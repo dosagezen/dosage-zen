@@ -36,7 +36,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent className="bg-gradient-gray-modern">
+      <SidebarContent className="bg-gradient-soft">
         <div className="p-4 border-b border-border/50">
           {!isCollapsed && (
             <div className="flex items-center gap-3">
