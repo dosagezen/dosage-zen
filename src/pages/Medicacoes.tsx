@@ -1,0 +1,269 @@
+import { useState } from "react"
+import { Plus, Pill, Clock, Calendar as CalendarIcon, Search } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const Medicacoes = () => {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const medicacoes = [
+    {
+      id: 1,
+      nome: "Atorvastatina",
+      dosagem: "10 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["08:00"],
+      proximaDose: "08:00",
+      estoque: 28,
+      status: "ativo"
+    },
+    {
+      id: 2,
+      nome: "Metformina XR",
+      dosagem: "500 mg",
+      forma: "Comprimido",
+      frequencia: "2x ao dia",
+      horarios: ["08:00", "20:00"],
+      proximaDose: "20:00",
+      estoque: 15,
+      status: "ativo"
+    },
+    {
+      id: 3,
+      nome: "Losartana",
+      dosagem: "50 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["20:00"],
+      proximaDose: "20:00",
+      estoque: 5,
+      status: "ativo"
+    }
+  ]
+
+  const filteredMedicacoes = medicacoes.filter(med =>
+    med.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  return (
+    <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-primary">Medicações</h1>
+          <p className="text-muted-foreground">Gerencie suas medicações e horários</p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Medicação
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-primary">Nova Medicação</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="medicamento">Nome do Medicamento</Label>
+                <Input 
+                  id="medicamento" 
+                  placeholder="Ex.: Glifarge XR"
+                  className="placeholder:text-muted-foreground/50"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dosagem">Dosagem</Label>
+                  <Input 
+                    id="dosagem" 
+                    placeholder="Ex.: 500 mg"
+                    className="placeholder:text-muted-foreground/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="quantidade">Quantidade</Label>
+                  <Input 
+                    id="quantidade" 
+                    placeholder="Ex.: 1"
+                    className="placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="forma">Forma</Label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione (Ex.: Comprimido)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="comprimido">Comprimido</SelectItem>
+                    <SelectItem value="capsula">Cápsula</SelectItem>
+                    <SelectItem value="liquido">Líquido</SelectItem>
+                    <SelectItem value="injecao">Injeção</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="frequencia">Frequência</Label>
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione (Ex.: 6 em 6 horas)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="6h">6 em 6 horas</SelectItem>
+                      <SelectItem value="8h">8 em 8 horas</SelectItem>
+                      <SelectItem value="12h">12 em 12 horas</SelectItem>
+                      <SelectItem value="24h">1 vez ao dia</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inicio">Hora de Início</Label>
+                  <Input 
+                    id="inicio" 
+                    type="time" 
+                    placeholder="Ex.: 08:00"
+                    className="placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="data-inicio">Data de Início</Label>
+                  <Input 
+                    id="data-inicio" 
+                    type="date" 
+                    placeholder="Ex.: 14/08/2025"
+                    className="placeholder:text-muted-foreground/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="data-fim">Data do Término</Label>
+                  <Input 
+                    id="data-fim" 
+                    type="date" 
+                    placeholder="Ex.: 14/11/2025"
+                    className="placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button className="bg-gradient-primary hover:bg-primary-hover">
+                Salvar Medicação
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Filtros e Busca */}
+      <Card className="shadow-card">
+        <CardContent className="pt-6">
+          <div className="flex gap-4 items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar medicações..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lista de Medicações */}
+      <div className="grid gap-4">
+        {filteredMedicacoes.map((medicacao) => (
+          <Card key={medicacao.id} className="shadow-card hover:shadow-floating transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-accent rounded-full flex items-center justify-center">
+                    <Pill className="w-6 h-6 text-accent-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-primary">{medicacao.nome}</h3>
+                    <p className="text-muted-foreground">{medicacao.dosagem} • {medicacao.forma}</p>
+                    <p className="text-sm text-muted-foreground">{medicacao.frequencia}</p>
+                  </div>
+                </div>
+                <div className="text-right space-y-2">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium">Próxima: {medicacao.proximaDose}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={medicacao.estoque > 10 ? "default" : "destructive"}>
+                      Estoque: {medicacao.estoque}
+                    </Badge>
+                    <Badge variant="outline">
+                      {medicacao.status}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Horários programados:</p>
+                    <div className="flex gap-2 mt-1">
+                      {medicacao.horarios.map((horario, index) => (
+                        <Badge key={index} variant="secondary" className="bg-accent/20">
+                          {horario}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      Editar
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      Registrar Dose
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredMedicacoes.length === 0 && (
+        <Card className="shadow-card">
+          <CardContent className="text-center py-12">
+            <Pill className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-primary mb-2">
+              {searchTerm ? "Nenhuma medicação encontrada" : "Nenhuma medicação cadastrada"}
+            </h3>
+            <p className="text-muted-foreground">
+              {searchTerm 
+                ? "Tente buscar com outros termos" 
+                : "Adicione sua primeira medicação para começar"
+              }
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}
+
+export default Medicacoes
