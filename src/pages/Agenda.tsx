@@ -20,14 +20,15 @@ const Agenda = () => {
   const [isDayModalOpen, setIsDayModalOpen] = useState(false)
 
   const consultas = [
+    // Eventos de Agosto 2025
     {
       id: 1,
       tipo: "consulta",
       especialidade: "Cardiologia",
       medico: "Dr. João Silva",
       local: "Hospital Central",
-      data: "2025-05-15",
-      dataFormatada: "15/05/2025",
+      data: "2025-08-15",
+      dataFormatada: "15/08/2025",
       hora: "09:00",
       observacoes: "Levar resultados de exames anteriores",
       status: "agendado"
@@ -38,8 +39,8 @@ const Agenda = () => {
       especialidade: "Endocrinologia",
       medico: "Dra. Maria Santos",
       local: "Clínica Saúde Plus",
-      data: "2025-05-22",
-      dataFormatada: "22/05/2025",
+      data: "2025-08-22",
+      dataFormatada: "22/08/2025",
       hora: "14:30",
       observacoes: "Jejum de 12 horas",
       status: "agendado"
@@ -50,23 +51,73 @@ const Agenda = () => {
       especialidade: "Oftalmologia",
       medico: "Dr. Carlos Oliveira",
       local: "Centro Médico Visual",
-      data: "2025-06-02",
-      dataFormatada: "02/06/2025",
+      data: "2025-08-28",
+      dataFormatada: "28/08/2025",
       hora: "16:00",
-      observacoes: "",
+      observacoes: "Avaliação de rotina",
+      status: "confirmado"
+    },
+    // Eventos de Setembro 2025
+    {
+      id: 4,
+      tipo: "consulta",
+      especialidade: "Dermatologia",
+      medico: "Dra. Ana Costa",
+      local: "Clínica DermaCare",
+      data: "2025-09-05",
+      dataFormatada: "05/09/2025",
+      hora: "10:30",
+      observacoes: "Consulta para acompanhamento",
+      status: "agendado"
+    },
+    {
+      id: 5,
+      tipo: "exame",
+      especialidade: "Radiologia",
+      medico: "Dr. Roberto Lima",
+      local: "Centro de Diagnóstico",
+      data: "2025-09-12",
+      dataFormatada: "12/09/2025",
+      hora: "08:00",
+      observacoes: "Ultrassom abdominal - jejum de 8 horas",
+      status: "agendado"
+    },
+    {
+      id: 6,
+      tipo: "consulta",
+      especialidade: "Neurologia",
+      medico: "Dr. Fernando Souza",
+      local: "Hospital Neurológico",
+      data: "2025-09-18",
+      dataFormatada: "18/09/2025",
+      hora: "15:00",
+      observacoes: "Primeira consulta",
+      status: "agendado"
+    },
+    {
+      id: 7,
+      tipo: "exame",
+      especialidade: "Laboratório",
+      medico: "Lab Central",
+      local: "Laboratório Central",
+      data: "2025-09-25",
+      dataFormatada: "25/09/2025",
+      hora: "07:30",
+      observacoes: "Exames de sangue - jejum de 12 horas",
       status: "agendado"
     }
   ]
 
   // Mock de medicações para demonstrar no calendário
   const medicacoes = [
+    // Medicações de Agosto
     {
       id: 101,
       tipo: "medicacao",
       nome: "Atorvastatina",
       dosagem: "10 mg",
-      data: "2025-05-15",
-      dataFormatada: "15/05/2025",
+      data: "2025-08-15",
+      dataFormatada: "15/08/2025",
       hora: "08:00",
       observacoes: "Tomar com o café da manhã",
       status: "pendente"
@@ -76,8 +127,8 @@ const Agenda = () => {
       tipo: "medicacao",
       nome: "Glifarge XR",
       dosagem: "500 mg",
-      data: "2025-05-15",
-      dataFormatada: "15/05/2025",
+      data: "2025-08-22",
+      dataFormatada: "22/08/2025",
       hora: "12:00",
       observacoes: "Tomar antes do almoço",
       status: "pendente"
@@ -87,10 +138,44 @@ const Agenda = () => {
       tipo: "medicacao",
       nome: "Omega 3",
       dosagem: "1000 mg",
-      data: "2025-05-22",
-      dataFormatada: "22/05/2025",
+      data: "2025-08-28",
+      dataFormatada: "28/08/2025",
       hora: "20:00",
       observacoes: "Tomar após o jantar",
+      status: "pendente"
+    },
+    // Medicações de Setembro
+    {
+      id: 104,
+      tipo: "medicacao",
+      nome: "Vitamina D",
+      dosagem: "2000 UI",
+      data: "2025-09-05",
+      dataFormatada: "05/09/2025",
+      hora: "09:00",
+      observacoes: "Tomar com leite ou iogurte",
+      status: "pendente"
+    },
+    {
+      id: 105,
+      tipo: "medicacao",
+      nome: "Losartana",
+      dosagem: "50 mg",
+      data: "2025-09-12",
+      dataFormatada: "12/09/2025",
+      hora: "19:00",
+      observacoes: "Tomar sempre no mesmo horário",
+      status: "pendente"
+    },
+    {
+      id: 106,
+      tipo: "medicacao",
+      nome: "Complexo B",
+      dosagem: "1 comprimido",
+      data: "2025-09-18",
+      dataFormatada: "18/09/2025",
+      hora: "08:30",
+      observacoes: "Tomar em jejum",
       status: "pendente"
     }
   ]
