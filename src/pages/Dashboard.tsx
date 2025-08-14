@@ -2,8 +2,10 @@ import { Calendar, Clock, Pill, Plus, TrendingUp, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const proximasMedicacoes = [
     { nome: "Atorvastatina", dosagem: "10 mg", horario: "08:00", status: "próximo" },
     { nome: "Metformina", dosagem: "500 mg", horario: "12:00", status: "pendente" },
@@ -30,7 +32,10 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold text-primary">Bom dia, Maria!</h1>
           <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
         </div>
-        <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft">
+        <Button 
+          className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft"
+          onClick={() => navigate('/medicacoes')}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Adicionar Medicação
         </Button>
@@ -61,7 +66,7 @@ const Dashboard = () => {
               <Clock className="w-5 h-5" />
               Próximas Medicações
             </CardTitle>
-            <Button variant="outline" size="sm">Ver Todas</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/medicacoes')}>Ver Todas</Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {proximasMedicacoes.map((med, index) => (
@@ -93,7 +98,7 @@ const Dashboard = () => {
               <Calendar className="w-5 h-5" />
               Próximas Consultas
             </CardTitle>
-            <Button variant="outline" size="sm">Ver Agenda</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/agenda')}>Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {proximasConsultas.map((consulta, index) => (
@@ -124,15 +129,27 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20"
+              onClick={() => navigate('/medicacoes')}
+            >
               <Pill className="w-6 h-6" />
               Registrar Dose
             </Button>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20"
+              onClick={() => navigate('/agenda')}
+            >
               <Calendar className="w-6 h-6" />
               Agendar Consulta
             </Button>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20"
+              onClick={() => navigate('/compartilhar')}
+            >
               <Users className="w-6 h-6" />
               Compartilhar Dados
             </Button>
