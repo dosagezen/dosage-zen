@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useNavigate } from "react-router-dom"
+import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -32,13 +33,12 @@ const Dashboard = () => {
           <h1 className="text-3xl font-bold text-primary">Bom dia, Maria!</h1>
           <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
         </div>
-        <Button 
-          className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft"
-          onClick={() => navigate('/medicacoes')}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Medicação
-        </Button>
+        <AddMedicationDialog>
+          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft">
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Medicação
+          </Button>
+        </AddMedicationDialog>
       </div>
 
       {/* Cards de Estatísticas */}
