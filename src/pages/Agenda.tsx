@@ -33,6 +33,43 @@ const Agenda = () => {
       observacoes: "Levar resultados de exames anteriores",
       status: "agendado"
     },
+    // Eventos do dia 19/08/2025
+    {
+      id: 8,
+      tipo: "consulta",
+      especialidade: "Clínica Geral",
+      medico: "Dr. Pedro Martins",
+      local: "UBS Central",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "08:30",
+      observacoes: "Consulta de rotina e renovação de receitas",
+      status: "agendado"
+    },
+    {
+      id: 9,
+      tipo: "consulta",
+      especialidade: "Nutricionista",
+      medico: "Dra. Carla Ribeiro",
+      local: "Clínica Vida Saudável",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "14:00",
+      observacoes: "Acompanhamento nutricional mensal",
+      status: "confirmado"
+    },
+    {
+      id: 10,
+      tipo: "exame",
+      especialidade: "Laboratório",
+      medico: "Lab Diagnóstica",
+      local: "Laboratório Diagnóstica",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "07:00",
+      observacoes: "Hemograma completo - jejum de 12 horas",
+      status: "agendado"
+    },
     {
       id: 2,
       tipo: "exame",
@@ -120,6 +157,40 @@ const Agenda = () => {
       dataFormatada: "15/08/2025",
       hora: "08:00",
       observacoes: "Tomar com o café da manhã",
+      status: "pendente"
+    },
+    // Medicações do dia 19/08/2025
+    {
+      id: 107,
+      tipo: "medicacao",
+      nome: "Captopril",
+      dosagem: "25 mg",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "06:00",
+      observacoes: "Tomar em jejum, 30 min antes do café",
+      status: "pendente"
+    },
+    {
+      id: 108,
+      tipo: "medicacao",
+      nome: "Sinvastatina",
+      dosagem: "20 mg",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "22:00",
+      observacoes: "Tomar antes de dormir",
+      status: "pendente"
+    },
+    {
+      id: 109,
+      tipo: "medicacao",
+      nome: "Ácido Fólico",
+      dosagem: "5 mg",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "12:30",
+      observacoes: "Tomar após o almoço",
       status: "pendente"
     },
     {
