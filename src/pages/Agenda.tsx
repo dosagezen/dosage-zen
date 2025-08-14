@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User } from "lucide-react"
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,10 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 const Agenda = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
 
   const consultas = [
     {
@@ -67,6 +72,40 @@ const Agenda = () => {
 
   const getTipoIcon = (tipo: string) => {
     return tipo === "consulta" ? User : CalendarIcon
+  }
+
+  // Calendar utilities
+  const monthStart = startOfMonth(currentDate)
+  const monthEnd = endOfMonth(currentDate)
+  const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  
+  // Add padding days for calendar grid
+  const firstDayOfWeek = getDay(monthStart)
+  const paddingDays = Array.from({ length: firstDayOfWeek }, (_, i) => 
+    new Date(monthStart.getTime() - (firstDayOfWeek - i) * 24 * 60 * 60 * 1000)
+  )
+  
+  const allCalendarDays = [...paddingDays, ...calendarDays]
+  
+  // Get events for a specific day
+  const getEventsForDay = (day: Date) => {
+    return filteredConsultas.filter(evento => 
+      isSameDay(new Date(evento.data), day)
+    )
+  }
+
+  // Navigation functions
+  const navigateToPreviousMonth = () => {
+    setCurrentDate(subMonths(currentDate, 1))
+  }
+
+  const navigateToNextMonth = () => {
+    setCurrentDate(addMonths(currentDate, 1))
+  }
+
+  const handleEventClick = (event: any) => {
+    setSelectedEvent(event)
+    setIsEventModalOpen(true)
   }
 
   return (
@@ -172,70 +211,177 @@ const Agenda = () => {
         </CardContent>
       </Card>
 
-      {/* Lista de Consultas/Exames */}
-      <div className="grid gap-4">
-        {filteredConsultas.map((consulta) => {
-          const TipoIcon = getTipoIcon(consulta.tipo)
-          return (
-            <Card key={consulta.id} className="shadow-card hover:shadow-floating transition-shadow duration-300">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-accent rounded-full flex items-center justify-center">
-                      <TipoIcon className="w-6 h-6 text-accent-foreground" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-primary">{consulta.especialidade}</h3>
-                      <p className="text-muted-foreground">{consulta.medico}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        <span>{consulta.local}</span>
+      {/* Calendário Mensal */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-primary flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              {format(currentDate, "MMMM yyyy", { locale: ptBR })}
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={navigateToPreviousMonth}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={navigateToNextMonth}
+                className="h-8 w-8 p-0"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-1 mb-4">
+            {/* Week days header */}
+            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+              <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+                {day}
+              </div>
+            ))}
+            
+            {/* Calendar days */}
+            {allCalendarDays.map((day, index) => {
+              const events = getEventsForDay(day)
+              const isCurrentMonth = isSameMonth(day, currentDate)
+              const isToday = isSameDay(day, new Date())
+              
+              return (
+                <div
+                  key={index}
+                  className={`
+                    min-h-[80px] p-1 border border-border/20 rounded-md transition-colors
+                    ${isCurrentMonth ? 'bg-card' : 'bg-muted/30'}
+                    ${isToday ? 'ring-2 ring-primary/50' : ''}
+                    hover:bg-accent/10
+                  `}
+                >
+                  <div className={`text-sm ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/50'} ${isToday ? 'font-bold text-primary' : ''}`}>
+                    {format(day, 'd')}
+                  </div>
+                  
+                  {/* Events for this day */}
+                  <div className="space-y-1 mt-1">
+                    {events.map((event) => (
+                      <div
+                        key={event.id}
+                        onClick={() => handleEventClick(event)}
+                        className="
+                          text-xs p-1 rounded cursor-pointer truncate
+                          bg-primary/10 text-primary border border-primary/20
+                          hover:bg-primary/20 transition-colors
+                        "
+                        title={`${event.especialidade} - ${event.hora}`}
+                      >
+                        {event.tipo === "consulta" ? "Consulta" : "Exame"} – {event.especialidade} – {event.hora}
                       </div>
-                    </div>
-                  </div>
-                  <div className="text-right space-y-2">
-                    <div className="flex items-center gap-2 text-primary">
-                      <CalendarIcon className="w-4 h-4" />
-                      <span className="font-medium">{consulta.dataFormatada}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-primary">
-                      <Clock className="w-4 h-4" />
-                      <span className="font-medium">{consulta.hora}</span>
-                    </div>
-                    <div className="flex justify-end">
-                      <Badge variant={getStatusColor(consulta.status)}>
-                        {consulta.status}
-                      </Badge>
-                    </div>
+                    ))}
                   </div>
                 </div>
-                
-                {consulta.observacoes && (
-                  <div className="mt-4 pt-4 border-t border-border/50">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Observações:</strong> {consulta.observacoes}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="mt-4 pt-4 border-t border-border/50">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm">
-                      Editar
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Remarcar
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-destructive">
-                      Cancelar
-                    </Button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Event Detail Modal */}
+      <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="text-primary flex items-center gap-2">
+              {selectedEvent && (
+                <>
+                  {getTipoIcon(selectedEvent.tipo) === User ? (
+                    <User className="w-5 h-5" />
+                  ) : (
+                    <CalendarIcon className="w-5 h-5" />
+                  )}
+                  {selectedEvent.especialidade}
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Tipo</Label>
+                  <p className="font-medium text-primary">
+                    {selectedEvent.tipo === "consulta" ? "Consulta" : "Exame"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <div className="mt-1">
+                    <Badge variant={getStatusColor(selectedEvent.status)}>
+                      {selectedEvent.status}
+                    </Badge>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+              </div>
+              
+              <div>
+                <Label className="text-muted-foreground">Profissional</Label>
+                <p className="font-medium text-primary">{selectedEvent.medico}</p>
+              </div>
+              
+              <div>
+                <Label className="text-muted-foreground">Local</Label>
+                <p className="font-medium text-primary flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {selectedEvent.local}
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Data</Label>
+                  <p className="font-medium text-primary flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    {selectedEvent.dataFormatada}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Hora</Label>
+                  <p className="font-medium text-primary flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {selectedEvent.hora}
+                  </p>
+                </div>
+              </div>
+              
+              {selectedEvent.observacoes && (
+                <div>
+                  <Label className="text-muted-foreground">Observações</Label>
+                  <p className="font-medium text-primary mt-1 p-3 bg-accent/10 rounded-lg">
+                    {selectedEvent.observacoes}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsEventModalOpen(false)}>
+              Fechar
+            </Button>
+            <Button variant="outline">
+              Editar
+            </Button>
+            <Button variant="outline">
+              Remarcar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {filteredConsultas.length === 0 && (
         <Card className="shadow-card">
