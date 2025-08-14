@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight } from "lucide-react"
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,8 @@ const Agenda = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null)
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false)
 
   const consultas = [
     {
@@ -56,10 +58,58 @@ const Agenda = () => {
     }
   ]
 
+  // Mock de medicações para demonstrar no calendário
+  const medicacoes = [
+    {
+      id: 101,
+      tipo: "medicacao",
+      nome: "Atorvastatina",
+      dosagem: "10 mg",
+      data: "2025-05-15",
+      dataFormatada: "15/05/2025",
+      hora: "08:00",
+      observacoes: "Tomar com o café da manhã",
+      status: "pendente"
+    },
+    {
+      id: 102,
+      tipo: "medicacao",
+      nome: "Glifarge XR",
+      dosagem: "500 mg",
+      data: "2025-05-15",
+      dataFormatada: "15/05/2025",
+      hora: "12:00",
+      observacoes: "Tomar antes do almoço",
+      status: "pendente"
+    },
+    {
+      id: 103,
+      tipo: "medicacao",
+      nome: "Omega 3",
+      dosagem: "1000 mg",
+      data: "2025-05-22",
+      dataFormatada: "22/05/2025",
+      hora: "20:00",
+      observacoes: "Tomar após o jantar",
+      status: "pendente"
+    }
+  ]
+
+  // Combinar todos os compromissos
+  const todosCompromissos = [...consultas, ...medicacoes]
+
   const filteredConsultas = consultas.filter(consulta =>
     consulta.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
     consulta.medico.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const filteredCompromissos = todosCompromissos.filter(item => {
+    if (item.tipo === "medicacao") {
+      return (item as any).nome.toLowerCase().includes(searchTerm.toLowerCase())
+    }
+    return (item as any).especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (item as any).medico?.toLowerCase().includes(searchTerm.toLowerCase())
+  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -71,7 +121,12 @@ const Agenda = () => {
   }
 
   const getTipoIcon = (tipo: string) => {
-    return tipo === "consulta" ? User : CalendarIcon
+    switch (tipo) {
+      case "consulta": return User
+      case "exame": return Stethoscope
+      case "medicacao": return Pill
+      default: return CalendarIcon
+    }
   }
 
   // Calendar utilities
@@ -94,6 +149,23 @@ const Agenda = () => {
     )
   }
 
+  // Get all compromissos for a specific day
+  const getCompromissosForDay = (day: Date) => {
+    return filteredCompromissos.filter(compromisso => 
+      isSameDay(new Date(compromisso.data), day)
+    )
+  }
+
+  // Get compromissos by type for a day
+  const getCompromissosByType = (day: Date) => {
+    const compromissos = getCompromissosForDay(day)
+    return {
+      medicacoes: compromissos.filter(c => c.tipo === "medicacao"),
+      consultas: compromissos.filter(c => c.tipo === "consulta"),
+      exames: compromissos.filter(c => c.tipo === "exame")
+    }
+  }
+
   // Navigation functions
   const navigateToPreviousMonth = () => {
     setCurrentDate(subMonths(currentDate, 1))
@@ -106,6 +178,14 @@ const Agenda = () => {
   const handleEventClick = (event: any) => {
     setSelectedEvent(event)
     setIsEventModalOpen(true)
+  }
+
+  const handleDayClick = (day: Date) => {
+    const compromissos = getCompromissosForDay(day)
+    if (compromissos.length > 0) {
+      setSelectedDay(day)
+      setIsDayModalOpen(true)
+    }
   }
 
   return (
@@ -251,41 +331,54 @@ const Agenda = () => {
             
             {/* Calendar days */}
             {allCalendarDays.map((day, index) => {
-              const events = getEventsForDay(day)
+              const compromissosByType = getCompromissosByType(day)
+              const totalCompromissos = getCompromissosForDay(day).length
               const isCurrentMonth = isSameMonth(day, currentDate)
               const isToday = isSameDay(day, new Date())
               
               return (
                 <div
                   key={index}
+                  onClick={() => handleDayClick(day)}
                   className={`
-                    min-h-[80px] p-1 border border-border/20 rounded-md transition-colors
+                    min-h-[80px] p-1 border border-border/20 rounded-md transition-colors cursor-pointer
                     ${isCurrentMonth ? 'bg-card' : 'bg-muted/30'}
                     ${isToday ? 'ring-2 ring-primary/50' : ''}
-                    hover:bg-accent/10
+                    ${totalCompromissos > 0 ? 'hover:bg-accent/20' : 'hover:bg-accent/10'}
                   `}
                 >
                   <div className={`text-sm ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/50'} ${isToday ? 'font-bold text-primary' : ''}`}>
                     {format(day, 'd')}
                   </div>
                   
-                  {/* Events for this day */}
-                  <div className="space-y-1 mt-1">
-                    {events.map((event) => (
-                      <div
-                        key={event.id}
-                        onClick={() => handleEventClick(event)}
-                        className="
-                          text-xs p-1 rounded cursor-pointer truncate
-                          bg-primary/10 text-primary border border-primary/20
-                          hover:bg-primary/20 transition-colors
-                        "
-                        title={`${event.especialidade} - ${event.hora}`}
-                      >
-                        {event.tipo === "consulta" ? "Consulta" : "Exame"} – {event.especialidade} – {event.hora}
-                      </div>
-                    ))}
-                  </div>
+                  {/* Indicadores visuais por tipo de compromisso */}
+                  {totalCompromissos > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {/* Ícone de Medicações */}
+                      {compromissosByType.medicacoes.length > 0 && (
+                        <div className="flex items-center gap-1 bg-success/20 text-success px-1 py-0.5 rounded text-xs">
+                          <Pill className="w-3 h-3" />
+                          <span>{compromissosByType.medicacoes.length}</span>
+                        </div>
+                      )}
+                      
+                      {/* Ícone de Consultas */}
+                      {compromissosByType.consultas.length > 0 && (
+                        <div className="flex items-center gap-1 bg-primary/20 text-primary px-1 py-0.5 rounded text-xs">
+                          <User className="w-3 h-3" />
+                          <span>{compromissosByType.consultas.length}</span>
+                        </div>
+                      )}
+                      
+                      {/* Ícone de Exames */}
+                      {compromissosByType.exames.length > 0 && (
+                        <div className="flex items-center gap-1 bg-accent/30 text-accent-foreground px-1 py-0.5 rounded text-xs">
+                          <Stethoscope className="w-3 h-3" />
+                          <span>{compromissosByType.exames.length}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -378,6 +471,143 @@ const Agenda = () => {
             </Button>
             <Button variant="outline">
               Remarcar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Day Compromissos Modal */}
+      <Dialog open={isDayModalOpen} onOpenChange={setIsDayModalOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-primary flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              Compromissos de {selectedDay && format(selectedDay, "dd/MM/yyyy", { locale: ptBR })}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDay && (
+            <div className="space-y-4 py-4">
+              {(() => {
+                const compromissos = getCompromissosForDay(selectedDay)
+                const compromissosByType = getCompromissosByType(selectedDay)
+                
+                return (
+                  <>
+                    {/* Medicações */}
+                    {compromissosByType.medicacoes.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="flex items-center gap-2 font-semibold text-success">
+                          <Pill className="w-4 h-4" />
+                          Medicações ({compromissosByType.medicacoes.length})
+                        </h3>
+                        {compromissosByType.medicacoes.map((medicacao: any) => (
+                          <div key={medicacao.id} className="border border-success/20 bg-success/5 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-primary">{medicacao.nome}</h4>
+                                <p className="text-sm text-muted-foreground">{medicacao.dosagem}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{medicacao.hora}</span>
+                                </div>
+                              </div>
+                              <Badge variant={getStatusColor(medicacao.status)}>
+                                {medicacao.status}
+                              </Badge>
+                            </div>
+                            {medicacao.observacoes && (
+                              <p className="text-sm text-muted-foreground mt-2 italic">
+                                {medicacao.observacoes}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Consultas */}
+                    {compromissosByType.consultas.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="flex items-center gap-2 font-semibold text-primary">
+                          <User className="w-4 h-4" />
+                          Consultas ({compromissosByType.consultas.length})
+                        </h3>
+                        {compromissosByType.consultas.map((consulta: any) => (
+                          <div key={consulta.id} className="border border-primary/20 bg-primary/5 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-primary">{consulta.especialidade}</h4>
+                                <p className="text-sm text-muted-foreground">{consulta.medico}</p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{consulta.hora}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{consulta.local}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant={getStatusColor(consulta.status)}>
+                                {consulta.status}
+                              </Badge>
+                            </div>
+                            {consulta.observacoes && (
+                              <p className="text-sm text-muted-foreground mt-2 italic">
+                                {consulta.observacoes}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Exames */}
+                    {compromissosByType.exames.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="flex items-center gap-2 font-semibold text-accent-foreground">
+                          <Stethoscope className="w-4 h-4" />
+                          Exames ({compromissosByType.exames.length})
+                        </h3>
+                        {compromissosByType.exames.map((exame: any) => (
+                          <div key={exame.id} className="border border-accent/20 bg-accent/5 rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-primary">{exame.especialidade}</h4>
+                                <p className="text-sm text-muted-foreground">{exame.medico}</p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    <span>{exame.hora}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{exame.local}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant={getStatusColor(exame.status)}>
+                                {exame.status}
+                              </Badge>
+                            </div>
+                            {exame.observacoes && (
+                              <p className="text-sm text-muted-foreground mt-2 italic">
+                                {exame.observacoes}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          )}
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={() => setIsDayModalOpen(false)}>
+              Fechar
             </Button>
           </div>
         </DialogContent>
