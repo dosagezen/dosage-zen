@@ -6,33 +6,33 @@
 
 @layer base {
   :root {
-    /* Paleta Principal - Tons de Verde Natural */
-    --background: 35 30% 85%; /* DAD7CD - Bege Claro */
-    --foreground: 146 42% 22%; /* 344E41 - Verde Escuro Principal */
+    /* Paleta Principal - Tons de Verde Natural - 50% Tonalidade */
+    --background: 35 30% 42.5%; /* Bege Claro - 50% mais escuro */
+    --foreground: 146 42% 85%; /* Verde claro para contraste */
 
-    --card: 0 0% 100%;
-    --card-foreground: 146 42% 22%;
+    --card: 0 0% 50%; /* Branco - 50% mais escuro */
+    --card-foreground: 146 42% 85%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 146 42% 22%;
+    --popover: 0 0% 50%;
+    --popover-foreground: 146 42% 85%;
 
     --primary: 146 42% 22%; /* #344E41 - Verde Principal */
     --primary-foreground: 0 0% 98%;
     --primary-hover: 146 42% 28%;
     --primary-light: 146 42% 35%; /* #3A5A40 */
 
-    --secondary: 35 30% 85%; /* #DAD7CD - Bege */
-    --secondary-foreground: 146 42% 22%;
+    --secondary: 35 30% 42.5%; /* Bege - 50% mais escuro */
+    --secondary-foreground: 146 42% 85%;
 
-    --accent: 81 27% 62%; /* #A3B18A - Verde Claro */
-    --accent-foreground: 146 42% 22%;
-    --accent-hover: 81 27% 56%;
+    --accent: 81 27% 31%; /* Verde Claro - 50% mais escuro */
+    --accent-foreground: 146 42% 85%;
+    --accent-hover: 81 27% 28%;
 
     --success: 118 39% 41%; /* #588157 - Verde Médio */
     --success-foreground: 0 0% 98%;
 
-    --muted: 35 30% 85%;
-    --muted-foreground: 146 20% 45%;
+    --muted: 35 30% 42.5%;
+    --muted-foreground: 146 20% 75%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
