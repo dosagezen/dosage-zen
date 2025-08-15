@@ -90,7 +90,7 @@ const Medicacoes = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-accent rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
                     <Pill className="w-6 h-6 text-accent-foreground" />
                   </div>
                   <div>
