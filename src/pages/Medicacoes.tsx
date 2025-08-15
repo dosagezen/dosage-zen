@@ -323,45 +323,45 @@ const Medicacoes = () => {
               medicacao.status === "inativa" ? "bg-red-500 border-red-500" : ""
             }`}
           >
-            <CardContent className="p-6 w-full">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+            <CardContent className="p-4 sm:p-6 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                     medicacao.status === "inativa" ? "bg-red-600" : "bg-accent"
                   }`}>
-                    <Pill className={`w-6 h-6 ${
+                    <Pill className={`w-5 h-5 sm:w-6 sm:h-6 ${
                       medicacao.status === "inativa" ? "text-white" : "text-accent-foreground"
                     }`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`text-lg font-semibold ${
+                    <h3 className={`text-base sm:text-lg font-semibold ${
                       medicacao.status === "inativa" ? "text-white" : "text-primary"
                     }`}>
                       {medicacao.nome}
                     </h3>
-                    <p className={`${
+                    <p className={`text-sm sm:text-base ${
                       medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
                     }`}>
                       {medicacao.dosagem} • {medicacao.forma}
                     </p>
-                    <p className={`text-sm ${
+                    <p className={`text-xs sm:text-sm ${
                       medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
                     }`}>
                       {medicacao.frequencia}
                     </p>
                   </div>
                 </div>
-                <div className="text-right space-y-2 flex-shrink-0 ml-4">
-                  <div className={`flex items-center justify-end ${
+                <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
+                  <div className={`flex items-center justify-start sm:justify-end ${
                     medicacao.status === "inativa" ? "text-white" : "text-primary"
                   }`}>
                     <Clock className="w-4 h-4 mr-1" />
-                    <span className="font-medium whitespace-nowrap">Próxima: {medicacao.proximaDose}</span>
+                    <span className="font-medium text-sm sm:text-base">Próxima: {medicacao.proximaDose}</span>
                   </div>
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-start sm:justify-end">
                     <Badge 
                       variant="outline"
-                      className={medicacao.status === "inativa" ? "bg-red-600 text-white border-red-400" : ""}
+                      className={`text-xs sm:text-sm ${medicacao.status === "inativa" ? "bg-red-600 text-white border-red-400" : ""}`}
                     >
                       {medicacao.status}
                     </Badge>
@@ -372,30 +372,30 @@ const Medicacoes = () => {
               <div className={`mt-4 pt-4 border-t w-full ${
                 medicacao.status === "inativa" ? "border-red-400/50" : "border-border/50"
               }`}>
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex-1">
-                    <p className={`text-sm ${
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs sm:text-sm ${
                       medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
                     }`}>
                       Horários programados:
                     </p>
-                    <div className="flex gap-2 mt-1 flex-wrap">
+                    <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
                       {medicacao.horarios.map((horario, index) => (
                         <Badge 
                           key={index} 
                           variant="secondary" 
-                          className={medicacao.status === "inativa" ? "bg-red-600 text-white" : "bg-accent/20"}
+                          className={`text-xs sm:text-sm ${medicacao.status === "inativa" ? "bg-red-600 text-white" : "bg-accent/20"}`}
                         >
                           {horario}
                         </Badge>
                       ))}
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0 ml-4">
+                  <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
                     <Button 
                       variant={medicacao.status === "inativa" ? "secondary" : "outline"}
                       size="sm"
-                      className={medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}
+                      className={`text-xs sm:text-sm flex-shrink-0 ${medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}`}
                       onClick={() => {
                         setEditingMedication(medicacao)
                         setIsEditDialogOpen(true)
@@ -407,7 +407,7 @@ const Medicacoes = () => {
                       <button
                         onClick={() => handleRegisterDose(medicacao.id)}
                         className={`
-                          w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
+                          w-8 h-8 sm:w-9 sm:h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
                           ${registeredDoses.has(medicacao.id)
                             ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
                             : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
@@ -415,7 +415,7 @@ const Medicacoes = () => {
                         `}
                         aria-label="Registrar dose"
                       >
-                        <Check className="w-4 h-4" />
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     )}
                   </div>
