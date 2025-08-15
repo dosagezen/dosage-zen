@@ -24,7 +24,7 @@ const items = [
 ]
 
 export function AppSidebar() {
-  const { state, setOpen } = useSidebar()
+  const { state, setOpenMobile } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
@@ -38,7 +38,7 @@ export function AppSidebar() {
 
   const handleMobileNavClick = () => {
     if (isMobile) {
-      setOpen(false)
+      setOpenMobile(false)
     }
   }
 
