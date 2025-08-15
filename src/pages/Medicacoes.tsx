@@ -294,6 +294,13 @@ const Medicacoes = () => {
         </CardContent>
       </Card>
 
+      {/* Contador de medicações */}
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <p className="text-sm">
+          Você tem <span className="text-lg font-bold text-primary">{filteredMedicacoes.length.toString().padStart(2, '0')}</span> medicações listadas.
+        </p>
+      </div>
+
       {/* Lista de Medicações */}
       <div className="grid gap-4">
         {filteredMedicacoes.map((medicacao) => (
