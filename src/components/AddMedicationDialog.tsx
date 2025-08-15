@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface Medication {
   id: number
@@ -31,6 +32,7 @@ interface AddMedicationDialogProps {
 const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditing = false, onDelete }: AddMedicationDialogProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
+  const isMobile = useIsMobile()
   
   const [formData, setFormData] = useState({
     nome: "",
@@ -95,9 +97,15 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         {children || (
-          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft">
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Medicação
+          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
+            {isMobile ? (
+              <Plus className="w-4 h-4" />
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Medicação
+              </>
+            )}
           </Button>
         )}
       </DialogTrigger>
