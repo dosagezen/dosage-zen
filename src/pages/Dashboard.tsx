@@ -199,8 +199,9 @@ const Dashboard = () => {
           <DialogHeader>
             <DialogTitle className="text-primary flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Compromissos de Hoje - 14 de agosto de 2025
+              Compromissos de Hoje
             </DialogTitle>
+            <h3 className="text-muted-foreground text-sm">14 de agosto de 2025</h3>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {/* Medicações */}
