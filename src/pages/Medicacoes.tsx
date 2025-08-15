@@ -101,8 +101,8 @@ const Medicacoes = () => {
                 </div>
                 <div className="text-right space-y-2">
                   <div className="flex items-center gap-2 text-primary">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-medium">Próxima: {medicacao.proximaDose}</span>
+                    <Clock className="w-4 h-4 flex-shrink-0" />
+                    <span className="font-medium leading-none">Próxima: {medicacao.proximaDose}</span>
                   </div>
                   <div className="flex items-center justify-end">
                     <Badge variant="outline">
