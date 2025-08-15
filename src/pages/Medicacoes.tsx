@@ -336,7 +336,10 @@ const Medicacoes = () => {
                     <span className="font-medium whitespace-nowrap">Próxima: {medicacao.proximaDose}</span>
                   </div>
                   <div className="flex items-center justify-end">
-                    <Badge variant="outline">
+                    <Badge 
+                      variant="outline"
+                      className={medicacao.status === "inativa" ? "bg-red-500 text-white border-red-500" : ""}
+                    >
                       {medicacao.status}
                     </Badge>
                   </div>
