@@ -254,21 +254,21 @@ const Medicacoes = () => {
           <TabsList className="grid w-full grid-cols-3 h-[36px] items-center p-0 m-0">
             <TabsTrigger 
               value="hoje" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
+              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "hoje"}
             >
               Hoje
             </TabsTrigger>
             <TabsTrigger 
               value="ativas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
+              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "ativas"}
             >
               Ativas
             </TabsTrigger>
             <TabsTrigger 
               value="todas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
+              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "todas"}
             >
               Todas
