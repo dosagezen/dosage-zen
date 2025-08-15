@@ -185,24 +185,24 @@ const Medicacoes = () => {
       <div className="flex items-center gap-4 mb-4">
         <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
         <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-auto">
-          <TabsList className="grid w-full grid-cols-3 h-[36px]">
+          <TabsList className="grid w-full grid-cols-3 h-[36px] items-center p-0 m-0">
             <TabsTrigger 
               value="hoje" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "hoje"}
             >
               Hoje
             </TabsTrigger>
             <TabsTrigger 
               value="ativas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "ativas"}
             >
               Ativas
             </TabsTrigger>
             <TabsTrigger 
               value="todas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground h-[36px] px-6 border-0 transition-all flex items-center justify-center"
               aria-selected={activeFilter === "todas"}
             >
               Todas
