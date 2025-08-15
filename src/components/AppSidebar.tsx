@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const items = [
   { title: "Dashboard", url: "/", icon: Home },
@@ -23,16 +24,23 @@ const items = [
 ]
 
 export function AppSidebar() {
-  const { state } = useSidebar()
+  const { state, setOpen } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
+  const isMobile = useIsMobile()
 
   const isActive = (path: string) => currentPath === path
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-accent/30 text-primary font-medium border-r-2 border-primary" 
       : "hover:bg-accent/20 text-foreground/80"
+
+  const handleMobileNavClick = () => {
+    if (isMobile) {
+      setOpen(false)
+    }
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -69,6 +77,7 @@ export function AppSidebar() {
                       to={item.url} 
                       end 
                       className={getNavCls}
+                      onClick={handleMobileNavClick}
                     >
                       <item.icon className="w-5 h-5" />
                       {!isCollapsed && <span>{item.title}</span>}
