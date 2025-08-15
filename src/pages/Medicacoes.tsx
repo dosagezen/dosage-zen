@@ -105,9 +105,6 @@ const Medicacoes = () => {
                     <span className="font-medium">Próxima: {medicacao.proximaDose}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={medicacao.estoque > 10 ? "default" : "destructive"}>
-                      Estoque: {medicacao.estoque}
-                    </Badge>
                     <Badge variant="outline">
                       {medicacao.status}
                     </Badge>
