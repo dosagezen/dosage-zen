@@ -151,7 +151,7 @@ const Medicacoes = () => {
                     <button
                       onClick={() => handleRegisterDose(medicacao.id)}
                       className={`
-                        w-11 h-11 rounded-lg border-2 transition-all duration-200 flex items-center justify-center
+                        w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center
                         ${registeredDoses.has(medicacao.id)
                           ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
                           : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
@@ -159,7 +159,7 @@ const Medicacoes = () => {
                       `}
                       aria-label="Registrar dose"
                     >
-                      <Check className="w-5 h-5" />
+                      <Check className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
