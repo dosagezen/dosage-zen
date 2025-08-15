@@ -61,7 +61,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-primary">Bom dia, Val!</h1>
-          <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
+          <p className="text-muted-foreground">Quinta-feira, 14 de agosto de 2025</p>
         </div>
         <AddMedicationDialog>
           <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12">
