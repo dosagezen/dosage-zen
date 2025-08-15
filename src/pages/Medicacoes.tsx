@@ -118,24 +118,24 @@ const Medicacoes = () => {
       <div className="flex items-center gap-4 mb-4">
         <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
         <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-auto">
-          <TabsList className="grid w-full grid-cols-3 bg-filter-neutral">
+          <TabsList className="grid w-full grid-cols-3 bg-filter-neutral gap-1 p-1">
             <TabsTrigger 
               value="hoje" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
               aria-selected={activeFilter === "hoje"}
             >
               Hoje
             </TabsTrigger>
             <TabsTrigger 
               value="ativas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
               aria-selected={activeFilter === "ativas"}
             >
               Ativas
             </TabsTrigger>
             <TabsTrigger 
               value="todas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
               aria-selected={activeFilter === "todas"}
             >
               Todas
