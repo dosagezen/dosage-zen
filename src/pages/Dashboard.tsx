@@ -60,7 +60,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-primary">Bom dia, Maria!</h1>
+          <h1 className="text-3xl font-bold text-primary">Bom dia, Val!</h1>
           <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
         </div>
         <AddMedicationDialog>
