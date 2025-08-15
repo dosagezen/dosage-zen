@@ -250,7 +250,7 @@ const Medicacoes = () => {
       {/* Filtros */}
       <div className="flex items-center gap-4 mb-4">
         <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
-        <Tabs value={activeFilter} onValueChange={setActiveFilter}>
+        <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-full">
           <TabsList className="grid w-full grid-cols-3 h-[36px] items-center p-0 m-0">
             <TabsTrigger 
               value="hoje" 
