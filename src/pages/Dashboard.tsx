@@ -64,7 +64,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
         </div>
         <AddMedicationDialog>
-          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
+          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12">
             <Plus className="w-4 h-4 md:mr-2" />
             <span className="hidden md:inline">Adicionar Medicação</span>
           </Button>
