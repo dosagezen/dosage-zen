@@ -351,7 +351,7 @@ const Medicacoes = () => {
                         setIsEditDialogOpen(true)
                       }}
                     >
-                      Editar
+                      Alterar
                     </Button>
                     <button
                       onClick={() => handleRegisterDose(medicacao.id)}
