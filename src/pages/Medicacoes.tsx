@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { Pill, Clock, Search, Check } from "lucide-react"
+import { Pill, Clock, Search, Check, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Medicacoes = () => {
@@ -48,7 +49,41 @@ const Medicacoes = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [medicacoesList, setMedicacoesList] = useState(medicacoes)
   const [registeredDoses, setRegisteredDoses] = useState<Set<number>>(new Set())
-  const filteredMedicacoes = medicacoesList.filter(med =>
+  const [activeFilter, setActiveFilter] = useState("hoje")
+
+  // Função para verificar se uma medicação tem dose hoje
+  const isToday = (proximaDose: string) => {
+    const today = new Date()
+    const todayString = today.toISOString().split('T')[0]
+    // Simulação: considera que se a próxima dose está nas próximas 24h, é "hoje"
+    return true // Para demo, todas as medicações são consideradas "hoje"
+  }
+
+  // Aplicar filtro baseado na aba selecionada
+  const getFilteredMedicacoes = () => {
+    let filtered = medicacoesList
+    
+    switch (activeFilter) {
+      case "hoje":
+        filtered = medicacoesList.filter(med => 
+          med.status === "ativo" && isToday(med.proximaDose)
+        )
+        break
+      case "ativas":
+        filtered = medicacoesList.filter(med => med.status === "ativo")
+        break
+      case "todas":
+        filtered = medicacoesList
+        break
+      default:
+        filtered = medicacoesList
+    }
+    
+    return filtered
+  }
+
+  // Aplicar busca sobre o resultado filtrado
+  const filteredMedicacoes = getFilteredMedicacoes().filter(med =>
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -79,7 +114,37 @@ const Medicacoes = () => {
         <AddMedicationDialog />
       </div>
 
-      {/* Filtros e Busca */}
+      {/* Filtros */}
+      <div className="flex items-center gap-4 mb-4">
+        <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
+        <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-auto">
+          <TabsList className="grid w-full grid-cols-3 bg-filter-neutral">
+            <TabsTrigger 
+              value="hoje" 
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              aria-selected={activeFilter === "hoje"}
+            >
+              Hoje
+            </TabsTrigger>
+            <TabsTrigger 
+              value="ativas" 
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              aria-selected={activeFilter === "ativas"}
+            >
+              Ativas
+            </TabsTrigger>
+            <TabsTrigger 
+              value="todas" 
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[44px] px-6"
+              aria-selected={activeFilter === "todas"}
+            >
+              Todas
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {/* Busca */}
       <Card className="shadow-card">
         <CardContent className="pt-6">
           <div className="flex gap-4 items-center">

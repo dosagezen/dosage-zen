@@ -31,6 +31,12 @@
     --success: 118 39% 41%; /* #588157 - Verde Médio */
     --success-foreground: 0 0% 98%;
 
+    /* Paleta específica do PRD */
+    --filter-neutral: 52 20% 85%; /* #DAD7CD */
+    --filter-neutral-foreground: 146 42% 22%; /* #344E41 */
+    --filter-active: 146 42% 22%; /* #344E41 */
+    --filter-active-foreground: 0 0% 98%;
+
     --muted: 220 20% 88%; /* Cinza Médio para Elementos Muted */
     --muted-foreground: 146 20% 45%;
 

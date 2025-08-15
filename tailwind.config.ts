@@ -51,6 +51,12 @@ export default {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))'
 				},
+				filter: {
+					neutral: 'hsl(var(--filter-neutral))',
+					'neutral-foreground': 'hsl(var(--filter-neutral-foreground))',
+					active: 'hsl(var(--filter-active))',
+					'active-foreground': 'hsl(var(--filter-active-foreground))'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
