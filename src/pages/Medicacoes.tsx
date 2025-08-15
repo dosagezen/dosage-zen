@@ -188,21 +188,21 @@ const Medicacoes = () => {
           <TabsList className="grid w-full grid-cols-3 gap-2 p-1 h-[36px]">
             <TabsTrigger 
               value="hoje" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
               aria-selected={activeFilter === "hoje"}
             >
               Hoje
             </TabsTrigger>
             <TabsTrigger 
               value="ativas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
               aria-selected={activeFilter === "ativas"}
             >
               Ativas
             </TabsTrigger>
             <TabsTrigger 
               value="todas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all flex items-center justify-center"
               aria-selected={activeFilter === "todas"}
             >
               Todas
