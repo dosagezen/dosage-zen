@@ -192,6 +192,22 @@ const Medicacoes = () => {
     return !proximaDose.includes("(amanhã)") && proximaDose !== "-"
   }
 
+  // Função para extrair e converter horário para comparação
+  const getTimeForSorting = (proximaDose: string) => {
+    if (proximaDose === "-") return 9999; // Medicações inativas vão para o final
+    if (proximaDose.includes("(amanhã)")) return 2400; // Medicações de amanhã vão após as de hoje
+    
+    // Extrair apenas o horário (formato HH:MM)
+    const timeMatch = proximaDose.match(/(\d{2}):(\d{2})/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      return hours * 60 + minutes; // Converter para minutos para facilitar comparação
+    }
+    
+    return 9999; // Fallback para casos não previstos
+  }
+
   // Aplicar filtro baseado na aba selecionada
   const getFilteredMedicacoes = () => {
     let filtered = medicacoesList
@@ -212,7 +228,12 @@ const Medicacoes = () => {
         filtered = medicacoesList
     }
     
-    return filtered
+    // Ordenar por horário (ordem crescente)
+    return filtered.sort((a, b) => {
+      const timeA = getTimeForSorting(a.proximaDose)
+      const timeB = getTimeForSorting(b.proximaDose)
+      return timeA - timeB
+    })
   }
 
   // Aplicar busca sobre o resultado filtrado
