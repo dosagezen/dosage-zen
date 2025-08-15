@@ -9,7 +9,7 @@ import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Medicacoes = () => {
   const medicacoes = [
-    // Medicações para hoje (ativas)
+    // Medicações para hoje (ativas) - 5 medicações
     {
       id: 1,
       nome: "Atorvastatina",
@@ -43,9 +43,31 @@ const Medicacoes = () => {
       estoque: 5,
       status: "ativa"
     },
-    // Medicações ativas mas não para hoje
     {
       id: 4,
+      nome: "Vitamina D3",
+      dosagem: "2000 UI",
+      forma: "Cápsula",
+      frequencia: "1x ao dia",
+      horarios: ["12:00"],
+      proximaDose: "12:00",
+      estoque: 30,
+      status: "ativa"
+    },
+    {
+      id: 5,
+      nome: "Ácido Acetilsalicílico",
+      dosagem: "100 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["22:00"],
+      proximaDose: "22:00",
+      estoque: 20,
+      status: "ativa"
+    },
+    // Medicações ativas mas não para hoje - mais 5 para completar 10 ativas
+    {
+      id: 6,
       nome: "Omeprazol",
       dosagem: "20 mg",
       forma: "Cápsula",
@@ -56,7 +78,7 @@ const Medicacoes = () => {
       status: "ativa"
     },
     {
-      id: 5,
+      id: 7,
       nome: "Sinvastatina",
       dosagem: "40 mg",
       forma: "Comprimido",
@@ -67,7 +89,7 @@ const Medicacoes = () => {
       status: "ativa"
     },
     {
-      id: 6,
+      id: 8,
       nome: "Captopril",
       dosagem: "25 mg",
       forma: "Comprimido",
@@ -77,9 +99,31 @@ const Medicacoes = () => {
       estoque: 18,
       status: "ativa"
     },
+    {
+      id: 9,
+      nome: "Hidroclorotiazida",
+      dosagem: "25 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["08:00"],
+      proximaDose: "08:00 (amanhã)",
+      estoque: 14,
+      status: "ativa"
+    },
+    {
+      id: 10,
+      nome: "Levotiroxina",
+      dosagem: "50 mcg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["06:00"],
+      proximaDose: "06:00 (amanhã)",
+      estoque: 25,
+      status: "ativa"
+    },
     // Medicações inativas
     {
-      id: 7,
+      id: 11,
       nome: "Amoxicilina",
       dosagem: "500 mg",
       forma: "Cápsula",
@@ -90,7 +134,7 @@ const Medicacoes = () => {
       status: "inativa"
     },
     {
-      id: 8,
+      id: 12,
       nome: "Ibuprofeno",
       dosagem: "600 mg",
       forma: "Comprimido",
@@ -101,7 +145,7 @@ const Medicacoes = () => {
       status: "inativa"
     },
     {
-      id: 9,
+      id: 13,
       nome: "Dipirona",
       dosagem: "500 mg",
       forma: "Comprimido",
@@ -109,6 +153,28 @@ const Medicacoes = () => {
       horarios: ["-"],
       proximaDose: "-",
       estoque: 10,
+      status: "inativa"
+    },
+    {
+      id: 14,
+      nome: "Prednisona",
+      dosagem: "20 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["08:00"],
+      proximaDose: "-",
+      estoque: 3,
+      status: "inativa"
+    },
+    {
+      id: 15,
+      nome: "Clonazepam",
+      dosagem: "2 mg",
+      forma: "Comprimido",
+      frequencia: "Conforme necessário",
+      horarios: ["-"],
+      proximaDose: "-",
+      estoque: 5,
       status: "inativa"
     }
   ]
