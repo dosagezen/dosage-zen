@@ -225,15 +225,7 @@ const Medicacoes = () => {
   }
 
   const handleRegisterDose = (medicationId: number) => {
-    setRegisteredDoses(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(medicationId)) {
-        newSet.delete(medicationId)
-      } else {
-        newSet.add(medicationId)
-      }
-      return newSet
-    })
+    setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
   }
 
   return (
