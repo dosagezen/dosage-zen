@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Plus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -23,22 +23,47 @@ interface AddMedicationDialogProps {
   children?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  medication?: Medication
+  medication?: Medication | null
   isEditing?: boolean
+  onDelete?: (medicationId: number) => void
 }
 
-const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditing = false }: AddMedicationDialogProps) => {
+const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditing = false, onDelete }: AddMedicationDialogProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
   
   const [formData, setFormData] = useState({
-    nome: medication?.nome || "",
-    dosagem: medication?.dosagem || "",
-    forma: medication?.forma || "",
-    frequencia: medication?.frequencia || "",
-    horario: medication?.horarios?.[0] || "",
-    estoque: medication?.estoque?.toString() || ""
+    nome: "",
+    dosagem: "",
+    forma: "",
+    frequencia: "",
+    horario: "",
+    estoque: ""
   })
+
+  // Atualizar dados quando medication muda
+  useEffect(() => {
+    if (medication && isEditing) {
+      setFormData({
+        nome: medication.nome || "",
+        dosagem: medication.dosagem || "",
+        forma: medication.forma || "",
+        frequencia: medication.frequencia || "",
+        horario: medication.horarios?.[0] || "",
+        estoque: medication.estoque?.toString() || ""
+      })
+    } else {
+      // Resetar formulário para nova medicação
+      setFormData({
+        nome: "",
+        dosagem: "",
+        forma: "",
+        frequencia: "",
+        horario: "",
+        estoque: ""
+      })
+    }
+  }, [medication, isEditing])
 
   const isControlled = open !== undefined && onOpenChange !== undefined
   const dialogOpen = isControlled ? open : isDialogOpen
@@ -52,6 +77,18 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         : "A medicação foi adicionada com sucesso ao seu plano de tratamento.",
     })
     setDialogOpen(false)
+  }
+
+  const handleDelete = () => {
+    if (medication && onDelete) {
+      onDelete(medication.id)
+      toast({
+        title: "Medicação excluída",
+        description: "A medicação foi removida com sucesso.",
+        variant: "destructive"
+      })
+      setDialogOpen(false)
+    }
   }
 
   return (
@@ -165,13 +202,21 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setDialogOpen(false)}>
-            Cancelar
-          </Button>
-          <Button className="bg-gradient-primary hover:bg-primary-hover" onClick={handleSave}>
-            {isEditing ? "Atualizar Medicação" : "Salvar Medicação"}
-          </Button>
+        <div className="flex justify-between">
+          {isEditing && (
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className="bg-gradient-primary hover:bg-primary-hover" onClick={handleSave}>
+              {isEditing ? "Atualizar Medicação" : "Salvar Medicação"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

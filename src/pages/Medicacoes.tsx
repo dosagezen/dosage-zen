@@ -7,10 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Medicacoes = () => {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [editingMedication, setEditingMedication] = useState<typeof medicacoes[0] | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-
   const medicacoes = [
     {
       id: 1,
@@ -47,9 +43,17 @@ const Medicacoes = () => {
     }
   ]
 
-  const filteredMedicacoes = medicacoes.filter(med =>
+  const [searchTerm, setSearchTerm] = useState("")
+  const [editingMedication, setEditingMedication] = useState<typeof medicacoes[0] | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [medicacoesList, setMedicacoesList] = useState(medicacoes)
+  const filteredMedicacoes = medicacoesList.filter(med =>
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleDeleteMedication = (medicationId: number) => {
+    setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
+  }
 
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
@@ -168,6 +172,7 @@ const Medicacoes = () => {
         onOpenChange={setIsEditDialogOpen}
         medication={editingMedication}
         isEditing={true}
+        onDelete={handleDeleteMedication}
       />
     </div>
   )
