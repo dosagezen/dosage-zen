@@ -8,6 +8,8 @@ import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Medicacoes = () => {
   const [searchTerm, setSearchTerm] = useState("")
+  const [editingMedication, setEditingMedication] = useState<typeof medicacoes[0] | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const medicacoes = [
     {
@@ -122,7 +124,14 @@ const Medicacoes = () => {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setEditingMedication(medicacao)
+                        setIsEditDialogOpen(true)
+                      }}
+                    >
                       Editar
                     </Button>
                     <Button variant="outline" size="sm">
@@ -152,6 +161,14 @@ const Medicacoes = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Edição */}
+      <AddMedicationDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        medication={editingMedication}
+        isEditing={true}
+      />
     </div>
   )
 }
