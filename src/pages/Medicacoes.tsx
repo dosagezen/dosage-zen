@@ -19,7 +19,7 @@ const Medicacoes = () => {
       horarios: ["08:00"],
       proximaDose: "08:00",
       estoque: 28,
-      status: "ativo"
+      status: "ativa"
     },
     {
       id: 2,
@@ -30,7 +30,7 @@ const Medicacoes = () => {
       horarios: ["08:00", "20:00"],
       proximaDose: "20:00",
       estoque: 15,
-      status: "ativo"
+      status: "ativa"
     },
     {
       id: 3,
@@ -41,7 +41,7 @@ const Medicacoes = () => {
       horarios: ["20:00"],
       proximaDose: "20:00",
       estoque: 5,
-      status: "ativo"
+      status: "ativa"
     },
     // Medicações ativas mas não para hoje
     {
@@ -53,7 +53,7 @@ const Medicacoes = () => {
       horarios: ["07:00"],
       proximaDose: "07:00 (amanhã)",
       estoque: 12,
-      status: "ativo"
+      status: "ativa"
     },
     {
       id: 5,
@@ -64,7 +64,7 @@ const Medicacoes = () => {
       horarios: ["21:00"],
       proximaDose: "21:00 (amanhã)",
       estoque: 22,
-      status: "ativo"
+      status: "ativa"
     },
     {
       id: 6,
@@ -75,7 +75,7 @@ const Medicacoes = () => {
       horarios: ["06:00", "14:00", "22:00"],
       proximaDose: "06:00 (amanhã)",
       estoque: 18,
-      status: "ativo"
+      status: "ativa"
     },
     // Medicações inativas
     {
@@ -87,7 +87,7 @@ const Medicacoes = () => {
       horarios: ["08:00", "16:00", "00:00"],
       proximaDose: "-",
       estoque: 0,
-      status: "inativo"
+      status: "inativa"
     },
     {
       id: 8,
@@ -98,7 +98,7 @@ const Medicacoes = () => {
       horarios: ["-"],
       proximaDose: "-",
       estoque: 8,
-      status: "inativo"
+      status: "inativa"
     },
     {
       id: 9,
@@ -109,7 +109,7 @@ const Medicacoes = () => {
       horarios: ["-"],
       proximaDose: "-",
       estoque: 10,
-      status: "inativo"
+      status: "inativa"
     }
   ]
 
@@ -133,11 +133,11 @@ const Medicacoes = () => {
     switch (activeFilter) {
       case "hoje":
         filtered = medicacoesList.filter(med => 
-          med.status === "ativo" && isToday(med.proximaDose)
+          med.status === "ativa" && isToday(med.proximaDose)
         )
         break
       case "ativas":
-        filtered = medicacoesList.filter(med => med.status === "ativo")
+        filtered = medicacoesList.filter(med => med.status === "ativa")
         break
       case "todas":
         filtered = medicacoesList
