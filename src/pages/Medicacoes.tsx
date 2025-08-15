@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Pill, Clock, Search } from "lucide-react"
+import { Pill, Clock, Search, Check } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -47,12 +47,25 @@ const Medicacoes = () => {
   const [editingMedication, setEditingMedication] = useState<typeof medicacoes[0] | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [medicacoesList, setMedicacoesList] = useState(medicacoes)
+  const [registeredDoses, setRegisteredDoses] = useState<Set<number>>(new Set())
   const filteredMedicacoes = medicacoesList.filter(med =>
     med.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleDeleteMedication = (medicationId: number) => {
     setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
+  }
+
+  const handleRegisterDose = (medicationId: number) => {
+    setRegisteredDoses(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(medicationId)) {
+        newSet.delete(medicationId)
+      } else {
+        newSet.add(medicationId)
+      }
+      return newSet
+    })
   }
 
   return (
@@ -135,9 +148,19 @@ const Medicacoes = () => {
                     >
                       Editar
                     </Button>
-                    <Button variant="outline" size="sm">
-                      Registrar Dose
-                    </Button>
+                    <button
+                      onClick={() => handleRegisterDose(medicacao.id)}
+                      className={`
+                        w-11 h-11 rounded-lg border-2 transition-all duration-200 flex items-center justify-center
+                        ${registeredDoses.has(medicacao.id)
+                          ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
+                          : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
+                        }
+                      `}
+                      aria-label="Registrar dose"
+                    >
+                      <Check className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>
