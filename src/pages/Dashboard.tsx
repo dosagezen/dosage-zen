@@ -58,7 +58,7 @@ const Dashboard = () => {
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-primary">Bom dia, Val!</h1>
           <p className="text-muted-foreground">Hoje é quinta-feira, 14 de agosto de 2025</p>
