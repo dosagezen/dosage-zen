@@ -315,25 +315,25 @@ const Medicacoes = () => {
       </div>
 
       {/* Lista de Medicações */}
-      <div className="grid gap-4">
+      <div className="grid gap-4 w-full">
         {filteredMedicacoes.map((medicacao) => (
           <Card 
             key={medicacao.id} 
-            className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${
+            className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 ${
               medicacao.status === "inativa" ? "bg-red-500 border-red-500" : ""
             }`}
           >
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+            <CardContent className="p-6 w-full">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                     medicacao.status === "inativa" ? "bg-red-600" : "bg-accent"
                   }`}>
                     <Pill className={`w-6 h-6 ${
                       medicacao.status === "inativa" ? "text-white" : "text-accent-foreground"
                     }`} />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <h3 className={`text-lg font-semibold ${
                       medicacao.status === "inativa" ? "text-white" : "text-primary"
                     }`}>
@@ -351,7 +351,7 @@ const Medicacoes = () => {
                     </p>
                   </div>
                 </div>
-                <div className="text-right space-y-2">
+                <div className="text-right space-y-2 flex-shrink-0 ml-4">
                   <div className={`flex items-center justify-end ${
                     medicacao.status === "inativa" ? "text-white" : "text-primary"
                   }`}>
@@ -369,17 +369,17 @@ const Medicacoes = () => {
                 </div>
               </div>
               
-              <div className={`mt-4 pt-4 border-t ${
+              <div className={`mt-4 pt-4 border-t w-full ${
                 medicacao.status === "inativa" ? "border-red-400/50" : "border-border/50"
               }`}>
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex-1">
                     <p className={`text-sm ${
                       medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
                     }`}>
                       Horários programados:
                     </p>
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex gap-2 mt-1 flex-wrap">
                       {medicacao.horarios.map((horario, index) => (
                         <Badge 
                           key={index} 
@@ -391,7 +391,7 @@ const Medicacoes = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0 ml-4">
                     <Button 
                       variant={medicacao.status === "inativa" ? "secondary" : "outline"}
                       size="sm"
@@ -407,7 +407,7 @@ const Medicacoes = () => {
                       <button
                         onClick={() => handleRegisterDose(medicacao.id)}
                         className={`
-                          w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center
+                          w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
                           ${registeredDoses.has(medicacao.id)
                             ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
                             : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
