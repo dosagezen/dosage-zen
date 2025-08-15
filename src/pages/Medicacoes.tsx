@@ -9,6 +9,7 @@ import AddMedicationDialog from "@/components/AddMedicationDialog"
 
 const Medicacoes = () => {
   const medicacoes = [
+    // Medicações para hoje (ativas)
     {
       id: 1,
       nome: "Atorvastatina",
@@ -41,6 +42,74 @@ const Medicacoes = () => {
       proximaDose: "20:00",
       estoque: 5,
       status: "ativo"
+    },
+    // Medicações ativas mas não para hoje
+    {
+      id: 4,
+      nome: "Omeprazol",
+      dosagem: "20 mg",
+      forma: "Cápsula",
+      frequencia: "1x ao dia",
+      horarios: ["07:00"],
+      proximaDose: "07:00 (amanhã)",
+      estoque: 12,
+      status: "ativo"
+    },
+    {
+      id: 5,
+      nome: "Sinvastatina",
+      dosagem: "40 mg",
+      forma: "Comprimido",
+      frequencia: "1x ao dia",
+      horarios: ["21:00"],
+      proximaDose: "21:00 (amanhã)",
+      estoque: 22,
+      status: "ativo"
+    },
+    {
+      id: 6,
+      nome: "Captopril",
+      dosagem: "25 mg",
+      forma: "Comprimido",
+      frequencia: "3x ao dia",
+      horarios: ["06:00", "14:00", "22:00"],
+      proximaDose: "06:00 (amanhã)",
+      estoque: 18,
+      status: "ativo"
+    },
+    // Medicações inativas
+    {
+      id: 7,
+      nome: "Amoxicilina",
+      dosagem: "500 mg",
+      forma: "Cápsula",
+      frequencia: "3x ao dia",
+      horarios: ["08:00", "16:00", "00:00"],
+      proximaDose: "-",
+      estoque: 0,
+      status: "inativo"
+    },
+    {
+      id: 8,
+      nome: "Ibuprofeno",
+      dosagem: "600 mg",
+      forma: "Comprimido",
+      frequencia: "Conforme necessário",
+      horarios: ["-"],
+      proximaDose: "-",
+      estoque: 8,
+      status: "inativo"
+    },
+    {
+      id: 9,
+      nome: "Dipirona",
+      dosagem: "500 mg",
+      forma: "Comprimido",
+      frequencia: "Conforme necessário",
+      horarios: ["-"],
+      proximaDose: "-",
+      estoque: 10,
+      status: "inativo"
     }
   ]
 
@@ -53,10 +122,8 @@ const Medicacoes = () => {
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {
-    const today = new Date()
-    const todayString = today.toISOString().split('T')[0]
-    // Simulação: considera que se a próxima dose está nas próximas 24h, é "hoje"
-    return true // Para demo, todas as medicações são consideradas "hoje"
+    // Simulação: considera "hoje" se não contém "(amanhã)" ou "-"
+    return !proximaDose.includes("(amanhã)") && proximaDose !== "-"
   }
 
   // Aplicar filtro baseado na aba selecionada
@@ -118,24 +185,24 @@ const Medicacoes = () => {
       <div className="flex items-center gap-4 mb-4">
         <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
         <Tabs value={activeFilter} onValueChange={setActiveFilter} className="w-auto">
-          <TabsList className="grid w-full grid-cols-3 bg-filter-neutral gap-1 p-1">
+          <TabsList className="grid w-full grid-cols-3 bg-filter-neutral gap-2 p-1">
             <TabsTrigger 
               value="hoje" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
               aria-selected={activeFilter === "hoje"}
             >
               Hoje
             </TabsTrigger>
             <TabsTrigger 
               value="ativas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
               aria-selected={activeFilter === "ativas"}
             >
               Ativas
             </TabsTrigger>
             <TabsTrigger 
               value="todas" 
-              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground text-filter-neutral-foreground min-h-[36px] px-6 m-0"
+              className="data-[state=active]:bg-filter-active data-[state=active]:text-filter-active-foreground data-[state=active]:border-filter-active text-filter-neutral-foreground min-h-[36px] px-6 border-2 border-transparent transition-all"
               aria-selected={activeFilter === "todas"}
             >
               Todas
