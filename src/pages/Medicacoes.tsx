@@ -317,28 +317,51 @@ const Medicacoes = () => {
       {/* Lista de Medicações */}
       <div className="grid gap-4">
         {filteredMedicacoes.map((medicacao) => (
-          <Card key={medicacao.id} className="shadow-card hover:shadow-floating transition-shadow duration-300">
+          <Card 
+            key={medicacao.id} 
+            className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${
+              medicacao.status === "inativa" ? "bg-red-500 border-red-500" : ""
+            }`}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center">
-                    <Pill className="w-6 h-6 text-accent-foreground" />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    medicacao.status === "inativa" ? "bg-red-600" : "bg-accent"
+                  }`}>
+                    <Pill className={`w-6 h-6 ${
+                      medicacao.status === "inativa" ? "text-white" : "text-accent-foreground"
+                    }`} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-primary">{medicacao.nome}</h3>
-                    <p className="text-muted-foreground">{medicacao.dosagem} • {medicacao.forma}</p>
-                    <p className="text-sm text-muted-foreground">{medicacao.frequencia}</p>
+                    <h3 className={`text-lg font-semibold ${
+                      medicacao.status === "inativa" ? "text-white" : "text-primary"
+                    }`}>
+                      {medicacao.nome}
+                    </h3>
+                    <p className={`${
+                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
+                    }`}>
+                      {medicacao.dosagem} • {medicacao.forma}
+                    </p>
+                    <p className={`text-sm ${
+                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
+                    }`}>
+                      {medicacao.frequencia}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right space-y-2">
-                  <div className="flex items-center justify-end text-primary">
+                  <div className={`flex items-center justify-end ${
+                    medicacao.status === "inativa" ? "text-white" : "text-primary"
+                  }`}>
                     <Clock className="w-4 h-4 mr-1" />
                     <span className="font-medium whitespace-nowrap">Próxima: {medicacao.proximaDose}</span>
                   </div>
                   <div className="flex items-center justify-end">
                     <Badge 
                       variant="outline"
-                      className={medicacao.status === "inativa" ? "bg-red-500 text-white border-red-500" : ""}
+                      className={medicacao.status === "inativa" ? "bg-red-600 text-white border-red-400" : ""}
                     >
                       {medicacao.status}
                     </Badge>
@@ -346,13 +369,23 @@ const Medicacoes = () => {
                 </div>
               </div>
               
-              <div className="mt-4 pt-4 border-t border-border/50">
+              <div className={`mt-4 pt-4 border-t ${
+                medicacao.status === "inativa" ? "border-red-400/50" : "border-border/50"
+              }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Horários programados:</p>
+                    <p className={`text-sm ${
+                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
+                    }`}>
+                      Horários programados:
+                    </p>
                     <div className="flex gap-2 mt-1">
                       {medicacao.horarios.map((horario, index) => (
-                        <Badge key={index} variant="secondary" className="bg-accent/20">
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className={medicacao.status === "inativa" ? "bg-red-600 text-white" : "bg-accent/20"}
+                        >
                           {horario}
                         </Badge>
                       ))}
@@ -360,8 +393,9 @@ const Medicacoes = () => {
                   </div>
                   <div className="flex gap-2">
                     <Button 
-                      variant="outline" 
+                      variant={medicacao.status === "inativa" ? "secondary" : "outline"}
                       size="sm"
+                      className={medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}
                       onClick={() => {
                         setEditingMedication(medicacao)
                         setIsEditDialogOpen(true)
@@ -369,19 +403,21 @@ const Medicacoes = () => {
                     >
                       Alterar
                     </Button>
-                    <button
-                      onClick={() => handleRegisterDose(medicacao.id)}
-                      className={`
-                        w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center
-                        ${registeredDoses.has(medicacao.id)
-                          ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
-                          : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
-                        }
-                      `}
-                      aria-label="Registrar dose"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
+                    {medicacao.status === "ativa" && (
+                      <button
+                        onClick={() => handleRegisterDose(medicacao.id)}
+                        className={`
+                          w-9 h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center
+                          ${registeredDoses.has(medicacao.id)
+                            ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
+                            : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
+                          }
+                        `}
+                        aria-label="Registrar dose"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
