@@ -8,13 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 
+interface HorarioStatus {
+  hora: string;
+  status: 'pendente' | 'concluido';
+  completed_at?: string;
+}
+
 interface Medication {
   id: number
   nome: string
   dosagem: string
   forma: string
   frequencia: string
-  horarios: string[]
+  horarios: HorarioStatus[]
   proximaDose: string
   estoque: number
   status: string
@@ -51,7 +57,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         dosagem: medication.dosagem || "",
         forma: medication.forma || "",
         frequencia: medication.frequencia || "",
-        horario: medication.horarios?.[0] || "",
+        horario: medication.horarios?.[0]?.hora || "",
         estoque: medication.estoque?.toString() || ""
       })
     } else {

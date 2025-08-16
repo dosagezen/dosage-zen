@@ -1,14 +1,40 @@
-import { useState } from "react"
-import { Pill, Clock, Search, Check, Filter } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { Pill, Clock, Search, Check, Filter, Undo2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 
+// Tipos para sistema de horários
+interface HorarioStatus {
+  hora: string;
+  status: 'pendente' | 'concluido';
+  completed_at?: string;
+}
+
+interface MedicacaoCompleta {
+  id: number;
+  nome: string;
+  dosagem: string;
+  forma: string;
+  frequencia: string;
+  horarios: HorarioStatus[];
+  proximaDose: string;
+  estoque: number;
+  status: "ativa" | "inativa";
+}
+
+interface UndoAction {
+  medicacaoId: number;
+  horario: string;
+  timestamp: number;
+}
+
 const Medicacoes = () => {
-  const medicacoes = [
+  const medicacoes: MedicacaoCompleta[] = [
     // Medicações para hoje (ativas) - 5 medicações
     {
       id: 1,
@@ -16,7 +42,7 @@ const Medicacoes = () => {
       dosagem: "10 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["08:00"],
+      horarios: [{ hora: "08:00", status: "pendente" }],
       proximaDose: "08:00",
       estoque: 28,
       status: "ativa"
@@ -27,8 +53,11 @@ const Medicacoes = () => {
       dosagem: "500 mg",
       forma: "Comprimido",
       frequencia: "2x ao dia",
-      horarios: ["08:00", "20:00"],
-      proximaDose: "20:00",
+      horarios: [
+        { hora: "08:00", status: "pendente" },
+        { hora: "20:00", status: "pendente" }
+      ],
+      proximaDose: "08:00",
       estoque: 15,
       status: "ativa"
     },
@@ -38,7 +67,7 @@ const Medicacoes = () => {
       dosagem: "50 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["20:00"],
+      horarios: [{ hora: "20:00", status: "pendente" }],
       proximaDose: "20:00",
       estoque: 5,
       status: "ativa"
@@ -49,7 +78,7 @@ const Medicacoes = () => {
       dosagem: "2000 UI",
       forma: "Cápsula",
       frequencia: "1x ao dia",
-      horarios: ["12:00"],
+      horarios: [{ hora: "12:00", status: "pendente" }],
       proximaDose: "12:00",
       estoque: 30,
       status: "ativa"
@@ -60,7 +89,7 @@ const Medicacoes = () => {
       dosagem: "100 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["22:00"],
+      horarios: [{ hora: "22:00", status: "pendente" }],
       proximaDose: "22:00",
       estoque: 20,
       status: "ativa"
@@ -72,7 +101,7 @@ const Medicacoes = () => {
       dosagem: "20 mg",
       forma: "Cápsula",
       frequencia: "1x ao dia",
-      horarios: ["07:00"],
+      horarios: [{ hora: "07:00", status: "pendente" }],
       proximaDose: "07:00 (amanhã)",
       estoque: 12,
       status: "ativa"
@@ -83,7 +112,7 @@ const Medicacoes = () => {
       dosagem: "40 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["21:00"],
+      horarios: [{ hora: "21:00", status: "pendente" }],
       proximaDose: "21:00 (amanhã)",
       estoque: 22,
       status: "ativa"
@@ -94,7 +123,11 @@ const Medicacoes = () => {
       dosagem: "25 mg",
       forma: "Comprimido",
       frequencia: "3x ao dia",
-      horarios: ["06:00", "14:00", "22:00"],
+      horarios: [
+        { hora: "06:00", status: "pendente" },
+        { hora: "14:00", status: "pendente" },
+        { hora: "22:00", status: "pendente" }
+      ],
       proximaDose: "06:00 (amanhã)",
       estoque: 18,
       status: "ativa"
@@ -105,7 +138,7 @@ const Medicacoes = () => {
       dosagem: "25 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["08:00"],
+      horarios: [{ hora: "08:00", status: "pendente" }],
       proximaDose: "08:00 (amanhã)",
       estoque: 14,
       status: "ativa"
@@ -116,7 +149,7 @@ const Medicacoes = () => {
       dosagem: "50 mcg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["06:00"],
+      horarios: [{ hora: "06:00", status: "pendente" }],
       proximaDose: "06:00 (amanhã)",
       estoque: 25,
       status: "ativa"
@@ -128,7 +161,11 @@ const Medicacoes = () => {
       dosagem: "500 mg",
       forma: "Cápsula",
       frequencia: "3x ao dia",
-      horarios: ["08:00", "16:00", "00:00"],
+      horarios: [
+        { hora: "08:00", status: "pendente" },
+        { hora: "16:00", status: "pendente" },
+        { hora: "00:00", status: "pendente" }
+      ],
       proximaDose: "-",
       estoque: 0,
       status: "inativa"
@@ -139,7 +176,7 @@ const Medicacoes = () => {
       dosagem: "600 mg",
       forma: "Comprimido",
       frequencia: "Conforme necessário",
-      horarios: ["-"],
+      horarios: [{ hora: "-", status: "pendente" }],
       proximaDose: "-",
       estoque: 8,
       status: "inativa"
@@ -150,7 +187,7 @@ const Medicacoes = () => {
       dosagem: "500 mg",
       forma: "Comprimido",
       frequencia: "Conforme necessário",
-      horarios: ["-"],
+      horarios: [{ hora: "-", status: "pendente" }],
       proximaDose: "-",
       estoque: 10,
       status: "inativa"
@@ -161,7 +198,7 @@ const Medicacoes = () => {
       dosagem: "20 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: ["08:00"],
+      horarios: [{ hora: "08:00", status: "pendente" }],
       proximaDose: "-",
       estoque: 3,
       status: "inativa"
@@ -172,7 +209,7 @@ const Medicacoes = () => {
       dosagem: "2 mg",
       forma: "Comprimido",
       frequencia: "Conforme necessário",
-      horarios: ["-"],
+      horarios: [{ hora: "-", status: "pendente" }],
       proximaDose: "-",
       estoque: 5,
       status: "inativa"
@@ -180,17 +217,153 @@ const Medicacoes = () => {
   ]
 
   const [searchTerm, setSearchTerm] = useState("")
-  const [editingMedication, setEditingMedication] = useState<typeof medicacoes[0] | null>(null)
+  const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [medicacoesList, setMedicacoesList] = useState(medicacoes)
-  const [registeredDoses, setRegisteredDoses] = useState<Set<number>>(new Set())
+  const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>(medicacoes)
   const [activeFilter, setActiveFilter] = useState("hoje")
+  const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
+  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {
     // Simulação: considera "hoje" se não contém "(amanhã)" ou "-"
     return !proximaDose.includes("(amanhã)") && proximaDose !== "-"
   }
+
+  // Função para calcular próximo horário pendente
+  const calculateNextDose = useCallback((horarios: HorarioStatus[]): string => {
+    const pendentes = horarios
+      .filter(h => h.status === 'pendente' && h.hora !== '-')
+      .sort((a, b) => {
+        const timeA = a.hora.split(':').map(Number)
+        const timeB = b.hora.split(':').map(Number)
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+      })
+
+    if (pendentes.length === 0) {
+      return "Todos concluídos hoje"
+    }
+
+    return pendentes[0].hora
+  }, [])
+
+  // Função para marcar dose como concluída
+  const markDoseCompleted = useCallback((medicacaoId: number) => {
+    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
+    if (!medicacao) return
+
+    // Encontrar primeiro horário pendente
+    const primeiroHorarioPendente = medicacao.horarios
+      .filter(h => h.status === 'pendente' && h.hora !== '-')
+      .sort((a, b) => {
+        const timeA = a.hora.split(':').map(Number)
+        const timeB = b.hora.split(':').map(Number)
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+      })[0]
+
+    if (!primeiroHorarioPendente) return
+
+    const horarioMarcado = primeiroHorarioPendente.hora
+
+    // Atualizar medicação
+    setMedicacoesList(prev => prev.map(med => {
+      if (med.id === medicacaoId) {
+        const novosHorarios = med.horarios.map(h => 
+          h.hora === horarioMarcado && h.status === 'pendente'
+            ? { ...h, status: 'concluido' as const, completed_at: new Date().toISOString() }
+            : h
+        )
+        
+        const novaProximaDose = calculateNextDose(novosHorarios)
+        
+        return {
+          ...med,
+          horarios: novosHorarios,
+          proximaDose: novaProximaDose
+        }
+      }
+      return med
+    }))
+
+    // Salvar ação para undo
+    const undoAction: UndoAction = {
+      medicacaoId,
+      horario: horarioMarcado,
+      timestamp: Date.now()
+    }
+    setLastUndoAction(undoAction)
+
+    // Limpar timeout anterior se existir
+    if (undoTimeout) {
+      clearTimeout(undoTimeout)
+    }
+
+    // Configurar novo timeout
+    const timeout = setTimeout(() => {
+      setLastUndoAction(null)
+    }, 5000)
+    setUndoTimeout(timeout)
+
+    // Exibir toast com opção de desfazer
+    toast({
+      title: `Dose de ${horarioMarcado} registrada`,
+      description: "A dose foi marcada como concluída.",
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUndo(undoAction)}
+          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+        >
+          <Undo2 className="w-4 h-4 mr-1" />
+          Desfazer
+        </Button>
+      ),
+    })
+  }, [medicacoesList, calculateNextDose, undoTimeout])
+
+  // Função para desfazer última ação
+  const handleUndo = useCallback((undoAction: UndoAction) => {
+    setMedicacoesList(prev => prev.map(med => {
+      if (med.id === undoAction.medicacaoId) {
+        const novosHorarios = med.horarios.map(h => 
+          h.hora === undoAction.horario && h.status === 'concluido'
+            ? { ...h, status: 'pendente' as const, completed_at: undefined }
+            : h
+        )
+        
+        const novaProximaDose = calculateNextDose(novosHorarios)
+        
+        return {
+          ...med,
+          horarios: novosHorarios,
+          proximaDose: novaProximaDose
+        }
+      }
+      return med
+    }))
+
+    // Limpar undo action e timeout
+    setLastUndoAction(null)
+    if (undoTimeout) {
+      clearTimeout(undoTimeout)
+      setUndoTimeout(null)
+    }
+
+    toast({
+      title: "Ação desfeita",
+      description: `Dose de ${undoAction.horario} foi desmarcada.`,
+    })
+  }, [undoTimeout, calculateNextDose])
+
+  // Limpar timeout quando componente desmontar
+  useEffect(() => {
+    return () => {
+      if (undoTimeout) {
+        clearTimeout(undoTimeout)
+      }
+    }
+  }, [undoTimeout])
 
   // Função para extrair e converter horário para comparação
   const getTimeForSorting = (proximaDose: string) => {
@@ -245,9 +418,17 @@ const Medicacoes = () => {
     setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
   }
 
-  const handleRegisterDose = (medicationId: number) => {
-    setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
-  }
+  // Debounced function para check
+  const debouncedMarkDose = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout
+      return (medicacaoId: number) => {
+        clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => markDoseCompleted(medicacaoId), 600)
+      }
+    })(),
+    [markDoseCompleted]
+  )
 
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
@@ -384,9 +565,28 @@ const Medicacoes = () => {
                         <Badge 
                           key={index} 
                           variant="secondary" 
-                          className={`text-xs sm:text-sm ${medicacao.status === "inativa" ? "bg-red-600 text-white" : "bg-accent/20"}`}
+                          className={`
+                            relative text-xs sm:text-sm transition-all duration-200
+                            ${medicacao.status === "inativa" 
+                              ? "bg-red-600 text-white" 
+                              : horario.status === 'concluido'
+                                ? "bg-[#588157]/20 text-[#588157] opacity-60"
+                                : "bg-accent/20"
+                            }
+                            ${horario.status === 'concluido' ? 'line-through' : ''}
+                          `}
+                          style={horario.status === 'concluido' ? {
+                            textDecoration: 'line-through',
+                            textDecorationColor: '#588157',
+                            textDecorationThickness: '2px'
+                          } : {}}
+                          aria-label={
+                            horario.status === 'concluido' 
+                              ? `Dose das ${horario.hora} registrada` 
+                              : `Dose das ${horario.hora} pendente`
+                          }
                         >
-                          {horario}
+                          {horario.hora}
                         </Badge>
                       ))}
                     </div>
@@ -403,16 +603,15 @@ const Medicacoes = () => {
                     >
                       Alterar
                     </Button>
-                    {medicacao.status === "ativa" && (
+                    {medicacao.status === "ativa" && medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-') && (
                       <button
-                        onClick={() => handleRegisterDose(medicacao.id)}
-                        className={`
+                        onClick={() => debouncedMarkDose(medicacao.id)}
+                        className="
                           w-8 h-8 sm:w-9 sm:h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
-                          ${registeredDoses.has(medicacao.id)
-                            ? 'bg-[#588157] border-[#588157] text-white shadow-lg scale-105'
-                            : 'bg-transparent border-muted-foreground/30 text-muted-foreground/70 hover:border-muted-foreground hover:text-muted-foreground'
-                          }
-                        `}
+                          bg-transparent border-muted-foreground/30 text-muted-foreground/70 
+                          hover:border-[#588157] hover:text-[#588157] hover:bg-[#588157]/10
+                          active:scale-95 active:bg-[#588157] active:border-[#588157] active:text-white
+                        "
                         aria-label="Registrar dose"
                       >
                         <Check className="w-3 h-3 sm:w-4 sm:h-4" />
