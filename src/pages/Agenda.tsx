@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useIsMobile } from "@/hooks/use-mobile"
+import CompromissosModal from "@/components/CompromissosModal"
 
 const Agenda = () => {
   const isMobile = useIsMobile()
@@ -815,6 +816,12 @@ const Agenda = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Compromissos do Dia - Usando o mesmo modal unificado */}
+      <CompromissosModal 
+        isOpen={isDayModalOpen} 
+        onClose={() => setIsDayModalOpen(false)} 
+      />
     </div>
   )
 }

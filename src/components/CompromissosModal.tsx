@@ -778,72 +778,103 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           {itensRemovidos.length > 0 && (
             <div className="space-y-4 mt-6 pt-4 border-t border-border/50">
               <div 
-                className="flex items-center justify-start gap-2 cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
+                className="flex items-center justify-between cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
                 onClick={() => setIsRemovedExpanded(!isRemovedExpanded)}
                 aria-expanded={isRemovedExpanded}
-                aria-label={isRemovedExpanded ? "Colapsar medicações removidas" : "Expandir medicações removidas"}
+                aria-label={isRemovedExpanded ? "Colapsar itens removidos" : "Expandir itens removidos"}
               >
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-[#344E41]">Ver itens removidos</h3>
+                  <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
+                    {itensRemovidos.length}
+                  </Badge>
+                </div>
                 {isRemovedExpanded ? (
                   <ChevronUp className="w-5 h-5 text-[#344E41]" />
                 ) : (
                   <ChevronDown className="w-5 h-5 text-[#344E41]" />
                 )}
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-[#344E41]">Ver medicações concluídas</h3>
-                  <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
-                    {medicacoesRemovidas.length}
-                  </Badge>
-                </div>
               </div>
               
               {isRemovedExpanded && (
                 <div className="grid gap-4 w-full">
-                  {medicacoesRemovidas.map((medicacao) => {
-                    const isCompleted = medicacao.removal_reason === 'completed'
+                  {itensRemovidos.map((item: any) => {
+                    const isCompleted = item.removal_reason === 'completed'
+                    const itemType = item.horarios ? 'medicacao' : 
+                                    item.profissional ? 'consulta' : 'exame'
+                    
+                    const getIcon = () => {
+                      switch (itemType) {
+                        case 'medicacao': return <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                        case 'consulta': return <User className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                        case 'exame': return <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                        default: return <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                      }
+                    }
+
+                    const getTitle = () => {
+                      switch (itemType) {
+                        case 'medicacao': return item.nome
+                        case 'consulta': return item.especialidade
+                        case 'exame': return item.tipo
+                        default: return 'Item'
+                      }
+                    }
+
+                    const getSubtitle = () => {
+                      switch (itemType) {
+                        case 'medicacao': return `${item.dosagem} • ${item.forma}`
+                        case 'consulta': return item.profissional
+                        case 'exame': return item.local
+                        default: return ''
+                      }
+                    }
                     
                     return (
                       <Card 
-                        key={medicacao.id} 
+                        key={`${itemType}-${item.id}`} 
                         className="w-full shadow-card hover:shadow-floating transition-shadow duration-300"
                       >
                         <CardContent className="p-4 sm:p-6 w-full opacity-80">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
                             <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-accent opacity-60">
-                                <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                                {getIcon()}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h3 className="text-base sm:text-lg font-semibold text-primary opacity-85">
-                                  {medicacao.nome}
+                                  {getTitle()}
                                 </h3>
                                 <p className="text-sm sm:text-base text-muted-foreground opacity-85">
-                                  {medicacao.dosagem} • {medicacao.forma}
+                                  {getSubtitle()}
                                 </p>
-                                <p className="text-xs sm:text-sm text-muted-foreground opacity-85">
-                                  {medicacao.frequencia}
-                                </p>
+                                {itemType === 'medicacao' && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground opacity-85">
+                                    {item.frequencia}
+                                  </p>
+                                )}
+                                {itemType === 'consulta' && (
+                                  <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground opacity-85 mt-1">
+                                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span>{item.local}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
                               <div className="flex items-center justify-start sm:justify-end text-muted-foreground/50">
                                 <Clock className="w-4 h-4 mr-1" />
                                 <span className="font-medium text-sm sm:text-base">
-                                  {getStatusText(medicacao)}
+                                  {getStatusText(item, itemType as any)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-start sm:justify-end gap-2">
-                                <Badge 
-                                  variant="outline"
-                                  className="text-xs sm:text-sm opacity-70"
-                                >
-                                  {medicacao.status}
-                                </Badge>
-                                {medicacao.removal_reason === 'excluded' && (
+                                {item.removal_reason === 'excluded' && (
                                   <Badge 
                                     variant="secondary"
                                     className="text-xs sm:text-sm bg-orange-100 text-orange-800"
                                   >
-                                    Excluída
+                                    Excluído
                                   </Badge>
                                 )}
                                 {isCompleted && (
@@ -851,55 +882,23 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                                     variant="secondary"
                                     className="text-xs sm:text-sm bg-green-100 text-green-800"
                                   >
-                                    Concluída
+                                    Concluído
                                   </Badge>
                                 )}
                               </div>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 pt-4 border-t border-border/50 w-full">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm text-muted-foreground">
-                                  Horários programados:
-                                </p>
-                                <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
-                                  {medicacao.horarios.map((horario, index) => (
-                                    <Badge 
-                                      key={index} 
-                                      variant="secondary" 
-                                      className={`
-                                        relative text-xs sm:text-sm transition-all duration-200
-                                        ${isCompleted 
-                                          ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through" 
-                                          : "bg-orange-100 text-orange-800 opacity-70"
-                                        }
-                                      `}
-                                      style={isCompleted ? {
-                                        textDecoration: 'line-through',
-                                        textDecorationColor: '#588157',
-                                        textDecorationThickness: '2px'
-                                      } : undefined}
-                                      aria-label={`Dose das ${horario.hora} ${isCompleted ? 'registrada' : 'removida'}`}
-                                    >
-                                      {horario.hora}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
-                                {medicacao.removal_reason === 'excluded' && (
+                              {item.removal_reason === 'excluded' && (
+                                <div className="flex justify-start sm:justify-end mt-2">
                                   <Button 
-                                    variant="outline"
+                                    variant="outline" 
                                     size="sm"
-                                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
-                                    onClick={() => handleRestore(medicacao.id)}
+                                    onClick={() => handleRestore(item.id, itemType as any)}
+                                    className="h-8 text-xs bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
                                   >
+                                    <Undo2 className="w-3 h-3 mr-1" />
                                     Restaurar
                                   </Button>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -911,15 +910,15 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
             </div>
           )}
 
-          {/* Caso não haja medicações */}
-          {medicacoesPrincipais.length === 0 && medicacoesRemovidas.length === 0 && (
+          {/* Caso não haja compromissos */}
+          {medicacoesPrincipais.length === 0 && consultasPrincipais.length === 0 && examesPrincipais.length === 0 && itensRemovidos.length === 0 && (
             <div className="text-center py-8">
-              <Pill className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-primary mb-2">
-                Nenhuma medicação para hoje
+                Nenhum compromisso para hoje
               </h3>
               <p className="text-muted-foreground">
-                Você não tem medicações programadas para hoje.
+                Você não tem compromissos programados para hoje.
               </p>
             </div>
           )}
