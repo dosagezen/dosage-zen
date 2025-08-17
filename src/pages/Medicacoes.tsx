@@ -595,7 +595,7 @@ const Medicacoes = () => {
                     <Button 
                       variant={medicacao.status === "inativa" ? "secondary" : "outline"}
                       size="sm"
-                      className={`text-xs sm:text-sm flex-shrink-0 ${medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}`}
+                      className={`text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 ${medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}`}
                       onClick={() => {
                         setEditingMedication(medicacao)
                         setIsEditDialogOpen(true)
