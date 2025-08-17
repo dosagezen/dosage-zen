@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Clock, Pill, Check, Trash2 } from "lucide-react"
+import { Clock, Pill, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface HorarioStatus {
@@ -243,6 +243,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
                     onClick={() => onEdit?.(medicacao)}
                   >
+                    <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Alterar
                   </Button>
                   {hasPendingDoses && (
@@ -268,6 +269,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
                     onClick={() => onEdit?.(medicacao)}
                   >
+                    <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Alterar
                   </Button>
                 </div>
