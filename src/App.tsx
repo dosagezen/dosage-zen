@@ -7,6 +7,9 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import Medicacoes from "./pages/Medicacoes";
 import Agenda from "./pages/Agenda";
+import Configuracoes from "./pages/Configuracoes";
+import Login from "./pages/Login";
+import EsqueciSenha from "./pages/EsqueciSenha";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +40,9 @@ const App = () => (
                 <Route path="/farmacias" element={<div className="p-6"><h1 className="text-2xl text-primary">Farmácias - Em desenvolvimento</h1></div>} />
                 <Route path="/compartilhar" element={<div className="p-6"><h1 className="text-2xl text-primary">Compartilhar - Em desenvolvimento</h1></div>} />
                 <Route path="/relatorios" element={<div className="p-6"><h1 className="text-2xl text-primary">Relatórios - Em desenvolvimento</h1></div>} />
-                <Route path="/configuracoes" element={<div className="p-6"><h1 className="text-2xl text-primary">Configurações - Em desenvolvimento</h1></div>} />
+                <Route path="/configuracoes" element={<Configuracoes />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/esqueci-senha" element={<EsqueciSenha />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
