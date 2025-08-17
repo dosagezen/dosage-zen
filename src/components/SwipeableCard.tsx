@@ -53,6 +53,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
     
+    // Prevenir scroll da página durante o touch
+    e.preventDefault()
+    
     const touch = e.touches[0]
     setDragState({
       isDragging: true,
@@ -64,6 +67,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isMobile || disabled || !dragState.isDragging) return
+    
+    // Prevenir scroll da página durante o movimento
+    e.preventDefault()
     
     const touch = e.touches[0]
     const deltaX = touch.clientX - dragState.startX
@@ -149,7 +155,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden"
+        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-none"
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
