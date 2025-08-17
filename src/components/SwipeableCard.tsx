@@ -1,0 +1,283 @@
+import React, { useState, useRef, useEffect } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Clock, Pill, Check, Trash2 } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
+
+interface HorarioStatus {
+  hora: string;
+  status: 'pendente' | 'concluido';
+  completed_at?: string;
+}
+
+interface MedicacaoCompleta {
+  id: number;
+  nome: string;
+  dosagem: string;
+  forma: string;
+  frequencia: string;
+  horarios: HorarioStatus[];
+  proximaDose: string;
+  estoque: number;
+  status: "ativa" | "inativa";
+  removed_from_today?: boolean;
+}
+
+interface SwipeableCardProps {
+  medicacao: MedicacaoCompleta;
+  onComplete: (id: number) => void;
+  onRemove: (id: number) => void;
+  onEdit?: (medicacao: MedicacaoCompleta) => void;
+  disabled?: boolean;
+}
+
+const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
+  medicacao, 
+  onComplete, 
+  onRemove, 
+  onEdit,
+  disabled = false 
+}) => {
+  const isMobile = useIsMobile()
+  const [dragState, setDragState] = useState({
+    isDragging: false,
+    startX: 0,
+    currentX: 0,
+    deltaX: 0,
+  })
+  const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const threshold = 0.3 // 30% da largura do card
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!isMobile || disabled) return
+    
+    const touch = e.touches[0]
+    setDragState({
+      isDragging: true,
+      startX: touch.clientX,
+      currentX: touch.clientX,
+      deltaX: 0,
+    })
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMobile || disabled || !dragState.isDragging) return
+    
+    const touch = e.touches[0]
+    const deltaX = touch.clientX - dragState.startX
+    const cardWidth = cardRef.current?.offsetWidth || 0
+    const normalizedDelta = Math.max(-cardWidth * 0.5, Math.min(cardWidth * 0.5, deltaX))
+    
+    setDragState(prev => ({
+      ...prev,
+      currentX: touch.clientX,
+      deltaX: normalizedDelta,
+    }))
+
+    // Mostrar hint baseado na direção
+    if (Math.abs(normalizedDelta) > cardWidth * 0.1) {
+      if (normalizedDelta > 0) {
+        setShowActionHint('complete')
+      } else {
+        setShowActionHint('remove')
+      }
+    } else {
+      setShowActionHint(null)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (!isMobile || disabled || !dragState.isDragging) return
+    
+    const cardWidth = cardRef.current?.offsetWidth || 0
+    const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
+
+    if (shouldTriggerAction) {
+      if (dragState.deltaX > 0) {
+        // Swipe direita - concluir
+        onComplete(medicacao.id)
+      } else {
+        // Swipe esquerda - remover
+        onRemove(medicacao.id)
+      }
+    }
+
+    // Reset state
+    setDragState({
+      isDragging: false,
+      startX: 0,
+      currentX: 0,
+      deltaX: 0,
+    })
+    setShowActionHint(null)
+  }
+
+  const getTransformStyle = () => {
+    if (!isMobile || !dragState.isDragging) return {}
+    
+    return {
+      transform: `translateX(${dragState.deltaX}px)`,
+      transition: dragState.isDragging ? 'none' : 'transform 0.3s ease-out',
+    }
+  }
+
+  const getBackgroundOverlay = () => {
+    if (!isMobile || !showActionHint) return null
+    
+    const isComplete = showActionHint === 'complete'
+    const bgColor = isComplete ? 'bg-[#588157]/20' : 'bg-[#3A5A40]/20'
+    const icon = isComplete ? <Check className="w-6 h-6 text-[#588157]" /> : <Trash2 className="w-6 h-6 text-[#3A5A40]" />
+    const text = isComplete ? 'Concluir' : 'Excluir da lista'
+    const position = isComplete ? 'left-4' : 'right-4'
+    
+    return (
+      <div className={`absolute inset-0 ${bgColor} flex items-center ${position === 'left-4' ? 'justify-start' : 'justify-end'} transition-opacity duration-200`}>
+        <div className={`flex items-center gap-2 ${position}`}>
+          {icon}
+          <span className="text-sm font-medium text-primary">{text}</span>
+        </div>
+      </div>
+    )
+  }
+
+  const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
+
+  return (
+    <div className="relative">
+      {getBackgroundOverlay()}
+      <Card 
+        ref={cardRef}
+        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden"
+        style={getTransformStyle()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <CardContent className="p-4 sm:p-6 w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-accent">
+                <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-semibold text-primary">
+                  {medicacao.nome}
+                </h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  {medicacao.dosagem} • {medicacao.forma}
+                </p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {medicacao.frequencia}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
+              <div className="flex items-center justify-start sm:justify-end text-primary">
+                <Clock className="w-4 h-4 mr-1" />
+                <span className="font-medium text-sm sm:text-base">
+                  Próxima: {medicacao.proximaDose}
+                </span>
+              </div>
+              <div className="flex items-center justify-start sm:justify-end">
+                <Badge variant="outline" className="text-xs sm:text-sm">
+                  {medicacao.status}
+                </Badge>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-border/50 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Horários programados:
+                </p>
+                <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
+                  {medicacao.horarios.map((horario, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary" 
+                      className={`
+                        relative text-xs sm:text-sm transition-all duration-200
+                        ${horario.status === 'concluido'
+                          ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through"
+                          : "bg-accent/20"
+                        }
+                      `}
+                      style={horario.status === 'concluido' ? {
+                        textDecoration: 'line-through',
+                        textDecorationColor: '#588157',
+                        textDecorationThickness: '2px'
+                      } : {}}
+                      aria-label={
+                        horario.status === 'concluido' 
+                          ? `Dose das ${horario.hora} registrada` 
+                          : `Dose das ${horario.hora} pendente`
+                      }
+                    >
+                      {horario.hora}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Botões para Desktop */}
+              {!isMobile && (
+                <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
+                    onClick={() => onEdit?.(medicacao)}
+                  >
+                    Alterar
+                  </Button>
+                  {hasPendingDoses && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
+                        onClick={() => onComplete(medicacao.id)}
+                      >
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        Concluir
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
+                        onClick={() => onRemove(medicacao.id)}
+                      >
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        Excluir
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+              
+              {/* Botão Alterar para Mobile (sempre visível) */}
+              {isMobile && (
+                <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
+                    onClick={() => onEdit?.(medicacao)}
+                  >
+                    Alterar
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default SwipeableCard

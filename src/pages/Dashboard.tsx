@@ -1,11 +1,11 @@
-import { Calendar, Clock, Pill, Plus, TrendingUp, Users, MapPin, Stethoscope, User } from "lucide-react"
+import { Calendar, Clock, Pill, Plus, TrendingUp, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
+import CompromissosModal from "@/components/CompromissosModal"
 
 const Dashboard = () => {
   const navigate = useNavigate()
@@ -29,31 +29,6 @@ const Dashboard = () => {
     { titulo: "Cuidadores", valor: "2", icone: Users, cor: "muted" }
   ]
 
-  // Dados mockados para o modal do dia
-  const compromissosHoje = {
-    medicacoes: [
-      { id: 1, nome: "Atorvastatina", dosagem: "10 mg", hora: "08:00", status: "concluído", observacoes: "Tomar com água" },
-      { id: 2, nome: "Metformina", dosagem: "500 mg", hora: "12:00", status: "pendente" },
-      { id: 3, nome: "Losartana", dosagem: "50 mg", hora: "20:00", status: "pendente" },
-      { id: 4, nome: "Vitamina D", dosagem: "2000 UI", hora: "08:00", status: "concluído" },
-      { id: 5, nome: "Ômega 3", dosagem: "1000 mg", hora: "19:00", status: "pendente" }
-    ],
-    consultas: [
-      { id: 1, especialidade: "Cardiologia", medico: "Dr. João Silva", hora: "09:00", local: "Hospital São Paulo", status: "agendado", observacoes: "Levar exames anteriores" }
-    ],
-    exames: [
-      { id: 1, especialidade: "Hemograma Completo", medico: "Lab. Central", hora: "07:30", local: "Laboratório Central", status: "agendado", observacoes: "Jejum de 12h" }
-    ]
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "concluído": return "default"
-      case "pendente": return "secondary"
-      case "agendado": return "outline"
-      default: return "secondary"
-    }
-  }
 
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
@@ -194,131 +169,10 @@ const Dashboard = () => {
       </Card>
 
       {/* Modal de Compromissos do Dia */}
-      <Dialog open={isDayModalOpen} onOpenChange={setIsDayModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-primary flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Compromissos de Hoje
-            </DialogTitle>
-            <h3 className="text-muted-foreground text-sm text-left">14 de agosto de 2025</h3>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {/* Medicações */}
-            {compromissosHoje.medicacoes.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 font-semibold text-success">
-                  <Pill className="w-4 h-4" />
-                  Medicações ({compromissosHoje.medicacoes.length})
-                </h3>
-                {compromissosHoje.medicacoes.map((medicacao) => (
-                  <div key={medicacao.id} className="border border-success/20 bg-success/5 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-primary">{medicacao.nome}</h4>
-                        <p className="text-sm text-muted-foreground">{medicacao.dosagem}</p>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{medicacao.hora}</span>
-                        </div>
-                      </div>
-                      <Badge variant={getStatusColor(medicacao.status)}>
-                        {medicacao.status}
-                      </Badge>
-                    </div>
-                    {medicacao.observacoes && (
-                      <p className="text-sm text-muted-foreground mt-2 italic">
-                        {medicacao.observacoes}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Consultas */}
-            {compromissosHoje.consultas.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 font-semibold text-primary">
-                  <User className="w-4 h-4" />
-                  Consultas ({compromissosHoje.consultas.length})
-                </h3>
-                {compromissosHoje.consultas.map((consulta) => (
-                  <div key={consulta.id} className="border border-primary/20 bg-primary/5 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-primary">{consulta.especialidade}</h4>
-                        <p className="text-sm text-muted-foreground">{consulta.medico}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{consulta.hora}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>{consulta.local}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant={getStatusColor(consulta.status)}>
-                        {consulta.status}
-                      </Badge>
-                    </div>
-                    {consulta.observacoes && (
-                      <p className="text-sm text-muted-foreground mt-2 italic">
-                        {consulta.observacoes}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Exames */}
-            {compromissosHoje.exames.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 font-semibold text-accent-foreground">
-                  <Stethoscope className="w-4 h-4" />
-                  Exames ({compromissosHoje.exames.length})
-                </h3>
-                {compromissosHoje.exames.map((exame) => (
-                  <div key={exame.id} className="border border-accent/20 bg-accent/5 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-primary">{exame.especialidade}</h4>
-                        <p className="text-sm text-muted-foreground">{exame.medico}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            <span>{exame.hora}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>{exame.local}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant={getStatusColor(exame.status)}>
-                        {exame.status}
-                      </Badge>
-                    </div>
-                    {exame.observacoes && (
-                      <p className="text-sm text-muted-foreground mt-2 italic">
-                        {exame.observacoes}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={() => setIsDayModalOpen(false)}>
-              Fechar
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CompromissosModal 
+        isOpen={isDayModalOpen} 
+        onClose={() => setIsDayModalOpen(false)} 
+      />
     </div>
   )
 }
