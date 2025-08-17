@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp } from "lucide-react"
+import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
+import SwipeableCard from "@/components/SwipeableCard"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -25,6 +27,7 @@ interface MedicacaoCompleta {
   proximaDose: string;
   estoque: number;
   status: "ativa" | "inativa";
+  removed_from_today?: boolean;
 }
 
 interface UndoAction {
@@ -34,6 +37,7 @@ interface UndoAction {
 }
 
 const Medicacoes = () => {
+  const isMobile = useIsMobile()
   const medicacoes: MedicacaoCompleta[] = [
     // Medicações para hoje (ativas) - 5 medicações
     {
@@ -334,24 +338,34 @@ const Medicacoes = () => {
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === undoAction.medicacaoId) {
-        const novosHorarios = med.horarios.map(h => 
-          h.hora === undoAction.horario && h.status === 'concluido'
-            ? { ...h, status: 'pendente' as const, completed_at: undefined }
-            : h
-        )
-        
-        const novaProximaDose = calculateNextDose(novosHorarios)
-        
-        return {
-          ...med,
-          horarios: novosHorarios,
-          proximaDose: novaProximaDose
+    if (undoAction.horario === 'removed') {
+      // Desfazer remoção da lista
+      setMedicacoesList(prev => prev.map(med => 
+        med.id === undoAction.medicacaoId 
+          ? { ...med, removed_from_today: false }
+          : med
+      ))
+    } else {
+      // Desfazer marcação de dose
+      setMedicacoesList(prev => prev.map(med => {
+        if (med.id === undoAction.medicacaoId) {
+          const novosHorarios = med.horarios.map(h => 
+            h.hora === undoAction.horario && h.status === 'concluido'
+              ? { ...h, status: 'pendente' as const, completed_at: undefined }
+              : h
+          )
+          
+          const novaProximaDose = calculateNextDose(novosHorarios)
+          
+          return {
+            ...med,
+            horarios: novosHorarios,
+            proximaDose: novaProximaDose
+          }
         }
-      }
-      return med
-    }))
+        return med
+      }))
+    }
 
     // Limpar undo action e timeout
     setLastUndoAction(null)
@@ -360,9 +374,13 @@ const Medicacoes = () => {
       setUndoTimeout(null)
     }
 
+    const message = undoAction.horario === 'removed' 
+      ? "Medicação restaurada para a lista" 
+      : `Dose de ${undoAction.horario} foi desmarcada`
+
     toast({
       title: "Ação desfeita",
-      description: `Dose de ${undoAction.horario} foi desmarcada.`,
+      description: message,
     })
   }, [undoTimeout, calculateNextDose])
 
@@ -398,23 +416,28 @@ const Medicacoes = () => {
     switch (activeFilter) {
       case "hoje":
         filtered = medicacoesList.filter(med => 
-          med.status === "ativa" && isToday(med.proximaDose)
+          med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
         )
         break
       case "ativas":
-        filtered = medicacoesList.filter(med => med.status === "ativa")
+        filtered = medicacoesList.filter(med => med.status === "ativa" && !med.removed_from_today)
         break
       case "todas":
-        filtered = medicacoesList
+        filtered = medicacoesList.filter(med => !med.removed_from_today)
         break
       default:
-        filtered = medicacoesList
+        filtered = medicacoesList.filter(med => !med.removed_from_today)
     }
     
-    // Ordenar por horário (ordem crescente)
+    // Ordenar por horário (ordem crescente) e por nome em caso de empate
     return filtered.sort((a, b) => {
       const timeA = getTimeForSorting(a.proximaDose)
       const timeB = getTimeForSorting(b.proximaDose)
+      
+      if (timeA === timeB) {
+        return a.nome.localeCompare(b.nome)
+      }
+      
       return timeA - timeB
     })
   }
@@ -436,6 +459,115 @@ const Medicacoes = () => {
   const handleDeleteMedication = (medicationId: number) => {
     setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
   }
+
+  // Função para remover medicação da lista do dia
+  const handleRemoveFromToday = useCallback((medicacaoId: number) => {
+    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
+    if (!medicacao) return
+
+    setMedicacoesList(prev => prev.map(med => 
+      med.id === medicacaoId 
+        ? { ...med, removed_from_today: true }
+        : med
+    ))
+
+    // Salvar ação para undo
+    const undoAction: UndoAction = {
+      medicacaoId,
+      horario: 'removed',
+      timestamp: Date.now()
+    }
+    setLastUndoAction(undoAction)
+
+    // Limpar timeout anterior se existir
+    if (undoTimeout) {
+      clearTimeout(undoTimeout)
+    }
+
+    // Configurar novo timeout
+    const timeout = setTimeout(() => {
+      setLastUndoAction(null)
+    }, 5000)
+    setUndoTimeout(timeout)
+
+    // Exibir toast com opção de desfazer
+    toast({
+      title: "Medicação removida da lista de hoje",
+      description: "A medicação foi removida da lista principal.",
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUndo(undoAction)}
+          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+        >
+          <Undo2 className="w-4 h-4 mr-1" />
+          Desfazer
+        </Button>
+      ),
+    })
+  }, [medicacoesList, undoTimeout])
+
+  // Função para restaurar medicação da lista concluída
+  const handleRestoreMedication = useCallback((medicacaoId: number) => {
+    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
+    if (!medicacao) return
+
+    // Resetar todos os horários para pendente e limpar flag de remoção
+    setMedicacoesList(prev => prev.map(med => {
+      if (med.id === medicacaoId) {
+        const novosHorarios = med.horarios.map(h => ({
+          ...h,
+          status: 'pendente' as const,
+          completed_at: undefined
+        }))
+        
+        const novaProximaDose = calculateNextDose(novosHorarios)
+        
+        return {
+          ...med,
+          horarios: novosHorarios,
+          proximaDose: novaProximaDose,
+          removed_from_today: false
+        }
+      }
+      return med
+    }))
+
+    toast({
+      title: "Medicação restaurada",
+      description: "A medicação foi restaurada para a lista de pendentes.",
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            // Undo da restauração: marcar todos horários como concluídos novamente
+            setMedicacoesList(prev => prev.map(med => {
+              if (med.id === medicacaoId) {
+                const novosHorarios = med.horarios.map(h => ({
+                  ...h,
+                  status: 'concluido' as const,
+                  completed_at: new Date().toISOString()
+                }))
+                
+                return {
+                  ...med,
+                  horarios: novosHorarios,
+                  proximaDose: "Todos concluídos hoje"
+                }
+              }
+              return med
+            }))
+          }}
+          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+        >
+          <Undo2 className="w-4 h-4 mr-1" />
+          Desfazer
+        </Button>
+      ),
+    })
+  }, [medicacoesList, calculateNextDose])
 
   // Debounced function para check
   const debouncedMarkDose = useCallback(
@@ -516,132 +648,122 @@ const Medicacoes = () => {
 
       {/* Lista de Medicações */}
       <div className="grid gap-4 w-full">
-        {filteredMedicacoes.map((medicacao) => (
-          <Card 
-            key={medicacao.id} 
-            className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 ${
-              medicacao.status === "inativa" ? "bg-red-500 border-red-500" : ""
-            }`}
-          >
-            <CardContent className="p-4 sm:p-6 w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    medicacao.status === "inativa" ? "bg-red-600" : "bg-accent"
-                  }`}>
-                    <Pill className={`w-5 h-5 sm:w-6 sm:h-6 ${
-                      medicacao.status === "inativa" ? "text-white" : "text-accent-foreground"
-                    }`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`text-base sm:text-lg font-semibold ${
-                      medicacao.status === "inativa" ? "text-white" : "text-primary"
-                    }`}>
-                      {medicacao.nome}
-                    </h3>
-                    <p className={`text-sm sm:text-base ${
-                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
-                    }`}>
-                      {medicacao.dosagem} • {medicacao.forma}
-                    </p>
-                    <p className={`text-xs sm:text-sm ${
-                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
-                    }`}>
-                      {medicacao.frequencia}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-                  <div className={`flex items-center justify-start sm:justify-end ${
-                    medicacao.status === "inativa" ? "text-white" : "text-primary"
-                  }`}>
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span className="font-medium text-sm sm:text-base">Próxima: {medicacao.proximaDose}</span>
-                  </div>
-                  <div className="flex items-center justify-start sm:justify-end">
-                    <Badge 
-                      variant="outline"
-                      className={`text-xs sm:text-sm ${medicacao.status === "inativa" ? "bg-red-600 text-white border-red-400" : ""}`}
-                    >
-                      {medicacao.status}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              
-              <div className={`mt-4 pt-4 border-t w-full ${
-                medicacao.status === "inativa" ? "border-red-400/50" : "border-border/50"
-              }`}>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs sm:text-sm ${
-                      medicacao.status === "inativa" ? "text-red-100" : "text-muted-foreground"
-                    }`}>
-                      Horários programados:
-                    </p>
-                    <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
-                      {medicacao.horarios.map((horario, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="secondary" 
-                          className={`
-                            relative text-xs sm:text-sm transition-all duration-200
-                            ${medicacao.status === "inativa" 
-                              ? "bg-red-600 text-white" 
-                              : horario.status === 'concluido'
-                                ? "bg-[#588157]/20 text-[#588157] opacity-60"
-                                : "bg-accent/20"
-                            }
-                            ${horario.status === 'concluido' ? 'line-through' : ''}
-                          `}
-                          style={horario.status === 'concluido' ? {
-                            textDecoration: 'line-through',
-                            textDecorationColor: '#588157',
-                            textDecorationThickness: '2px'
-                          } : {}}
-                          aria-label={
-                            horario.status === 'concluido' 
-                              ? `Dose das ${horario.hora} registrada` 
-                              : `Dose das ${horario.hora} pendente`
-                          }
-                        >
-                          {horario.hora}
+        {filteredMedicacoes.map((medicacao) => {
+          // Para medicações inativas, usar card original
+          if (medicacao.status === "inativa") {
+            return (
+              <Card 
+                key={medicacao.id} 
+                className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 bg-red-500 border-red-500"
+              >
+                <CardContent className="p-4 sm:p-6 w-full">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                    <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-red-600">
+                        <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-white">
+                          {medicacao.nome}
+                        </h3>
+                        <p className="text-sm sm:text-base text-red-100">
+                          {medicacao.dosagem} • {medicacao.forma}
+                        </p>
+                        <p className="text-xs sm:text-sm text-red-100">
+                          {medicacao.frequencia}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
+                      <div className="flex items-center justify-start sm:justify-end text-white">
+                        <Clock className="w-4 h-4 mr-1" />
+                        <span className="font-medium text-sm sm:text-base">Próxima: {medicacao.proximaDose}</span>
+                      </div>
+                      <div className="flex items-center justify-start sm:justify-end">
+                        <Badge variant="outline" className="text-xs sm:text-sm bg-red-600 text-white border-red-400">
+                          {medicacao.status}
                         </Badge>
-                      ))}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
-                    <Button 
-                      variant={medicacao.status === "inativa" ? "secondary" : "outline"}
-                      size="sm"
-                      className={`text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 ${medicacao.status === "inativa" ? "bg-red-600 hover:bg-red-700 text-white border-red-400" : ""}`}
-                      onClick={() => {
-                        setEditingMedication(medicacao)
-                        setIsEditDialogOpen(true)
-                      }}
-                    >
-                      Alterar
-                    </Button>
-                    {medicacao.status === "ativa" && medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-') && (
-                      <button
-                        onClick={() => debouncedMarkDose(medicacao.id)}
-                        className="
-                          w-8 h-8 sm:w-9 sm:h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
-                          bg-transparent border-muted-foreground/30 text-muted-foreground/70 
-                          hover:border-[#588157] hover:text-[#588157] hover:bg-[#588157]/10
-                          active:scale-95 active:bg-[#588157] active:border-[#588157] active:text-white
-                        "
-                        aria-label="Registrar dose"
-                      >
-                        <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-                      </button>
-                    )}
+                  
+                  <div className="mt-4 pt-4 border-t border-red-400/50 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-red-100">
+                          Horários programados:
+                        </p>
+                        <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
+                          {medicacao.horarios.map((horario, index) => (
+                            <Badge 
+                              key={index} 
+                              variant="secondary" 
+                              className="relative text-xs sm:text-sm transition-all duration-200 bg-red-600 text-white"
+                            >
+                              {horario.hora}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                        {!isMobile && (
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
+                            onClick={() => handleDeleteMedication(medicacao.id)}
+                          >
+                            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                            Excluir
+                          </Button>
+                        )}
+                        <Button 
+                          variant="secondary"
+                          size="sm"
+                          className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 bg-red-600 hover:bg-red-700 text-white border-red-400"
+                          onClick={() => {
+                            setEditingMedication(medicacao)
+                            setIsEditDialogOpen(true)
+                          }}
+                        >
+                          Alterar
+                        </Button>
+                        {!isMobile && medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-') && (
+                          <button
+                            onClick={() => debouncedMarkDose(medicacao.id)}
+                            className="
+                              w-8 h-8 sm:w-9 sm:h-9 rounded-md border-2 transition-all duration-200 flex items-center justify-center flex-shrink-0
+                              bg-transparent border-white/30 text-white/70 
+                              hover:border-[#588157] hover:text-[#588157] hover:bg-[#588157]/10
+                              active:scale-95 active:bg-[#588157] active:border-[#588157] active:text-white
+                            "
+                            aria-label="Registrar dose"
+                          >
+                            <Check className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </CardContent>
+              </Card>
+            )
+          }
+
+          // Para medicações ativas, usar SwipeableCard
+          return (
+            <SwipeableCard
+              key={medicacao.id}
+              medicacao={medicacao}
+              onComplete={markDoseCompleted}
+              onRemove={handleRemoveFromToday}
+              onEdit={(med) => {
+                setEditingMedication(med)
+                setIsEditDialogOpen(true)
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Seção "Ver Medicações" colapsável para medicações concluídas */}
@@ -658,12 +780,12 @@ const Medicacoes = () => {
               <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
                 {completedMedicacoes.length}
               </Badge>
+              {isCompletedExpanded ? (
+                <ChevronUp className="w-5 h-5 text-[#344E41]" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-[#344E41]" />
+              )}
             </div>
-            {isCompletedExpanded ? (
-              <ChevronUp className="w-5 h-5 text-[#344E41]" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-[#344E41]" />
-            )}
           </div>
           
           {isCompletedExpanded && (
@@ -673,33 +795,33 @@ const Medicacoes = () => {
                   key={medicacao.id} 
                   className="w-full shadow-card hover:shadow-floating transition-shadow duration-300"
                 >
-                  <CardContent className="p-4 sm:p-6 w-full">
+                  <CardContent className="p-4 sm:p-6 w-full opacity-80">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
                       <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-accent">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-accent opacity-60">
                           <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-base sm:text-lg font-semibold text-primary">
+                          <h3 className="text-base sm:text-lg font-semibold text-primary opacity-85">
                             {medicacao.nome}
                           </h3>
-                          <p className="text-sm sm:text-base text-muted-foreground">
+                          <p className="text-sm sm:text-base text-muted-foreground opacity-85">
                             {medicacao.dosagem} • {medicacao.forma}
                           </p>
-                          <p className="text-xs sm:text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground opacity-85">
                             {medicacao.frequencia}
                           </p>
                         </div>
                       </div>
                       <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-                        <div className="flex items-center justify-start sm:justify-end text-muted-foreground/70">
+                        <div className="flex items-center justify-start sm:justify-end text-muted-foreground/50">
                           <Clock className="w-4 h-4 mr-1" />
                           <span className="font-medium text-sm sm:text-base">Todos concluídos hoje</span>
                         </div>
                         <div className="flex items-center justify-start sm:justify-end">
                           <Badge 
                             variant="outline"
-                            className="text-xs sm:text-sm"
+                            className="text-xs sm:text-sm opacity-70"
                           >
                             {medicacao.status}
                           </Badge>
@@ -738,13 +860,10 @@ const Medicacoes = () => {
                           <Button 
                             variant="outline"
                             size="sm"
-                            className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
-                            onClick={() => {
-                              setEditingMedication(medicacao)
-                              setIsEditDialogOpen(true)
-                            }}
+                            className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
+                            onClick={() => handleRestoreMedication(medicacao.id)}
                           >
-                            Alterar
+                            Restaurar
                           </Button>
                         </div>
                       </div>

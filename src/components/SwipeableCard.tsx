@@ -226,6 +226,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               {/* Botões para Desktop */}
               {!isMobile && (
                 <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                  {hasPendingDoses && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
+                      onClick={() => onRemove(medicacao.id)}
+                    >
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      Excluir
+                    </Button>
+                  )}
                   <Button 
                     variant="outline"
                     size="sm"
@@ -235,26 +246,15 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     Alterar
                   </Button>
                   {hasPendingDoses && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
-                        onClick={() => onComplete(medicacao.id)}
-                      >
-                        <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        Concluir
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
-                        onClick={() => onRemove(medicacao.id)}
-                      >
-                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                        Excluir
-                      </Button>
-                    </>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
+                      onClick={() => onComplete(medicacao.id)}
+                    >
+                      <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      Concluir
+                    </Button>
                   )}
                 </div>
               )}
