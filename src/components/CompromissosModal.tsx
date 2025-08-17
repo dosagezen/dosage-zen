@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2 } from "lucide-react"
 import SwipeableCard from './SwipeableCard'
+import SwipeableConsultaCard from './SwipeableConsultaCard'
+import SwipeableExameCard from './SwipeableExameCard'
 
 interface HorarioStatus {
   hora: string;
@@ -27,11 +29,35 @@ interface MedicacaoCompleta {
   removal_reason?: 'completed' | 'excluded';
 }
 
+interface ConsultaCompleta {
+  id: number;
+  especialidade: string;
+  profissional: string;
+  local: string;
+  hora: string;
+  status: "agendado" | "confirmado" | "concluido_hoje";
+  removed_from_today?: boolean;
+  removal_reason?: 'completed' | 'excluded';
+  completed_at?: string;
+}
+
+interface ExameCompleto {
+  id: number;
+  tipo: string;
+  local: string;
+  hora: string;
+  status: "agendado" | "concluido_hoje";
+  removed_from_today?: boolean;
+  removal_reason?: 'completed' | 'excluded';
+  completed_at?: string;
+}
+
 interface UndoAction {
-  medicacaoId: number;
+  itemId: number;
+  itemType: 'medicacao' | 'consulta' | 'exame';
   action: 'complete' | 'remove';
   timestamp: number;
-  previousData?: Partial<MedicacaoCompleta>;
+  previousData?: any;
 }
 
 interface CompromissosModalProps {
@@ -66,43 +92,48 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       proximaDose: "08:00",
       estoque: 15,
       status: "ativa"
-    },
+    }
+  ]
+
+  const initialConsultas: ConsultaCompleta[] = [
     {
       id: 3,
-      nome: "Losartana",
-      dosagem: "50 mg",
-      forma: "Comprimido",
-      frequencia: "1x ao dia",
-      horarios: [{ hora: "20:00", status: "pendente" }],
-      proximaDose: "20:00",
-      estoque: 5,
-      status: "ativa"
+      especialidade: "Cardiologia",
+      profissional: "Dr. João Silva",
+      local: "Clínica Boa Saúde",
+      hora: "09:30",
+      status: "agendado"
     },
     {
       id: 4,
-      nome: "Vitamina D",
-      dosagem: "2000 UI",
-      forma: "Cápsula",
-      frequencia: "1x ao dia",
-      horarios: [{ hora: "12:00", status: "pendente" }],
-      proximaDose: "12:00",
-      estoque: 30,
-      status: "ativa"
-    },
+      especialidade: "Endocrinologia", 
+      profissional: "Dra. Maria Santos",
+      local: "Hospital Central",
+      hora: "14:00",
+      status: "confirmado"
+    }
+  ]
+
+  const initialExames: ExameCompleto[] = [
     {
       id: 5,
-      nome: "Ômega 3",
-      dosagem: "1000 mg",
-      forma: "Cápsula",
-      frequencia: "1x ao dia",
-      horarios: [{ hora: "19:00", status: "pendente" }],
-      proximaDose: "19:00",
-      estoque: 20,
-      status: "ativa"
+      tipo: "Hemograma",
+      local: "Lab Central",
+      hora: "07:00",
+      status: "agendado"
+    },
+    {
+      id: 6,
+      tipo: "Ultrassom Abdominal",
+      local: "Centro Diagnóstico",
+      hora: "16:30",
+      status: "agendado"
     }
   ]
 
   const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>(initialMedicacoes)
+  const [consultasList, setConsultasList] = useState<ConsultaCompleta[]>(initialConsultas)
+  const [examesList, setExamesList] = useState<ExameCompleto[]>(initialExames)
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRemovedExpanded, setIsRemovedExpanded] = useState(false)
@@ -132,172 +163,377 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status === 'concluido')
   }, [])
 
-  // Função para marcar dose como concluída
-  const handleComplete = useCallback((medicacaoId: number) => {
-    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
-    if (!medicacao) return
+  // Função genérica para marcar item como concluído
+  const handleComplete = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+    if (itemType === 'medicacao') {
+      const medicacao = medicacoesList.find(m => m.id === itemId)
+      if (!medicacao) return
 
-    // Encontrar primeiro horário pendente
-    const primeiroHorarioPendente = medicacao.horarios
-      .filter(h => h.status === 'pendente' && h.hora !== '-')
-      .sort((a, b) => {
-        const timeA = a.hora.split(':').map(Number)
-        const timeB = b.hora.split(':').map(Number)
-        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
-      })[0]
+      // Encontrar primeiro horário pendente
+      const primeiroHorarioPendente = medicacao.horarios
+        .filter(h => h.status === 'pendente' && h.hora !== '-')
+        .sort((a, b) => {
+          const timeA = a.hora.split(':').map(Number)
+          const timeB = b.hora.split(':').map(Number)
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+        })[0]
 
-    if (!primeiroHorarioPendente) return
+      if (!primeiroHorarioPendente) return
 
-    const horarioMarcado = primeiroHorarioPendente.hora
+      const horarioMarcado = primeiroHorarioPendente.hora
 
-    // Salvar estado anterior para undo
-    const undoAction: UndoAction = {
-      medicacaoId,
-      action: 'complete',
-      timestamp: Date.now(),
-      previousData: {
-        horarios: [...medicacao.horarios],
-        proximaDose: medicacao.proximaDose,
-        removed_from_today: medicacao.removed_from_today,
-        removal_reason: medicacao.removal_reason
-      }
-    }
-
-    // Atualizar medicação
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === medicacaoId) {
-        const novosHorarios = med.horarios.map(h => 
-          h.hora === horarioMarcado && h.status === 'pendente'
-            ? { ...h, status: 'concluido' as const, completed_at: new Date().toISOString() }
-            : h
-        )
-        
-        const novaProximaDose = calculateNextDose(novosHorarios)
-        const allCompleted = novosHorarios.filter(h => h.hora !== '-').every(h => h.status === 'concluido')
-        
-        return {
-          ...med,
-          horarios: novosHorarios,
-          proximaDose: novaProximaDose,
-          removed_from_today: allCompleted,
-          removal_reason: allCompleted ? 'completed' : undefined
+      // Salvar estado anterior para undo
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'medicacao',
+        action: 'complete',
+        timestamp: Date.now(),
+        previousData: {
+          horarios: [...medicacao.horarios],
+          proximaDose: medicacao.proximaDose,
+          removed_from_today: medicacao.removed_from_today,
+          removal_reason: medicacao.removal_reason
         }
       }
-      return med
-    }))
 
-    setLastUndoAction(undoAction)
+      // Atualizar medicação
+      setMedicacoesList(prev => prev.map(med => {
+        if (med.id === itemId) {
+          const novosHorarios = med.horarios.map(h => 
+            h.hora === horarioMarcado && h.status === 'pendente'
+              ? { ...h, status: 'concluido' as const, completed_at: new Date().toISOString() }
+              : h
+          )
+          
+          const novaProximaDose = calculateNextDose(novosHorarios)
+          const allCompleted = novosHorarios.filter(h => h.hora !== '-').every(h => h.status === 'concluido')
+          
+          return {
+            ...med,
+            horarios: novosHorarios,
+            proximaDose: novaProximaDose,
+            removed_from_today: allCompleted,
+            removal_reason: allCompleted ? 'completed' : undefined
+          }
+        }
+        return med
+      }))
 
-    // Limpar timeout anterior se existir
+      setLastUndoAction(undoAction)
+
+      // Exibir toast
+      toast({
+        title: `Dose de ${horarioMarcado} registrada`,
+        description: "A dose foi marcada como concluída.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    } else if (itemType === 'consulta') {
+      const consulta = consultasList.find(c => c.id === itemId)
+      if (!consulta) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'consulta',
+        action: 'complete',
+        timestamp: Date.now(),
+        previousData: {
+          status: consulta.status,
+          removed_from_today: consulta.removed_from_today,
+          removal_reason: consulta.removal_reason
+        }
+      }
+
+      setConsultasList(prev => prev.map(cons => {
+        if (cons.id === itemId) {
+          return {
+            ...cons,
+            status: 'concluido_hoje' as const,
+            removed_from_today: true,
+            removal_reason: 'completed',
+            completed_at: new Date().toISOString()
+          }
+        }
+        return cons
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Consulta concluída",
+        description: "A consulta foi marcada como concluída hoje.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    } else if (itemType === 'exame') {
+      const exame = examesList.find(e => e.id === itemId)
+      if (!exame) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'exame',
+        action: 'complete',
+        timestamp: Date.now(),
+        previousData: {
+          status: exame.status,
+          removed_from_today: exame.removed_from_today,
+          removal_reason: exame.removal_reason
+        }
+      }
+
+      setExamesList(prev => prev.map(exam => {
+        if (exam.id === itemId) {
+          return {
+            ...exam,
+            status: 'concluido_hoje' as const,
+            removed_from_today: true,
+            removal_reason: 'completed',
+            completed_at: new Date().toISOString()
+          }
+        }
+        return exam
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Exame concluído",
+        description: "O exame foi marcado como concluído hoje.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    }
+
+    // Configurar timeout para limpar undo
     if (undoTimeout) {
       clearTimeout(undoTimeout)
     }
 
-    // Configurar novo timeout
     const timeout = setTimeout(() => {
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
+  }, [medicacoesList, consultasList, examesList, calculateNextDose, undoTimeout])
 
-    // Exibir toast com opção de desfazer
-    toast({
-      title: `Dose de ${horarioMarcado} registrada`,
-      description: "A dose foi marcada como concluída.",
-      action: (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleUndo(undoAction)}
-          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
-        >
-          <Undo2 className="w-4 h-4 mr-1" />
-          Desfazer
-        </Button>
-      ),
-    })
-  }, [medicacoesList, calculateNextDose, undoTimeout])
+  // Função genérica para remover da lista
+  const handleRemove = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+    if (itemType === 'medicacao') {
+      const medicacao = medicacoesList.find(m => m.id === itemId)
+      if (!medicacao) return
 
-  // Função para remover da lista
-  const handleRemove = useCallback((medicacaoId: number) => {
-    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
-    if (!medicacao) return
-
-    // Salvar estado anterior para undo
-    const undoAction: UndoAction = {
-      medicacaoId,
-      action: 'remove',
-      timestamp: Date.now(),
-      previousData: {
-        removed_from_today: medicacao.removed_from_today,
-        removal_reason: medicacao.removal_reason
-      }
-    }
-
-    // Marcar como removida da lista
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === medicacaoId) {
-        return {
-          ...med,
-          removed_from_today: true,
-          removal_reason: 'excluded'
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'medicacao',
+        action: 'remove',
+        timestamp: Date.now(),
+        previousData: {
+          removed_from_today: medicacao.removed_from_today,
+          removal_reason: medicacao.removal_reason
         }
       }
-      return med
-    }))
 
-    setLastUndoAction(undoAction)
+      setMedicacoesList(prev => prev.map(med => {
+        if (med.id === itemId) {
+          return {
+            ...med,
+            removed_from_today: true,
+            removal_reason: 'excluded'
+          }
+        }
+        return med
+      }))
 
-    // Limpar timeout anterior se existir
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Medicação removida da lista de hoje",
+        description: "A medicação foi excluída da lista principal.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    } else if (itemType === 'consulta') {
+      const consulta = consultasList.find(c => c.id === itemId)
+      if (!consulta) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'consulta',
+        action: 'remove',
+        timestamp: Date.now(),
+        previousData: {
+          removed_from_today: consulta.removed_from_today,
+          removal_reason: consulta.removal_reason
+        }
+      }
+
+      setConsultasList(prev => prev.map(cons => {
+        if (cons.id === itemId) {
+          return {
+            ...cons,
+            removed_from_today: true,
+            removal_reason: 'excluded'
+          }
+        }
+        return cons
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Consulta removida da lista de hoje",
+        description: "A consulta foi excluída da lista principal.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    } else if (itemType === 'exame') {
+      const exame = examesList.find(e => e.id === itemId)
+      if (!exame) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'exame',
+        action: 'remove',
+        timestamp: Date.now(),
+        previousData: {
+          removed_from_today: exame.removed_from_today,
+          removal_reason: exame.removal_reason
+        }
+      }
+
+      setExamesList(prev => prev.map(exam => {
+        if (exam.id === itemId) {
+          return {
+            ...exam,
+            removed_from_today: true,
+            removal_reason: 'excluded'
+          }
+        }
+        return exam
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Exame removido da lista de hoje",
+        description: "O exame foi excluído da lista principal.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
+    }
+
+    // Configurar timeout para limpar undo
     if (undoTimeout) {
       clearTimeout(undoTimeout)
     }
 
-    // Configurar novo timeout
     const timeout = setTimeout(() => {
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-
-    // Exibir toast com opção de desfazer
-    toast({
-      title: "Medicação removida da lista de hoje",
-      description: "A medicação foi excluída da lista principal.",
-      action: (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleUndo(undoAction)}
-          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
-        >
-          <Undo2 className="w-4 h-4 mr-1" />
-          Desfazer
-        </Button>
-      ),
-    })
-  }, [medicacoesList, undoTimeout])
+  }, [medicacoesList, consultasList, examesList, undoTimeout])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === undoAction.medicacaoId && undoAction.previousData) {
-        if (undoAction.action === 'complete') {
-          return {
-            ...med,
-            horarios: undoAction.previousData.horarios || med.horarios,
-            proximaDose: undoAction.previousData.proximaDose || med.proximaDose,
-            removed_from_today: undoAction.previousData.removed_from_today,
-            removal_reason: undoAction.previousData.removal_reason
+    if (undoAction.itemType === 'medicacao') {
+      setMedicacoesList(prev => prev.map(med => {
+        if (med.id === undoAction.itemId && undoAction.previousData) {
+          if (undoAction.action === 'complete') {
+            return {
+              ...med,
+              horarios: undoAction.previousData.horarios || med.horarios,
+              proximaDose: undoAction.previousData.proximaDose || med.proximaDose,
+              removed_from_today: undoAction.previousData.removed_from_today,
+              removal_reason: undoAction.previousData.removal_reason
+            }
+          } else if (undoAction.action === 'remove') {
+            return {
+              ...med,
+              removed_from_today: undoAction.previousData.removed_from_today,
+              removal_reason: undoAction.previousData.removal_reason
+            }
           }
-        } else if (undoAction.action === 'remove') {
+        }
+        return med
+      }))
+    } else if (undoAction.itemType === 'consulta') {
+      setConsultasList(prev => prev.map(cons => {
+        if (cons.id === undoAction.itemId && undoAction.previousData) {
           return {
-            ...med,
+            ...cons,
+            status: undoAction.previousData.status,
             removed_from_today: undoAction.previousData.removed_from_today,
             removal_reason: undoAction.previousData.removal_reason
           }
         }
-      }
-      return med
-    }))
+        return cons
+      }))
+    } else if (undoAction.itemType === 'exame') {
+      setExamesList(prev => prev.map(exam => {
+        if (exam.id === undoAction.itemId && undoAction.previousData) {
+          return {
+            ...exam,
+            status: undoAction.previousData.status,
+            removed_from_today: undoAction.previousData.removed_from_today,
+            removal_reason: undoAction.previousData.removal_reason
+          }
+        }
+        return exam
+      }))
+    }
 
     // Limpar undo action e timeout
     setLastUndoAction(null)
@@ -306,30 +542,63 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setUndoTimeout(null)
     }
 
-    const actionText = undoAction.action === 'complete' ? 'dose desmarcada' : 'medicação restaurada'
+    const typeText = undoAction.itemType === 'medicacao' ? 'medicação' : 
+                     undoAction.itemType === 'consulta' ? 'consulta' : 'exame'
+    const actionText = undoAction.action === 'complete' ? 'desmarcada' : 'restaurada'
     toast({
       title: "Ação desfeita",
-      description: `Operação revertida: ${actionText}.`,
+      description: `Operação revertida: ${typeText} ${actionText}.`,
     })
   }, [undoTimeout])
 
-  // Função para restaurar medicação excluída
-  const handleRestore = useCallback((medicacaoId: number) => {
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === medicacaoId) {
-        return {
-          ...med,
-          removed_from_today: false,
-          removal_reason: undefined
+  // Função genérica para restaurar item excluído
+  const handleRestore = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+    if (itemType === 'medicacao') {
+      setMedicacoesList(prev => prev.map(med => {
+        if (med.id === itemId) {
+          return {
+            ...med,
+            removed_from_today: false,
+            removal_reason: undefined
+          }
         }
-      }
-      return med
-    }))
-
-    toast({
-      title: "Medicação restaurada",
-      description: "A medicação foi retornada à lista principal.",
-    })
+        return med
+      }))
+      toast({
+        title: "Medicação restaurada",
+        description: "A medicação foi retornada à lista principal.",
+      })
+    } else if (itemType === 'consulta') {
+      setConsultasList(prev => prev.map(cons => {
+        if (cons.id === itemId) {
+          return {
+            ...cons,
+            removed_from_today: false,
+            removal_reason: undefined
+          }
+        }
+        return cons
+      }))
+      toast({
+        title: "Consulta restaurada",
+        description: "A consulta foi retornada à lista principal.",
+      })
+    } else if (itemType === 'exame') {
+      setExamesList(prev => prev.map(exam => {
+        if (exam.id === itemId) {
+          return {
+            ...exam,
+            removed_from_today: false,
+            removal_reason: undefined
+          }
+        }
+        return exam
+      }))
+      toast({
+        title: "Exame restaurado",
+        description: "O exame foi retornado à lista principal.",
+      })
+    }
   }, [])
 
   // Função para extrair e converter horário para comparação
@@ -346,14 +615,29 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     return 9999
   }
 
-  // Separar medicações em principais e removidas
+  // Separar todos os itens em principais e removidos
   const medicacoesPrincipais = medicacoesList
     .filter(med => !med.removed_from_today)
     .sort((a, b) => getTimeForSorting(a.proximaDose) - getTimeForSorting(b.proximaDose))
 
-  const medicacoesRemovidas = medicacoesList
-    .filter(med => med.removed_from_today)
-    .sort((a, b) => getTimeForSorting(a.proximaDose) - getTimeForSorting(b.proximaDose))
+  const consultasPrincipais = consultasList
+    .filter(cons => !cons.removed_from_today)
+    .sort((a, b) => getTimeForSorting(a.hora) - getTimeForSorting(b.hora))
+
+  const examesPrincipais = examesList
+    .filter(exam => !exam.removed_from_today)
+    .sort((a, b) => getTimeForSorting(a.hora) - getTimeForSorting(b.hora))
+
+  // Itens removidos/concluídos de todas as categorias
+  const itensRemovidos = [
+    ...medicacoesList.filter(med => med.removed_from_today),
+    ...consultasList.filter(cons => cons.removed_from_today),
+    ...examesList.filter(exam => exam.removed_from_today)
+  ].sort((a, b) => {
+    const timeA = 'proximaDose' in a ? getTimeForSorting(a.proximaDose) : getTimeForSorting(a.hora)
+    const timeB = 'proximaDose' in b ? getTimeForSorting(b.proximaDose) : getTimeForSorting(b.hora)
+    return timeA - timeB
+  })
 
   // Limpar timeout quando componente desmontar
   useEffect(() => {
@@ -368,6 +652,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   useEffect(() => {
     if (!isOpen) {
       setMedicacoesList(initialMedicacoes)
+      setConsultasList(initialConsultas)
+      setExamesList(initialExames)
       setLastUndoAction(null)
       setIsRemovedExpanded(false)
       if (undoTimeout) {
@@ -377,13 +663,13 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     }
   }, [isOpen, undoTimeout])
 
-  const getStatusText = (medicacao: MedicacaoCompleta) => {
-    if (medicacao.removal_reason === 'completed') {
-      return 'Concluída hoje'
-    } else if (medicacao.removal_reason === 'excluded') {
-      return 'Excluída da lista'
+  const getStatusText = (item: any, itemType: 'medicacao' | 'consulta' | 'exame') => {
+    if (item.removal_reason === 'completed') {
+      return 'Concluído hoje'
+    } else if (item.removal_reason === 'excluded') {
+      return 'Excluído da lista'
     }
-    return medicacao.status
+    return item.status
   }
 
   return (
@@ -397,29 +683,99 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           <p className="text-muted-foreground text-sm text-left">14 de agosto de 2025</p>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Lista Principal - Medicações Pendentes */}
-          {medicacoesPrincipais.length > 0 && (
+        <div className="space-y-6 py-4">
+          {/* Seção A: Medicações */}
+          {medicacoesPrincipais.length > 0 ? (
             <div className="space-y-3">
               <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
                 <Pill className="w-5 h-5" />
-                Medicações do dia ({medicacoesPrincipais.length})
+                Medicações ({medicacoesPrincipais.length})
               </h3>
               <div className="space-y-3">
                 {medicacoesPrincipais.map((medicacao) => (
                   <SwipeableCard
                     key={medicacao.id}
                     medicacao={medicacao}
+                    onComplete={(id) => handleComplete(id, 'medicacao')}
+                    onRemove={(id) => handleRemove(id, 'medicacao')}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <Pill className="w-5 h-5" />
+                Medicações (0)
+              </h3>
+              <div className="text-muted-foreground/60 text-sm italic p-4 bg-muted/20 rounded-lg">
+                Ex.: Nenhum item pendente
+              </div>
+            </div>
+          )}
+
+          {/* Seção B: Consultas */}
+          {consultasPrincipais.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <User className="w-5 h-5" />
+                Consultas ({consultasPrincipais.length})
+              </h3>
+              <div className="space-y-3">
+                {consultasPrincipais.map((consulta) => (
+                  <SwipeableConsultaCard
+                    key={consulta.id}
+                    consulta={consulta}
                     onComplete={handleComplete}
                     onRemove={handleRemove}
                   />
                 ))}
               </div>
             </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <User className="w-5 h-5" />
+                Consultas (0)
+              </h3>
+              <div className="text-muted-foreground/60 text-sm italic p-4 bg-muted/20 rounded-lg">
+                Ex.: Nenhum item pendente
+              </div>
+            </div>
           )}
 
-          {/* Sub-lista "Ver medicações removidas" */}
-          {medicacoesRemovidas.length > 0 && (
+          {/* Seção C: Exames */}
+          {examesPrincipais.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <Stethoscope className="w-5 h-5" />
+                Exames ({examesPrincipais.length})
+              </h3>
+              <div className="space-y-3">
+                {examesPrincipais.map((exame) => (
+                  <SwipeableExameCard
+                    key={exame.id}
+                    exame={exame}
+                    onComplete={handleComplete}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <Stethoscope className="w-5 h-5" />
+                Exames (0)
+              </h3>
+              <div className="text-muted-foreground/60 text-sm italic p-4 bg-muted/20 rounded-lg">
+                Ex.: Nenhum item pendente
+              </div>
+            </div>
+          )}
+
+          {/* Seção D: Sublista "Ver itens removidos" */}
+          {itensRemovidos.length > 0 && (
             <div className="space-y-4 mt-6 pt-4 border-t border-border/50">
               <div 
                 className="flex items-center justify-start gap-2 cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
