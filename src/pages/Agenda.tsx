@@ -354,7 +354,7 @@ const Agenda = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft">
+            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
               <Plus className="w-4 h-4 mr-2" />
               Agendar
             </Button>
