@@ -54,9 +54,11 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const threshold = 0.3 // 30% da largura do card
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    console.log('TouchStart triggered', { isMobile, disabled })
     if (!isMobile || disabled) return
     
     const touch = e.touches[0]
+    console.log('TouchStart position:', { x: touch.clientX, y: touch.clientY })
     setDragState({
       isDragging: true,
       startX: touch.clientX,
@@ -75,15 +77,19 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     const deltaX = touch.clientX - dragState.startX
     const deltaY = touch.clientY - dragState.startY
     
+    console.log('TouchMove:', { deltaX, deltaY, isHorizontalSwipe: dragState.isHorizontalSwipe })
+    
     // Detectar se é movimento horizontal ou vertical
     if (!dragState.isHorizontalSwipe && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
       // Ainda não determinamos a direção, aguardar mais movimento
+      console.log('Waiting for more movement')
       return
     }
     
     // Determinar direção do movimento na primeira vez
     if (!dragState.isHorizontalSwipe) {
       const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+      console.log('Determining direction:', { isHorizontal, deltaX, deltaY })
       
       setDragState(prev => ({
         ...prev,
@@ -94,6 +100,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       
       // Se for movimento horizontal, prevenir scroll
       if (isHorizontal) {
+        console.log('Preventing default for horizontal swipe')
         e.preventDefault()
       }
       return
