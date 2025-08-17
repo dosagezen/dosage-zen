@@ -290,8 +290,8 @@ const Agenda = () => {
   const monthEnd = endOfMonth(currentDate)
   const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
   
-  // Add padding days for calendar grid
-  const firstDayOfWeek = getDay(monthStart)
+  // Add padding days for calendar grid (Monday = 0, Sunday = 6)
+  const firstDayOfWeek = (getDay(monthStart) + 6) % 7 // Convert Sunday=0 to Monday=0
   const paddingDays = Array.from({ length: firstDayOfWeek }, (_, i) => 
     new Date(monthStart.getTime() - (firstDayOfWeek - i) * 24 * 60 * 60 * 1000)
   )
@@ -479,7 +479,7 @@ const Agenda = () => {
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1 mb-4">
             {/* Week days header */}
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+            {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day) => (
               <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
                 {day}
               </div>
