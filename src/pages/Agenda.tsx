@@ -349,7 +349,7 @@ const Agenda = () => {
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-primary">Agenda</h1>
           <p className="text-muted-foreground">Gerencie suas consultas e exames</p>
