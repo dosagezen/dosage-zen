@@ -23,7 +23,7 @@ const Dashboard = () => {
   ]
 
   const estatisticas = [
-    { titulo: "Medicações Hoje", valor: "5", icone: Pill, cor: "success" },
+    { titulo: "Compromissos Hoje", valor: "5", icone: Pill, cor: "success" },
     { titulo: "Próxima Consulta", valor: "3 dias", icone: Calendar, cor: "accent" },
     { titulo: "Aderência Semanal", valor: "92%", icone: TrendingUp, cor: "primary" },
     { titulo: "Cuidadores", valor: "2", icone: Users, cor: "muted" }
