@@ -43,8 +43,11 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const [dragState, setDragState] = useState({
     isDragging: false,
     startX: 0,
+    startY: 0,
     currentX: 0,
+    currentY: 0,
     deltaX: 0,
+    isHorizontalSwipe: false,
   })
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -53,60 +56,92 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
     
-    // Prevenir scroll da página durante o touch
-    e.preventDefault()
-    
     const touch = e.touches[0]
     setDragState({
       isDragging: true,
       startX: touch.clientX,
+      startY: touch.clientY,
       currentX: touch.clientX,
+      currentY: touch.clientY,
       deltaX: 0,
+      isHorizontalSwipe: false,
     })
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isMobile || disabled || !dragState.isDragging) return
     
-    // Prevenir scroll da página durante o movimento
-    e.preventDefault()
-    
     const touch = e.touches[0]
     const deltaX = touch.clientX - dragState.startX
-    const cardWidth = cardRef.current?.offsetWidth || 0
-    const normalizedDelta = Math.max(-cardWidth * 0.5, Math.min(cardWidth * 0.5, deltaX))
+    const deltaY = touch.clientY - dragState.startY
     
-    setDragState(prev => ({
-      ...prev,
-      currentX: touch.clientX,
-      deltaX: normalizedDelta,
-    }))
-
-    // Mostrar hint baseado na direção
-    if (Math.abs(normalizedDelta) > cardWidth * 0.1) {
-      if (normalizedDelta > 0) {
-        setShowActionHint('complete')
-      } else {
-        setShowActionHint('remove')
+    // Detectar se é movimento horizontal ou vertical
+    if (!dragState.isHorizontalSwipe && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
+      // Ainda não determinamos a direção, aguardar mais movimento
+      return
+    }
+    
+    // Determinar direção do movimento na primeira vez
+    if (!dragState.isHorizontalSwipe) {
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+      
+      setDragState(prev => ({
+        ...prev,
+        isHorizontalSwipe: isHorizontal,
+        currentX: touch.clientX,
+        currentY: touch.clientY,
+      }))
+      
+      // Se for movimento horizontal, prevenir scroll
+      if (isHorizontal) {
+        e.preventDefault()
       }
-    } else {
-      setShowActionHint(null)
+      return
+    }
+    
+    // Se é swipe horizontal, continuar com a lógica de swipe
+    if (dragState.isHorizontalSwipe) {
+      e.preventDefault()
+      
+      const cardWidth = cardRef.current?.offsetWidth || 0
+      const normalizedDelta = Math.max(-cardWidth * 0.5, Math.min(cardWidth * 0.5, deltaX))
+      
+      setDragState(prev => ({
+        ...prev,
+        currentX: touch.clientX,
+        currentY: touch.clientY,
+        deltaX: normalizedDelta,
+      }))
+
+      // Mostrar hint baseado na direção
+      if (Math.abs(normalizedDelta) > cardWidth * 0.1) {
+        if (normalizedDelta > 0) {
+          setShowActionHint('complete')
+        } else {
+          setShowActionHint('remove')
+        }
+      } else {
+        setShowActionHint(null)
+      }
     }
   }
 
   const handleTouchEnd = () => {
     if (!isMobile || disabled || !dragState.isDragging) return
     
-    const cardWidth = cardRef.current?.offsetWidth || 0
-    const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
+    // Só executar ação se foi um swipe horizontal
+    if (dragState.isHorizontalSwipe) {
+      const cardWidth = cardRef.current?.offsetWidth || 0
+      const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
 
-    if (shouldTriggerAction) {
-      if (dragState.deltaX > 0) {
-        // Swipe direita - concluir
-        onComplete(medicacao.id)
-      } else {
-        // Swipe esquerda - remover
-        onRemove(medicacao.id)
+      if (shouldTriggerAction) {
+        if (dragState.deltaX > 0) {
+          // Swipe direita - concluir
+          onComplete(medicacao.id)
+        } else {
+          // Swipe esquerda - remover
+          onRemove(medicacao.id)
+        }
       }
     }
 
@@ -114,14 +149,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     setDragState({
       isDragging: false,
       startX: 0,
+      startY: 0,
       currentX: 0,
+      currentY: 0,
       deltaX: 0,
+      isHorizontalSwipe: false,
     })
     setShowActionHint(null)
   }
 
   const getTransformStyle = () => {
-    if (!isMobile || !dragState.isDragging) return {}
+    if (!isMobile || !dragState.isDragging || !dragState.isHorizontalSwipe) return {}
     
     return {
       transform: `translateX(${dragState.deltaX}px)`,
@@ -130,7 +168,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }
 
   const getBackgroundOverlay = () => {
-    if (!isMobile || !showActionHint) return null
+    if (!isMobile || !showActionHint || !dragState.isHorizontalSwipe) return null
     
     const isComplete = showActionHint === 'complete'
     const bgColor = isComplete ? 'bg-[#588157]/20' : 'bg-[#3A5A40]/20'
@@ -155,7 +193,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-none"
+        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden"
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
