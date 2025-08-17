@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const Agenda = () => {
+  const isMobile = useIsMobile()
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -355,8 +357,14 @@ const Agenda = () => {
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
-              <Plus className="w-4 h-4 mr-2" />
-              Agendar
+              {isMobile ? (
+                <Plus className="w-4 h-4" />
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agendar
+                </>
+              )}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
