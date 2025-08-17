@@ -54,11 +54,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const threshold = 0.3 // 30% da largura do card
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    console.log('TouchStart triggered', { isMobile, disabled })
     if (!isMobile || disabled) return
     
     const touch = e.touches[0]
-    console.log('TouchStart position:', { x: touch.clientX, y: touch.clientY })
     setDragState({
       isDragging: true,
       startX: touch.clientX,
@@ -77,19 +75,14 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     const deltaX = touch.clientX - dragState.startX
     const deltaY = touch.clientY - dragState.startY
     
-    console.log('TouchMove:', { deltaX, deltaY, isHorizontalSwipe: dragState.isHorizontalSwipe })
-    
-    // Detectar se é movimento horizontal ou vertical
-    if (!dragState.isHorizontalSwipe && Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10) {
-      // Ainda não determinamos a direção, aguardar mais movimento
-      console.log('Waiting for more movement')
+    // Aguardar movimento mínimo antes de determinar direção
+    if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
       return
     }
     
-    // Determinar direção do movimento na primeira vez
+    // Determinar direção do movimento uma vez
     if (!dragState.isHorizontalSwipe) {
-      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
-      console.log('Determining direction:', { isHorizontal, deltaX, deltaY })
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.5 // Favorece movimento vertical
       
       setDragState(prev => ({
         ...prev,
@@ -98,9 +91,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         currentY: touch.clientY,
       }))
       
-      // Se for movimento horizontal, prevenir scroll
+      // Só prevenir default se for claramente horizontal
       if (isHorizontal) {
-        console.log('Preventing default for horizontal swipe')
         e.preventDefault()
       }
       return
@@ -200,7 +192,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden"
+        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y"
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
