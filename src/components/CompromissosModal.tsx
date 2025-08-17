@@ -421,22 +421,22 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           {medicacoesRemovidas.length > 0 && (
             <div className="space-y-4 mt-6 pt-4 border-t border-border/50">
               <div 
-                className="flex items-center justify-between cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
+                className="flex items-center justify-start gap-2 cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
                 onClick={() => setIsRemovedExpanded(!isRemovedExpanded)}
                 aria-expanded={isRemovedExpanded}
                 aria-label={isRemovedExpanded ? "Colapsar medicações removidas" : "Expandir medicações removidas"}
               >
+                {isRemovedExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-[#344E41]" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-[#344E41]" />
+                )}
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-[#344E41]">Ver medicações concluídas</h3>
                   <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
                     {medicacoesRemovidas.length}
                   </Badge>
                 </div>
-                {isRemovedExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-[#344E41]" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-[#344E41]" />
-                )}
               </div>
               
               {isRemovedExpanded && (
