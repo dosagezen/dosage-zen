@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
@@ -440,35 +441,115 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
               </div>
               
               {isRemovedExpanded && (
-                <div className="space-y-3">
-                  {medicacoesRemovidas.map((medicacao) => (
-                    <div key={medicacao.id} className="relative">
-                      <SwipeableCard
-                        medicacao={medicacao}
-                        onComplete={handleComplete}
-                        onRemove={handleRemove}
-                        disabled={true}
-                      />
-                      <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
-                        <Badge 
-                          variant="secondary" 
-                          className="bg-muted/80 text-muted-foreground text-xs"
-                        >
-                          {getStatusText(medicacao)}
-                        </Badge>
-                        {medicacao.removal_reason === 'excluded' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs h-6 px-2 bg-background/90 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
-                            onClick={() => handleRestore(medicacao.id)}
-                          >
-                            Restaurar
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div className="grid gap-4 w-full">
+                  {medicacoesRemovidas.map((medicacao) => {
+                    const isCompleted = medicacao.removal_reason === 'completed'
+                    
+                    return (
+                      <Card 
+                        key={medicacao.id} 
+                        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300"
+                      >
+                        <CardContent className="p-4 sm:p-6 w-full opacity-80">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-accent opacity-60">
+                                <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base sm:text-lg font-semibold text-primary opacity-85">
+                                  {medicacao.nome}
+                                </h3>
+                                <p className="text-sm sm:text-base text-muted-foreground opacity-85">
+                                  {medicacao.dosagem} • {medicacao.forma}
+                                </p>
+                                <p className="text-xs sm:text-sm text-muted-foreground opacity-85">
+                                  {medicacao.frequencia}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
+                              <div className="flex items-center justify-start sm:justify-end text-muted-foreground/50">
+                                <Clock className="w-4 h-4 mr-1" />
+                                <span className="font-medium text-sm sm:text-base">
+                                  {getStatusText(medicacao)}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-start sm:justify-end gap-2">
+                                <Badge 
+                                  variant="outline"
+                                  className="text-xs sm:text-sm opacity-70"
+                                >
+                                  {medicacao.status}
+                                </Badge>
+                                {medicacao.removal_reason === 'excluded' && (
+                                  <Badge 
+                                    variant="secondary"
+                                    className="text-xs sm:text-sm bg-orange-100 text-orange-800"
+                                  >
+                                    Excluída
+                                  </Badge>
+                                )}
+                                {isCompleted && (
+                                  <Badge 
+                                    variant="secondary"
+                                    className="text-xs sm:text-sm bg-green-100 text-green-800"
+                                  >
+                                    Concluída
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 pt-4 border-t border-border/50 w-full">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm text-muted-foreground">
+                                  Horários programados:
+                                </p>
+                                <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
+                                  {medicacao.horarios.map((horario, index) => (
+                                    <Badge 
+                                      key={index} 
+                                      variant="secondary" 
+                                      className={`
+                                        relative text-xs sm:text-sm transition-all duration-200
+                                        ${isCompleted 
+                                          ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through" 
+                                          : "bg-orange-100 text-orange-800 opacity-70"
+                                        }
+                                      `}
+                                      style={isCompleted ? {
+                                        textDecoration: 'line-through',
+                                        textDecorationColor: '#588157',
+                                        textDecorationThickness: '2px'
+                                      } : undefined}
+                                      aria-label={`Dose das ${horario.hora} ${isCompleted ? 'registrada' : 'removida'}`}
+                                    >
+                                      {horario.hora}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                                {medicacao.removal_reason === 'excluded' && (
+                                  <Button 
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
+                                    onClick={() => handleRestore(medicacao.id)}
+                                  >
+                                    Restaurar
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
             </div>
