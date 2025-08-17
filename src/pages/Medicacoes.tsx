@@ -409,6 +409,27 @@ const Medicacoes = () => {
     return 9999; // Fallback para casos não previstos
   }
 
+  // Função para obter o primeiro horário (mais cedo) de uma medicação
+  const getEarliestTime = (medicacao: MedicacaoCompleta) => {
+    if (medicacao.status === "inativa") return 9999;
+    
+    // Filtrar horários válidos e ordená-los
+    const horariosValidos = medicacao.horarios
+      .filter(h => h.hora !== '-')
+      .map(h => {
+        const timeMatch = h.hora.match(/(\d{2}):(\d{2})/);
+        if (timeMatch) {
+          const hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          return hours * 60 + minutes;
+        }
+        return 9999;
+      })
+      .sort((a, b) => a - b);
+    
+    return horariosValidos.length > 0 ? horariosValidos[0] : 9999;
+  }
+
   // Aplicar filtro baseado na aba selecionada
   const getFilteredMedicacoes = () => {
     let filtered = medicacoesList
@@ -418,28 +439,64 @@ const Medicacoes = () => {
         filtered = medicacoesList.filter(med => 
           med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
         )
-        break
+        // Para "hoje", usar a próxima dose (comportamento atual)
+        return filtered.sort((a, b) => {
+          const timeA = getTimeForSorting(a.proximaDose)
+          const timeB = getTimeForSorting(b.proximaDose)
+          
+          if (timeA === timeB) {
+            return a.nome.localeCompare(b.nome)
+          }
+          
+          return timeA - timeB
+        })
+        
       case "ativas":
         filtered = medicacoesList.filter(med => med.status === "ativa" && !med.removed_from_today)
-        break
+        // Para "ativas", usar o primeiro horário da medicação
+        return filtered.sort((a, b) => {
+          const timeA = getEarliestTime(a)
+          const timeB = getEarliestTime(b)
+          
+          if (timeA === timeB) {
+            return a.nome.localeCompare(b.nome)
+          }
+          
+          return timeA - timeB
+        })
+        
       case "todas":
         filtered = medicacoesList.filter(med => !med.removed_from_today)
-        break
+        // Para "todas", usar o primeiro horário da medicação (ativas vêm antes das inativas)
+        return filtered.sort((a, b) => {
+          // Medicações ativas vêm antes das inativas
+          if (a.status !== b.status) {
+            return a.status === "ativa" ? -1 : 1
+          }
+          
+          const timeA = getEarliestTime(a)
+          const timeB = getEarliestTime(b)
+          
+          if (timeA === timeB) {
+            return a.nome.localeCompare(b.nome)
+          }
+          
+          return timeA - timeB
+        })
+        
       default:
         filtered = medicacoesList.filter(med => !med.removed_from_today)
+        return filtered.sort((a, b) => {
+          const timeA = getEarliestTime(a)
+          const timeB = getEarliestTime(b)
+          
+          if (timeA === timeB) {
+            return a.nome.localeCompare(b.nome)
+          }
+          
+          return timeA - timeB
+        })
     }
-    
-    // Ordenar por horário (ordem crescente) e por nome em caso de empate
-    return filtered.sort((a, b) => {
-      const timeA = getTimeForSorting(a.proximaDose)
-      const timeB = getTimeForSorting(b.proximaDose)
-      
-      if (timeA === timeB) {
-        return a.nome.localeCompare(b.nome)
-      }
-      
-      return timeA - timeB
-    })
   }
 
   // Separar medicações em pendentes e concluídas
