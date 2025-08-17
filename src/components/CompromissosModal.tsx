@@ -427,7 +427,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                 aria-label={isRemovedExpanded ? "Colapsar medicações removidas" : "Expandir medicações removidas"}
               >
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-[#344E41]">Ver medicações removidas</h3>
+                  <h3 className="text-lg font-bold text-[#344E41]">Ver medicações concluídas</h3>
                   <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
                     {medicacoesRemovidas.length}
                   </Badge>
