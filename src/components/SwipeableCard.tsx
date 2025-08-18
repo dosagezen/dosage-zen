@@ -177,7 +177,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     
     return (
       <div 
-        className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0 transition-opacity duration-200`}
+        className={`absolute inset-0 ${bgColor} rounded-lg flex items-center ${isComplete ? 'justify-start pl-4' : 'justify-end pr-4'} text-white z-0 transition-opacity duration-200`}
         style={{ opacity }}
       >
         <div className="flex flex-col items-center gap-1">
