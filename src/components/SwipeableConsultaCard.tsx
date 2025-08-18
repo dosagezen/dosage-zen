@@ -93,18 +93,12 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     if (!isDragging || !dragDirection) return null
 
     const isComplete = dragDirection === 'right'
-    const bgColor = isComplete ? 'bg-[#588157]' : 'bg-[#3A5A40]'
-    const icon = isComplete ? <Check className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />
+    const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
     const text = isComplete ? 'Concluir' : 'Excluir'
 
     return (
-      <div className={`absolute inset-0 ${bgColor} rounded-lg flex items-center ${
-        isComplete ? 'justify-start pl-6' : 'justify-end pr-6'
-      } text-white z-0`}>
-        <div className="flex items-center gap-2">
-          {icon}
-          <span className="font-medium">{text}</span>
-        </div>
+      <div className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0`}>
+        <span className="font-bold text-base">{text}</span>
       </div>
     )
   }

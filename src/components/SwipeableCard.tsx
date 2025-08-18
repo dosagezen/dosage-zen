@@ -170,17 +170,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     if (!isMobile || !showActionHint || !dragState.isHorizontalSwipe) return null
     
     const isComplete = showActionHint === 'complete'
-    const bgColor = isComplete ? 'bg-[#588157]/20' : 'bg-[#3A5A40]/20'
-    const icon = isComplete ? <Check className="w-6 h-6 text-[#588157]" /> : <Trash2 className="w-6 h-6 text-[#3A5A40]" />
-    const text = isComplete ? 'Concluir' : 'Excluir da lista'
-    const position = isComplete ? 'left-4' : 'right-4'
+    const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
+    const text = isComplete ? 'Concluir' : 'Excluir'
     
     return (
-      <div className={`absolute inset-0 ${bgColor} flex items-center ${position === 'left-4' ? 'justify-start' : 'justify-end'} transition-opacity duration-200`}>
-        <div className={`flex items-center gap-2 ${position}`}>
-          {icon}
-          <span className="text-sm font-medium text-primary">{text}</span>
-        </div>
+      <div className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0 transition-opacity duration-200`}>
+        <span className="font-bold text-base">{text}</span>
       </div>
     )
   }
