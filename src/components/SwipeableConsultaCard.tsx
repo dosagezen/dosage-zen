@@ -80,8 +80,8 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     if (!isDragging) return {}
     
     const delta = dragCurrent - dragStart
-    const maxTranslate = 80
-    const translate = Math.max(-maxTranslate, Math.min(maxTranslate, delta * 0.3))
+    const maxTranslate = 120
+    const translate = Math.max(-maxTranslate, Math.min(maxTranslate, delta * 0.4))
     
     return {
       transform: `translateX(${translate}px)`,
@@ -95,10 +95,18 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     const isComplete = dragDirection === 'right'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
     const text = isComplete ? 'Concluir' : 'Excluir'
+    const delta = Math.abs(dragCurrent - dragStart)
+    const opacity = Math.min(1, delta / 80)
 
     return (
-      <div className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0`}>
-        <span className="font-bold text-base">{text}</span>
+      <div 
+        className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0`}
+        style={{ opacity }}
+      >
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-bold text-lg sm:text-xl">{text}</span>
+          <div className="w-8 h-1 bg-white/60 rounded-full"></div>
+        </div>
       </div>
     )
   }

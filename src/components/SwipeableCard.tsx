@@ -172,10 +172,18 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     const isComplete = showActionHint === 'complete'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
     const text = isComplete ? 'Concluir' : 'Excluir'
+    const delta = Math.abs(dragState.deltaX)
+    const opacity = Math.min(1, delta / 100)
     
     return (
-      <div className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0 transition-opacity duration-200`}>
-        <span className="font-bold text-base">{text}</span>
+      <div 
+        className={`absolute inset-0 ${bgColor} rounded-lg flex items-center justify-center text-white z-0 transition-opacity duration-200`}
+        style={{ opacity }}
+      >
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-bold text-lg sm:text-xl">{text}</span>
+          <div className="w-8 h-1 bg-white/60 rounded-full"></div>
+        </div>
       </div>
     )
   }
