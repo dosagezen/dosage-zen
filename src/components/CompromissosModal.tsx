@@ -886,7 +886,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                                   </Badge>
                                 )}
                               </div>
-                              {item.removal_reason === 'excluded' && (
+                              {(item.removal_reason === 'excluded' || item.removal_reason === 'completed') && (
                                 <div className="flex justify-start sm:justify-end mt-2">
                                   <Button 
                                     variant="outline" 
