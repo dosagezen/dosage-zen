@@ -661,7 +661,12 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-auto"
+                              className="h-48 w-20 border rounded-md overflow-y-scroll scrollbar-thin"
+                              style={{ 
+                                WebkitOverflowScrolling: 'touch',
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'rgb(156, 163, 175) transparent'
+                              }}
                               tabIndex={0}
                               onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -675,7 +680,7 @@ const Agenda = () => {
                                 }
                               }}
                             >
-                              <div className="py-2">
+                              <div className="py-4 space-y-1">
                                 {Array.from({length: 24}, (_, i) => (
                                   <div
                                     key={i}
@@ -685,7 +690,7 @@ const Agenda = () => {
                                       setSelectedTime(`${hour}:${minute}`);
                                     }}
                                     className={cn(
-                                      "px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      "px-3 py-3 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors text-center",
                                       selectedTime.split(':')[0] === i.toString().padStart(2, '0') && "bg-primary text-primary-foreground"
                                     )}
                                   >
@@ -699,7 +704,12 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-auto"
+                              className="h-48 w-20 border rounded-md overflow-y-scroll scrollbar-thin"
+                              style={{ 
+                                WebkitOverflowScrolling: 'touch',
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: 'rgb(156, 163, 175) transparent'
+                              }}
                               tabIndex={0}
                               onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -715,7 +725,7 @@ const Agenda = () => {
                                 }
                               }}
                             >
-                              <div className="py-2">
+                              <div className="py-4 space-y-1">
                                 {Array.from({length: 12}, (_, i) => {
                                   const minute = (i * 5).toString().padStart(2, '0');
                                   return (
@@ -726,7 +736,7 @@ const Agenda = () => {
                                         setSelectedTime(`${hour}:${minute}`);
                                       }}
                                       className={cn(
-                                        "px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
+                                        "px-3 py-3 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors text-center",
                                         selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
                                       )}
                                     >
