@@ -32,6 +32,7 @@ export function AppSidebar() {
   const isMobile = useIsMobile()
 
   const isActive = (path: string) => currentPath === path
+  const isInactive = (path: string) => ["/farmacias", "/compartilhar", "/relatorios"].includes(path)
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-accent/30 text-primary font-medium border-r-2 border-primary" 
@@ -77,7 +78,11 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end 
-                      className={getNavCls}
+                      className={({ isActive }) => {
+                        const baseClasses = getNavCls({ isActive })
+                        const inactiveClasses = isInactive(item.url) ? " opacity-50" : ""
+                        return baseClasses + inactiveClasses
+                      }}
                       onClick={handleMobileNavClick}
                     >
                       <item.icon className="w-5 h-5" />
