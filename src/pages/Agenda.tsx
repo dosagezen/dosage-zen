@@ -606,7 +606,7 @@ const Agenda = () => {
               )}
 
               {/* Campos Data e Hora */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="data">Data</Label>
                   <Input id="data" type="date" placeholder="Ex.: 22/09/2025" className="placeholder:text-muted-foreground/50" />
