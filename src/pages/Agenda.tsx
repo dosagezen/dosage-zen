@@ -606,14 +606,32 @@ const Agenda = () => {
               )}
 
               {/* Campos Data e Hora */}
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="data">Data</Label>
-                  <Input id="data" type="date" placeholder="Ex.: 22/09/2025" className="placeholder:text-muted-foreground/50" />
+                  <div className="relative">
+                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input 
+                      id="data" 
+                      type="date" 
+                      placeholder="22/09/2025" 
+                      defaultValue="2025-09-22"
+                      className="pl-10 placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
-                  <Input id="hora" type="time" placeholder="Ex.: 09:30" className="placeholder:text-muted-foreground/50" />
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input 
+                      id="hora" 
+                      type="time" 
+                      placeholder="09:30" 
+                      defaultValue="09:30"
+                      className="pl-10 placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
                 </div>
               </div>
 
