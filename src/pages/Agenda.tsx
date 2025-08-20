@@ -535,7 +535,7 @@ const Agenda = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 sm:pb-2">
+            <div className="flex justify-end gap-2 sm:pb-2 sm:pt-0">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
