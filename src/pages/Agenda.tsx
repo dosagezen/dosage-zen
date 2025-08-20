@@ -692,7 +692,7 @@ const Agenda = () => {
                       updateCurrentCategoryData('time', value);
                     }}
                     onReset={() => updateCurrentCategoryData('time', "06:00")}
-                    className="h-10 text-left"
+                    className="h-10 text-left [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                     style={{ textAlign: 'left' }}
                   />
                 </div>
