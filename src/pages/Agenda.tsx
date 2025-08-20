@@ -646,86 +646,13 @@ const Agenda = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal h-10",
-                          !selectedTime && "text-muted-foreground/50"
-                        )}
-                      >
-                        <Clock className="mr-2 h-4 w-4" />
-                        {selectedTime ? selectedTime : <span className="text-muted-foreground/50 font-normal">00:00</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-4" align="start" side="top">
-                      <div className="flex items-end gap-4">
-                        <div className="space-y-2 relative z-10">
-                          <Label className="text-sm font-medium mr-1">Hora</Label>
-                          <select 
-                            value={(selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[0] : '08'}
-                            onChange={(e) => {
-                              const hour = e.target.value;
-                              const minute = (selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[1] : '00';
-                              setSelectedTime(`${hour}:${minute}`);
-                            }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                            style={{ 
-                              WebkitTapHighlightColor: 'transparent',
-                              touchAction: 'manipulation',
-                              userSelect: 'none'
-                            }}
-                            tabIndex={1}
-                          >
-                            {Array.from({length: 24}, (_, i) => (
-                              <option key={i} value={i.toString().padStart(2, '0')}>
-                                {i.toString().padStart(2, '0')}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="text-lg font-medium pt-6 relative z-5">:</div>
-                        <div className="space-y-2 relative z-10">
-                          <Label className="text-sm font-medium mr-1">Minuto</Label>
-                          <select 
-                            value={(selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[1] : '00'}
-                            onChange={(e) => {
-                              const minute = e.target.value;
-                              const hour = (selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[0] : '08';
-                              setSelectedTime(`${hour}:${minute}`);
-                            }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-                            style={{ 
-                              WebkitTapHighlightColor: 'transparent',
-                              touchAction: 'manipulation',
-                              userSelect: 'none'
-                            }}
-                            tabIndex={2}
-                          >
-                            {Array.from({length: 12}, (_, i) => {
-                              const minute = (i * 5).toString().padStart(2, '0');
-                              return (
-                                <option key={minute} value={minute}>
-                                  {minute}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex justify-center">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setSelectedTime("")}
-                            className="text-xs"
-                          >
-                            Limpar
-                          </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                  <Input
+                    id="hora"
+                    type="time"
+                    value={selectedTime || "08:00"}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="h-10"
+                  />
                 </div>
               </div>
 
