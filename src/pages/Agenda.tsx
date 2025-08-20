@@ -607,11 +607,11 @@ const Agenda = () => {
 
               {/* Campos Data e Hora */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="data">Data</Label>
                   <Input id="data" type="date" placeholder="Ex.: 22/09/2025" className="placeholder:text-muted-foreground/50" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
                   <Input id="hora" type="time" placeholder="Ex.: 09:30" className="placeholder:text-muted-foreground/50" />
                 </div>
