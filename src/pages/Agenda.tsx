@@ -386,13 +386,13 @@ const Agenda = () => {
                 </>}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] sm:max-h-[90vh] sm:my-4 overflow-y-auto">
-            <DialogHeader className="sm:pt-4">
-              <DialogTitle className="text-primary sm:mb-2">Adicionar compromisso</DialogTitle>
+          <DialogContent className="sm:max-w-[500px] sm:max-h-[95vh] sm:my-2">
+            <DialogHeader className="sm:pt-2">
+              <DialogTitle className="text-primary sm:mb-1">Adicionar compromisso</DialogTitle>
             </DialogHeader>
             
             {/* Botões de categoria em estilo chip */}
-            <div className="pt-4 pb-2">
+            <div className="pt-2 pb-1">
               <div role="radiogroup" aria-labelledby="category-label" className="flex gap-2 flex-wrap">
                 <span id="category-label" className="sr-only">Selecione o tipo de compromisso</span>
                 
@@ -464,7 +464,7 @@ const Agenda = () => {
               </div>
             </div>
             
-            <div className="space-y-4 py-4">
+            <div className="space-y-3 py-2">
               {/* Campo Título/Nome - comum a todas as categorias */}
               <div className="space-y-2">
                 <Label htmlFor="titulo">
@@ -535,7 +535,7 @@ const Agenda = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2 sm:pb-4">
+            <div className="flex justify-end gap-2 sm:pb-2">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
