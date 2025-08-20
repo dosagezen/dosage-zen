@@ -119,3 +119,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar utilities */
+@layer utilities {
+  .scrollbar-hide {
+    /* Firefox */
+    scrollbar-width: none;
+    /* Safari and Chrome */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
