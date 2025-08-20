@@ -347,7 +347,7 @@ const Agenda = () => {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="especialidade">Especialidade</Label>
-                <Input id="especialidade" placeholder="Ex.: Oftalmologia" className="placeholder:text-muted-foreground/50" />
+                <Input id="especialidade" placeholder="Ex.: Oftalmologista, Pilates, Natação..." className="placeholder:text-muted-foreground/50" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="medico">Médico/Profissional</Label>
