@@ -392,7 +392,7 @@ const Agenda = () => {
             </DialogHeader>
             
             {/* Botões de categoria em estilo chip */}
-            <div className="pt-2 pb-1">
+            <div className="pt-1 pb-1">
               <div role="radiogroup" aria-labelledby="category-label" className="flex gap-2 flex-wrap">
                 <span id="category-label" className="sr-only">Selecione o tipo de compromisso</span>
                 
@@ -407,7 +407,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'consulta'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
                     ${selectedCategory === 'consulta' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -429,7 +429,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'exame'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
                     ${selectedCategory === 'exame' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -451,7 +451,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'atividade'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
                     ${selectedCategory === 'atividade' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -510,19 +510,19 @@ const Agenda = () => {
               </div>
 
               {/* Campos Data e Hora */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
                   <Label htmlFor="data">Data</Label>
                   <Input id="data" type="date" placeholder="Ex.: 22/09/2025" className="placeholder:text-muted-foreground/50" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label htmlFor="hora">Hora</Label>
                   <Input id="hora" type="time" placeholder="Ex.: 09:30" className="placeholder:text-muted-foreground/50" />
                 </div>
               </div>
 
               {/* Campo Observações - comum a todas as categorias */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="observacoes">Observações</Label>
                 <Textarea 
                   id="observacoes" 
