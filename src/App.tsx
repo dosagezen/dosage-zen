@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
+import Conquistas from "./pages/Conquistas";
 import Medicacoes from "./pages/Medicacoes";
 import Agenda from "./pages/Agenda";
 import Configuracoes from "./pages/Configuracoes";
@@ -35,6 +36,7 @@ const App = () => (
             <main className="flex-1">
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/conquistas" element={<Conquistas />} />
                 <Route path="/medicacoes" element={<Medicacoes />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/farmacias" element={<div className="p-6"><h1 className="text-2xl text-primary">Farmácias - Em desenvolvimento</h1></div>} />

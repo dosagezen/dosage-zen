@@ -1,4 +1,4 @@
-import { Calendar, Home, Pill, Users, FileText, Settings, MapPin } from "lucide-react"
+import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 const items = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Conquistas", url: "/conquistas", icon: TrendingUp },
   { title: "Medicações", url: "/medicacoes", icon: Pill },
   { title: "Agenda", url: "/agenda", icon: Calendar },
   { title: "Farmácias", url: "/farmacias", icon: MapPin },
