@@ -658,7 +658,7 @@ const Agenda = () => {
                     <PopoverContent className="w-auto p-4" align="start" side="top">
                       <div className="flex items-center gap-4">
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium">Hora</Label>
+                          <Label className="text-sm font-medium mr-1">Hora</Label>
                           <select 
                             value={selectedTime.split(':')[0] || '09'}
                             onChange={(e) => {
