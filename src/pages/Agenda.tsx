@@ -30,7 +30,7 @@ const Agenda = () => {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [repetitionType, setRepetitionType] = useState<'weekly' | 'none'>('none');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string>("09:00");
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -652,7 +652,7 @@ const Agenda = () => {
                         )}
                       >
                         <Clock className="mr-2 h-4 w-4" />
-                        {selectedTime ? selectedTime : <span className="text-muted-foreground/50 font-normal">09:30</span>}
+                        {selectedTime ? selectedTime : <span className="text-muted-foreground/50 font-normal">00:00</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-4" align="start" side="top">
@@ -660,10 +660,10 @@ const Agenda = () => {
                         <div className="space-y-2">
                           <Label className="text-sm font-medium mr-1">Hora</Label>
                           <select 
-                            value={selectedTime.split(':')[0] || '09'}
+                            value={selectedTime ? selectedTime.split(':')[0] : '00'}
                             onChange={(e) => {
                               const hour = e.target.value;
-                              const minute = selectedTime.split(':')[1] || '00';
+                              const minute = selectedTime ? selectedTime.split(':')[1] : '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
                             className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -679,10 +679,10 @@ const Agenda = () => {
                         <div className="space-y-2">
                           <Label className="text-sm font-medium mr-1">Minuto</Label>
                           <select 
-                            value={selectedTime.split(':')[1] || '00'}
+                            value={selectedTime ? selectedTime.split(':')[1] : '00'}
                             onChange={(e) => {
                               const minute = e.target.value;
-                              const hour = selectedTime.split(':')[0] || '09';
+                              const hour = selectedTime ? selectedTime.split(':')[0] : '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
                             className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -702,7 +702,7 @@ const Agenda = () => {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => setSelectedTime("09:00")}
+                            onClick={() => setSelectedTime("")}
                             className="text-xs"
                           >
                             Limpar
