@@ -30,6 +30,7 @@ const Agenda = () => {
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [repetitionType, setRepetitionType] = useState<'weekly' | 'none'>('none');
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -641,15 +642,62 @@ const Agenda = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input 
-                      id="hora" 
-                      type="time" 
-                      placeholder="09:30" 
-                      className="pl-10 text-muted-foreground/50 font-normal h-10 [&::-webkit-calendar-picker-indicator]:hidden" 
-                    />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-10",
+                          !selectedTime && "text-muted-foreground/50"
+                        )}
+                      >
+                        <Clock className="mr-2 h-4 w-4" />
+                        {selectedTime ? selectedTime : <span className="text-muted-foreground/50 font-normal">09:30</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <div className="p-3 space-y-3 pointer-events-auto">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium">Hora</Label>
+                            <Select value={selectedTime.split(':')[0] || ''} onValueChange={(hour) => {
+                              const minute = selectedTime.split(':')[1] || '00';
+                              setSelectedTime(`${hour}:${minute}`);
+                            }}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="00" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[200px]">
+                                {Array.from({length: 24}, (_, i) => (
+                                  <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                                    {i.toString().padStart(2, '0')}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium">Minuto</Label>
+                            <Select value={selectedTime.split(':')[1] || ''} onValueChange={(minute) => {
+                              const hour = selectedTime.split(':')[0] || '00';
+                              setSelectedTime(`${hour}:${minute}`);
+                            }}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="00" />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-[200px]">
+                                {['00', '15', '30', '45'].map((minute) => (
+                                  <SelectItem key={minute} value={minute}>
+                                    {minute}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 
