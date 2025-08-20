@@ -616,6 +616,13 @@ const Agenda = () => {
                       type="text" 
                       placeholder="20/08/25" 
                       defaultValue="20/08/25"
+                      maxLength={8}
+                      onInput={(e) => {
+                        let value = e.currentTarget.value.replace(/\D/g, '');
+                        if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
+                        if (value.length >= 5) value = value.slice(0, 5) + '/' + value.slice(5, 7);
+                        e.currentTarget.value = value;
+                      }}
                       className="pl-10 placeholder:text-muted-foreground/50" 
                     />
                   </div>
