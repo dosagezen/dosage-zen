@@ -663,7 +663,7 @@ const Agenda = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-4" align="start" side="top">
                       <div className="flex items-end gap-4">
-                        <div className="space-y-2">
+                        <div className="space-y-2 relative z-10">
                           <Label className="text-sm font-medium mr-1">Hora</Label>
                           <select 
                             value={selectedTime.split(':')[0] || '00'}
@@ -672,7 +672,12 @@ const Agenda = () => {
                               const minute = selectedTime.split(':')[1] || '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-20"
+                            style={{ 
+                              position: 'relative',
+                              zIndex: 20,
+                              WebkitTapHighlightColor: 'transparent'
+                            }}
                           >
                             {Array.from({length: 24}, (_, i) => (
                               <option key={i} value={i.toString().padStart(2, '0')}>
@@ -681,8 +686,8 @@ const Agenda = () => {
                             ))}
                           </select>
                         </div>
-                        <div className="text-lg font-medium pt-6">:</div>
-                        <div className="space-y-2">
+                        <div className="text-lg font-medium pt-6 relative z-5">:</div>
+                        <div className="space-y-2 relative z-10">
                           <Label className="text-sm font-medium mr-1">Minuto</Label>
                           <select 
                             value={selectedTime.split(':')[1] || '00'}
@@ -691,7 +696,12 @@ const Agenda = () => {
                               const hour = selectedTime.split(':')[0] || '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-15"
+                            style={{ 
+                              position: 'relative',
+                              zIndex: 15,
+                              WebkitTapHighlightColor: 'transparent'
+                            }}
                           >
                             {Array.from({length: 12}, (_, i) => {
                               const minute = (i * 5).toString().padStart(2, '0');
