@@ -388,7 +388,7 @@ const Agenda = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] sm:max-h-[95vh] sm:my-2">
             <DialogHeader className="sm:pt-2">
-              <DialogTitle className="text-primary sm:mb-1">Adicionar compromisso</DialogTitle>
+              <DialogTitle className="text-primary sm:mb-1 sm:mt-0">Adicionar compromisso</DialogTitle>
             </DialogHeader>
             
             {/* Botões de categoria em estilo chip */}
