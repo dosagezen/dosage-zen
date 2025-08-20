@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,6 +29,7 @@ const Agenda = () => {
   const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [repetitionType, setRepetitionType] = useState<'weekly' | 'none'>('none');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -609,23 +613,29 @@ const Agenda = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="data">Data</Label>
-                  <div className="relative">
-                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input 
-                      id="data" 
-                      type="text" 
-                      placeholder="20/08/25" 
-                      defaultValue="20/08/25"
-                      maxLength={8}
-                      onInput={(e) => {
-                        let value = e.currentTarget.value.replace(/\D/g, '');
-                        if (value.length >= 2) value = value.slice(0, 2) + '/' + value.slice(2);
-                        if (value.length >= 5) value = value.slice(0, 5) + '/' + value.slice(5, 7);
-                        e.currentTarget.value = value;
-                      }}
-                      className="pl-10 placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal h-10",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, "dd/MM/yy") : <span>20/08/25</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
@@ -636,7 +646,7 @@ const Agenda = () => {
                       type="time" 
                       placeholder="09:30" 
                       defaultValue="09:30"
-                      className="pl-10 placeholder:text-muted-foreground/50" 
+                      className="pl-10 placeholder:text-muted-foreground/50 h-10" 
                     />
                   </div>
                 </div>
