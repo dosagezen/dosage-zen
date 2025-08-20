@@ -648,7 +648,7 @@ const Agenda = () => {
                       type="time" 
                       placeholder="09:30" 
                       defaultValue="09:30"
-                      className="pl-10 placeholder:text-muted-foreground/50 h-10 [&::-webkit-calendar-picker-indicator]:hidden" 
+                      className="pl-10 placeholder:text-muted-foreground/50 placeholder:font-normal h-10 [&::-webkit-calendar-picker-indicator]:hidden" 
                     />
                   </div>
                 </div>
