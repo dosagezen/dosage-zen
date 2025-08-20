@@ -29,8 +29,23 @@ const Agenda = () => {
   const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [repetitionType, setRepetitionType] = useState<'weekly' | 'none'>('none');
+  // Estados separados para cada categoria
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
+  
+  // Estados específicos para cada categoria
+  const [consultaData, setConsultaData] = useState({
+    date: undefined as Date | undefined,
+    time: "06:00"
+  });
+  const [exameData, setExameData] = useState({
+    date: undefined as Date | undefined,
+    time: "06:00"
+  });
+  const [atividadeData, setAtividadeData] = useState({
+    date: undefined as Date | undefined,
+    time: "06:00"
+  });
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -429,9 +444,31 @@ const Agenda = () => {
       setSelectedDays([]);
       setRepetitionType('none');
       setSelectedTime("");
-    } else {
-      // Sempre inicializar selectedTime quando abre o dialog 
-      setSelectedTime("08:00");
+    }
+  };
+
+  // Função para obter dados da categoria atual
+  const getCurrentCategoryData = () => {
+    switch (selectedCategory) {
+      case 'consulta': return consultaData;
+      case 'exame': return exameData;
+      case 'atividade': return atividadeData;
+      default: return consultaData;
+    }
+  };
+
+  // Função para atualizar dados da categoria atual
+  const updateCurrentCategoryData = (field: 'date' | 'time', value: any) => {
+    switch (selectedCategory) {
+      case 'consulta':
+        setConsultaData(prev => ({ ...prev, [field]: value }));
+        break;
+      case 'exame':
+        setExameData(prev => ({ ...prev, [field]: value }));
+        break;
+      case 'atividade':
+        setAtividadeData(prev => ({ ...prev, [field]: value }));
+        break;
     }
   };
 
@@ -624,18 +661,18 @@ const Agenda = () => {
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal h-10",
-                          !selectedDate && "text-muted-foreground"
+                          !getCurrentCategoryData().date && "text-muted-foreground"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
+                        {getCurrentCategoryData().date ? format(getCurrentCategoryData().date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
+                        selected={getCurrentCategoryData().date}
+                        onSelect={(date) => updateCurrentCategoryData('date', date)}
                         initialFocus
                         locale={ptBR}
                         weekStartsOn={1}
@@ -646,13 +683,21 @@ const Agenda = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
-                  <Input
-                    id="hora"
-                    type="time"
-                    value={selectedTime || "08:00"}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className="h-10"
-                  />
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+                    <Input
+                      id="hora"
+                      type="time"
+                      value={getCurrentCategoryData().time}
+                      onChange={(e) => {
+                        const value = e.target.value || "06:00";
+                        updateCurrentCategoryData('time', value);
+                      }}
+                      onReset={() => updateCurrentCategoryData('time', "06:00")}
+                      className="h-10 pl-10 text-left"
+                      style={{ textAlign: 'left' }}
+                    />
+                  </div>
                 </div>
               </div>
 
