@@ -392,7 +392,7 @@ const Agenda = () => {
             </DialogHeader>
             
             {/* Botões de categoria em estilo chip */}
-            <div className="pt-1 pb-1">
+            <div className="pt-1 pb-1 sm:-mt-1">
               <div role="radiogroup" aria-labelledby="category-label" className="flex gap-2 flex-wrap">
                 <span id="category-label" className="sr-only">Selecione o tipo de compromisso</span>
                 
