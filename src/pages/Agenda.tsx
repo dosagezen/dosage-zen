@@ -386,9 +386,9 @@ const Agenda = () => {
                 </>}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-primary">Adicionar compromisso</DialogTitle>
+          <DialogContent className="sm:max-w-[500px] sm:max-h-[85vh] sm:my-8">
+            <DialogHeader className="sm:pt-4">
+              <DialogTitle className="text-primary sm:mb-2">Adicionar compromisso</DialogTitle>
             </DialogHeader>
             
             {/* Botões de categoria em estilo chip */}
@@ -535,7 +535,7 @@ const Agenda = () => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 sm:pb-4">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancelar
               </Button>
