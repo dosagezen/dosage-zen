@@ -613,9 +613,9 @@ const Agenda = () => {
                     <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input 
                       id="data" 
-                      type="date" 
-                      placeholder="22/09/2025" 
-                      defaultValue="2025-09-22"
+                      type="text" 
+                      placeholder="20/08/25" 
+                      defaultValue="20/08/25"
                       className="pl-10 placeholder:text-muted-foreground/50" 
                     />
                   </div>
