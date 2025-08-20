@@ -386,7 +386,7 @@ const Agenda = () => {
                 </>}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] sm:max-h-[85vh] sm:my-8">
+          <DialogContent className="sm:max-w-[500px] sm:max-h-[90vh] sm:my-4 overflow-y-auto">
             <DialogHeader className="sm:pt-4">
               <DialogTitle className="text-primary sm:mb-2">Adicionar compromisso</DialogTitle>
             </DialogHeader>
