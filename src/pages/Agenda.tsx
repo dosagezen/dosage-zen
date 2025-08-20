@@ -464,7 +464,7 @@ const Agenda = () => {
               </div>
             </div>
             
-            <div className="space-y-3 py-2 sm:pt-1">
+            <div className="space-y-3 py-2 sm:pt-0">
               {/* Campo Título/Nome - comum a todas as categorias */}
               <div className="space-y-2">
                 <Label htmlFor="titulo">
