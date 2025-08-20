@@ -676,8 +676,10 @@ const Agenda = () => {
                             style={{ 
                               position: 'relative',
                               zIndex: 20,
-                              WebkitTapHighlightColor: 'transparent'
+                              WebkitTapHighlightColor: 'transparent',
+                              touchAction: 'manipulation'
                             }}
+                            autoFocus
                           >
                             {Array.from({length: 24}, (_, i) => (
                               <option key={i} value={i.toString().padStart(2, '0')}>
