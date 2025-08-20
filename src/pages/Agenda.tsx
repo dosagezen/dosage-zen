@@ -617,63 +617,65 @@ const Agenda = () => {
                 </div>
               </div>
 
-              {/* Nova seção: Dias da semana e Repetição */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Coluna 1: Dias da semana */}
-                <div className="space-y-2">
-                  <Label>Dias da semana</Label>
-                  <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
-                    <div className="flex justify-between gap-1">
-                      {[
-                        { short: 'Seg', full: 'Segunda' },
-                        { short: 'Ter', full: 'Terça' },
-                        { short: 'Qua', full: 'Quarta' },
-                        { short: 'Qui', full: 'Quinta' },
-                        { short: 'Sex', full: 'Sexta' },
-                        { short: 'Sáb', full: 'Sábado' },
-                        { short: 'Dom', full: 'Domingo' }
-                      ].map((day) => (
-                        <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
-                          <span className="text-xs text-foreground font-medium">{day.short}</span>
-                          <Checkbox 
-                            checked={selectedDays.includes(day.short)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setSelectedDays([...selectedDays, day.short]);
-                              } else {
-                                setSelectedDays(selectedDays.filter(d => d !== day.short));
-                              }
-                            }}
-                            className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
-                          />
-                        </label>
-                      ))}
+              {/* Nova seção: Dias da semana e Repetição - apenas para Atividades */}
+              {selectedCategory === "atividade" && (
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Coluna 1: Dias da semana */}
+                  <div className="space-y-2">
+                    <Label>Dias da semana</Label>
+                    <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
+                      <div className="flex justify-between gap-1">
+                        {[
+                          { short: 'Seg', full: 'Segunda' },
+                          { short: 'Ter', full: 'Terça' },
+                          { short: 'Qua', full: 'Quarta' },
+                          { short: 'Qui', full: 'Quinta' },
+                          { short: 'Sex', full: 'Sexta' },
+                          { short: 'Sáb', full: 'Sábado' },
+                          { short: 'Dom', full: 'Domingo' }
+                        ].map((day) => (
+                          <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
+                            <span className="text-xs text-foreground font-medium">{day.short}</span>
+                            <Checkbox 
+                              checked={selectedDays.includes(day.short)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedDays([...selectedDays, day.short]);
+                                } else {
+                                  setSelectedDays(selectedDays.filter(d => d !== day.short));
+                                }
+                              }}
+                              className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
+                            />
+                          </label>
+                        ))}
+                      </div>
+                      {selectedDays.length === 0 && (
+                        <p className="text-xs text-muted-foreground/50">Ex.: Seg, Qua, Sex</p>
+                      )}
+                      {repetitionType === 'weekly' && selectedDays.length === 0 && (
+                        <p className="text-xs text-destructive" role="alert" aria-live="polite">
+                          Selecione ao menos um dia
+                        </p>
+                      )}
                     </div>
-                    {selectedDays.length === 0 && (
-                      <p className="text-xs text-muted-foreground/50">Ex.: Seg, Qua, Sex</p>
-                    )}
-                    {repetitionType === 'weekly' && selectedDays.length === 0 && (
-                      <p className="text-xs text-destructive" role="alert" aria-live="polite">
-                        Selecione ao menos um dia
-                      </p>
-                    )}
+                  </div>
+
+                  {/* Coluna 2: Repetição */}
+                  <div className="space-y-2">
+                    <Label htmlFor="repeticao">Repetição</Label>
+                    <Select value={repetitionType} onValueChange={(value: 'weekly' | 'none') => setRepetitionType(value)}>
+                      <SelectTrigger className="min-h-[44px] sm:min-h-[32px]">
+                        <SelectValue placeholder="Selecione..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border shadow-lg z-50">
+                        <SelectItem value="weekly">Toda semana</SelectItem>
+                        <SelectItem value="none">Não se repete</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
-
-                {/* Coluna 2: Repetição */}
-                <div className="space-y-2">
-                  <Label htmlFor="repeticao">Repetição</Label>
-                  <Select value={repetitionType} onValueChange={(value: 'weekly' | 'none') => setRepetitionType(value)}>
-                    <SelectTrigger className="min-h-[44px] sm:min-h-[32px]">
-                      <SelectValue placeholder="Selecione..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border border-border shadow-lg z-50">
-                      <SelectItem value="weekly">Toda semana</SelectItem>
-                      <SelectItem value="none">Não se repete</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              )}
 
               {/* Campo Observações - comum a todas as categorias */}
               <div className="space-y-1.5">
