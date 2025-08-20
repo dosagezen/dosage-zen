@@ -557,7 +557,56 @@ const Agenda = () => {
             })}
             </DialogTitle>
           </DialogHeader>
-          {selectedDay}
+          
+          {selectedDay && (
+            <div className="py-4">
+              <div className="space-y-4">
+                {getCompromissosForDay(selectedDay).map((compromisso) => {
+                  const Icon = getTipoIcon(compromisso.tipo);
+                  return (
+                    <Card key={compromisso.id} className="p-4">
+                      <div className="flex items-start gap-3">
+                        <Icon className="w-5 h-5 text-primary mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-primary">
+                              {compromisso.tipo === "medicacao" ? (compromisso as any).nome : (compromisso as any).especialidade}
+                            </h4>
+                            <Badge variant={getStatusColor(compromisso.status)}>
+                              {compromisso.status}
+                            </Badge>
+                          </div>
+                          
+                          {compromisso.tipo === "medicacao" ? (
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <p>Dosagem: {(compromisso as any).dosagem}</p>
+                              <p>Horário: {compromisso.hora}</p>
+                              <p>Observações: {compromisso.observacoes}</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <p>Profissional: {(compromisso as any).medico}</p>
+                              <p>Local: {(compromisso as any).local}</p>
+                              <p>Horário: {compromisso.hora}</p>
+                              <p>Observações: {compromisso.observacoes}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+                
+                {getCompromissosForDay(selectedDay).length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhum compromisso para este dia</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => setIsDayModalOpen(false)}>
               Fechar
@@ -599,9 +648,6 @@ const Agenda = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Modal de Compromissos do Dia - Usando o mesmo modal unificado */}
-      <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
     </div>;
 };
 export default Agenda;
