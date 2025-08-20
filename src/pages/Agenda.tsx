@@ -623,7 +623,7 @@ const Agenda = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground font-normal">20/08/25</span>}
+                        {selectedDate ? format(selectedDate, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
