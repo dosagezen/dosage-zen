@@ -63,6 +63,8 @@ interface AtividadeCompleta {
   removed_from_today?: boolean;
   removal_reason?: 'completed' | 'excluded';
   completed_at?: string;
+  dias?: string[];
+  repeticao?: string;
 }
 
 interface UndoAction {
@@ -151,7 +153,9 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       local: "Clínica Movimento",
       hora: "07:30",
       duracao: "45min",
-      status: "pendente"
+      status: "pendente",
+      dias: ["Seg", "Qua", "Sex"],
+      repeticao: "Toda semana"
     },
     {
       id: 8,
@@ -159,7 +163,9 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       local: "Parque da Cidade",
       hora: "18:00",
       duracao: "30min",
-      status: "pendente"
+      status: "pendente",
+      dias: ["Dom"],
+      repeticao: "Não se repete"
     }
   ]
 

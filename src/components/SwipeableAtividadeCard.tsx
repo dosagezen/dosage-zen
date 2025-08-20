@@ -15,6 +15,8 @@ interface AtividadeCompleta {
   removed_from_today?: boolean;
   removal_reason?: 'completed' | 'excluded';
   completed_at?: string;
+  dias?: string[];
+  repeticao?: string;
 }
 
 interface SwipeableAtividadeCardProps {
@@ -145,13 +147,42 @@ const SwipeableAtividadeCard: React.FC<SwipeableAtividadeCardProps> = ({
                   {atividade.hora} ({atividade.duracao})
                 </span>
               </div>
-              <div className="flex items-center justify-start sm:justify-end gap-2">
+              
+              {/* Chips dos dias da semana */}
+              {atividade.dias && atividade.dias.length > 0 && (
+                <div className="flex items-center justify-start sm:justify-end gap-1 flex-wrap">
+                  {atividade.dias.map((dia, index) => (
+                    <Badge 
+                      key={dia} 
+                      variant="outline" 
+                      className="text-xs px-2 py-0.5 border-[#344E41] text-[#344E41]"
+                    >
+                      {dia}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex items-center justify-start sm:justify-end gap-2 flex-wrap">
                 <Badge 
                   variant={atividade.status === 'pendente' ? 'secondary' : 'default'}
                   className="text-xs sm:text-sm"
                 >
                   {atividade.status === 'pendente' ? 'Pendente' : 'Concluído'}
                 </Badge>
+                
+                {/* Badge de repetição */}
+                {atividade.repeticao && (
+                  <Badge 
+                    variant="outline"
+                    className={`text-xs ${atividade.repeticao === 'Toda semana' 
+                      ? 'border-[#588157] text-[#588157]' 
+                      : 'border-muted-foreground text-muted-foreground'
+                    }`}
+                  >
+                    {atividade.repeticao === 'Toda semana' ? 'Repetição semanal' : 'Próxima ocorrência'}
+                  </Badge>
+                )}
               </div>
               
               {/* Botões para Desktop */}
