@@ -650,9 +650,6 @@ const Agenda = () => {
                           </label>
                         ))}
                       </div>
-                      {selectedDays.length === 0 && (
-                        <p className="text-xs text-muted-foreground/50">Ex.: Seg, Qua, Sex</p>
-                      )}
                       {repetitionType === 'weekly' && selectedDays.length === 0 && (
                         <p className="text-xs text-destructive" role="alert" aria-live="polite">
                           Selecione ao menos um dia
