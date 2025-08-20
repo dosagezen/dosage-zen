@@ -661,7 +661,15 @@ const Agenda = () => {
                         <div className="flex items-center justify-center space-x-4">
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
-                            <div className="h-48 w-20 border rounded-md overflow-y-auto scrollbar-hide touch-scroll">
+                            <div 
+                              className="h-48 w-20 border rounded-md overflow-y-auto time-picker-scroll"
+                              style={{
+                                WebkitOverflowScrolling: 'touch',
+                                touchAction: 'pan-y',
+                                overscrollBehavior: 'contain'
+                              }}
+                              onTouchStart={(e) => e.stopPropagation()}
+                            >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 24}, (_, i) => (
                                   <button
@@ -685,7 +693,15 @@ const Agenda = () => {
                           <div className="text-lg font-medium self-center mt-6">:</div>
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
-                            <div className="h-48 w-20 border rounded-md overflow-y-auto scrollbar-hide touch-scroll">
+                            <div 
+                              className="h-48 w-20 border rounded-md overflow-y-auto time-picker-scroll"
+                              style={{
+                                WebkitOverflowScrolling: 'touch',
+                                touchAction: 'pan-y',
+                                overscrollBehavior: 'contain'
+                              }}
+                              onTouchStart={(e) => e.stopPropagation()}
+                            >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 12}, (_, i) => {
                                   const minute = (i * 5).toString().padStart(2, '0');

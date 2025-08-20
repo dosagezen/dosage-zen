@@ -136,3 +136,16 @@
     overscroll-behavior: contain;
   }
 }
+
+/* Força o comportamento de scroll nativo para containers específicos */
+.time-picker-scroll {
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+}
+
+.time-picker-scroll::-webkit-scrollbar {
+  display: none !important;
+}
