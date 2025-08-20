@@ -661,13 +661,11 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md"
+                              className="h-48 w-20 border rounded-md time-picker-scroll"
                               style={{
                                 overflowY: 'scroll',
                                 WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y',
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none'
+                                touchAction: 'pan-y'
                               }}
                               onTouchStart={(e) => e.stopPropagation()}
                               onTouchMove={(e) => e.stopPropagation()}
@@ -698,13 +696,11 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md"
+                              className="h-48 w-20 border rounded-md time-picker-scroll"
                               style={{
                                 overflowY: 'scroll',
                                 WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y',
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none'
+                                touchAction: 'pan-y'
                               }}
                               onTouchStart={(e) => e.stopPropagation()}
                               onTouchMove={(e) => e.stopPropagation()}
