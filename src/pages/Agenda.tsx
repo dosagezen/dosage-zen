@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -655,44 +656,54 @@ const Agenda = () => {
                         {selectedTime ? selectedTime : <span className="text-muted-foreground/50 font-normal">09:30</span>}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <div className="p-3 space-y-3 pointer-events-auto">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium">Hora</Label>
-                            <Select value={selectedTime.split(':')[0] || ''} onValueChange={(hour) => {
-                              const minute = selectedTime.split(':')[1] || '00';
-                              setSelectedTime(`${hour}:${minute}`);
-                            }}>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="00" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-[200px]">
+                    <PopoverContent className="w-auto p-0" align="start" side="top">
+                      <div className="p-3 pointer-events-auto">
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="text-center">
+                            <Label className="text-sm font-medium mb-2 block">Hora</Label>
+                            <ScrollArea className="h-32 w-16 border rounded-md">
+                              <div className="p-1">
                                 {Array.from({length: 24}, (_, i) => (
-                                  <SelectItem key={i} value={i.toString().padStart(2, '0')}>
+                                  <button
+                                    key={i}
+                                    onClick={() => {
+                                      const hour = i.toString().padStart(2, '0');
+                                      const minute = selectedTime.split(':')[1] || '00';
+                                      setSelectedTime(`${hour}:${minute}`);
+                                    }}
+                                    className={cn(
+                                      "w-full px-2 py-1 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      selectedTime.split(':')[0] === i.toString().padStart(2, '0') && "bg-primary text-primary-foreground"
+                                    )}
+                                  >
                                     {i.toString().padStart(2, '0')}
-                                  </SelectItem>
+                                  </button>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </div>
+                            </ScrollArea>
                           </div>
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium">Minuto</Label>
-                            <Select value={selectedTime.split(':')[1] || ''} onValueChange={(minute) => {
-                              const hour = selectedTime.split(':')[0] || '00';
-                              setSelectedTime(`${hour}:${minute}`);
-                            }}>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="00" />
-                              </SelectTrigger>
-                              <SelectContent className="max-h-[200px]">
+                          <div className="text-lg font-medium">:</div>
+                          <div className="text-center">
+                            <Label className="text-sm font-medium mb-2 block">Minuto</Label>
+                            <ScrollArea className="h-32 w-16 border rounded-md">
+                              <div className="p-1">
                                 {['00', '15', '30', '45'].map((minute) => (
-                                  <SelectItem key={minute} value={minute}>
+                                  <button
+                                    key={minute}
+                                    onClick={() => {
+                                      const hour = selectedTime.split(':')[0] || '00';
+                                      setSelectedTime(`${hour}:${minute}`);
+                                    }}
+                                    className={cn(
+                                      "w-full px-2 py-1 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
+                                    )}
+                                  >
                                     {minute}
-                                  </SelectItem>
+                                  </button>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </div>
+                            </ScrollArea>
                           </div>
                         </div>
                       </div>
