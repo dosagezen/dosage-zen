@@ -430,10 +430,8 @@ const Agenda = () => {
       setRepetitionType('none');
       setSelectedTime("");
     } else {
-      // Inicializar selectedTime quando abre o dialog para evitar problemas no mobile
-      if (!selectedTime) {
-        setSelectedTime("00:00");
-      }
+      // Sempre inicializar selectedTime quando abre o dialog 
+      setSelectedTime("08:00");
     }
   };
 
@@ -666,20 +664,19 @@ const Agenda = () => {
                         <div className="space-y-2 relative z-10">
                           <Label className="text-sm font-medium mr-1">Hora</Label>
                           <select 
-                            value={selectedTime.split(':')[0] || '00'}
+                            value={(selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[0] : '08'}
                             onChange={(e) => {
                               const hour = e.target.value;
-                              const minute = selectedTime.split(':')[1] || '00';
+                              const minute = (selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[1] : '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-20"
+                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                             style={{ 
-                              position: 'relative',
-                              zIndex: 20,
                               WebkitTapHighlightColor: 'transparent',
-                              touchAction: 'manipulation'
+                              touchAction: 'manipulation',
+                              userSelect: 'none'
                             }}
-                            autoFocus
+                            tabIndex={1}
                           >
                             {Array.from({length: 24}, (_, i) => (
                               <option key={i} value={i.toString().padStart(2, '0')}>
@@ -692,18 +689,19 @@ const Agenda = () => {
                         <div className="space-y-2 relative z-10">
                           <Label className="text-sm font-medium mr-1">Minuto</Label>
                           <select 
-                            value={selectedTime.split(':')[1] || '00'}
+                            value={(selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[1] : '00'}
                             onChange={(e) => {
                               const minute = e.target.value;
-                              const hour = selectedTime.split(':')[0] || '00';
+                              const hour = (selectedTime && selectedTime.includes(':')) ? selectedTime.split(':')[0] : '08';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-15"
+                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                             style={{ 
-                              position: 'relative',
-                              zIndex: 15,
-                              WebkitTapHighlightColor: 'transparent'
+                              WebkitTapHighlightColor: 'transparent',
+                              touchAction: 'manipulation',
+                              userSelect: 'none'
                             }}
+                            tabIndex={2}
                           >
                             {Array.from({length: 12}, (_, i) => {
                               const minute = (i * 5).toString().padStart(2, '0');
