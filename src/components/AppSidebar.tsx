@@ -14,7 +14,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile"
 
 const items = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Início", url: "/", icon: Home },
   { title: "Conquistas", url: "/conquistas", icon: TrendingUp },
   { title: "Medicações", url: "/medicacoes", icon: Pill },
   { title: "Agenda", url: "/agenda", icon: Calendar },
