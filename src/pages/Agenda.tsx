@@ -530,7 +530,7 @@ const Agenda = () => {
                     selectedCategory === 'consulta' ? "Ex.: Levar resultados / Roupas confortáveis" :
                     selectedCategory === 'exame' ? "Ex.: Levar resultados / Roupas confortáveis" : "Ex.: Roupas confortáveis"
                   } 
-                   className="placeholder:text-muted-foreground/50 sm:rows-2" 
+                   className="placeholder:text-muted-foreground/50 sm:h-6" 
                    rows={2} 
                 />
               </div>
