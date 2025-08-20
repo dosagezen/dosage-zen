@@ -623,7 +623,7 @@ const Agenda = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedDate ? format(selectedDate, "dd/MM/yy") : <span>20/08/25</span>}
+                        {selectedDate ? format(selectedDate, "dd/MM/yy", { locale: ptBR }) : <span>20/08/25</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -632,6 +632,8 @@ const Agenda = () => {
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         initialFocus
+                        locale={ptBR}
+                        weekStartsOn={1}
                         className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
