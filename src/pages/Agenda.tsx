@@ -407,7 +407,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'consulta'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
                     ${selectedCategory === 'consulta' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -429,7 +429,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'exame'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
                     ${selectedCategory === 'exame' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -451,7 +451,7 @@ const Agenda = () => {
                     aria-checked={selectedCategory === 'atividade'}
                   />
                   <div className={`
-                    flex items-center gap-2 px-3 py-1.5 rounded-full sm:min-h-[36px] min-h-[44px] text-sm font-medium transition-colors
+                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
                     ${selectedCategory === 'atividade' 
                       ? 'bg-[#344E41] text-white' 
                       : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
@@ -530,8 +530,8 @@ const Agenda = () => {
                     selectedCategory === 'consulta' ? "Ex.: Levar resultados / Roupas confortáveis" :
                     selectedCategory === 'exame' ? "Ex.: Levar resultados / Roupas confortáveis" : "Ex.: Roupas confortáveis"
                   } 
-                  className="placeholder:text-muted-foreground/50" 
-                  rows={3} 
+                   className="placeholder:text-muted-foreground/50 sm:rows-2" 
+                   rows={2} 
                 />
               </div>
             </div>
