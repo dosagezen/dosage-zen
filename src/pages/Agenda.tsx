@@ -496,18 +496,23 @@ const Agenda = () => {
                 </div>
               )}
 
-              {selectedCategory === 'atividade' && (
+              {selectedCategory === 'atividade' ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="local">Local</Label>
+                    <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duracao">Duração</Label>
+                    <Input id="duracao" placeholder="Ex.: 45 min" className="placeholder:text-muted-foreground/50" />
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-2">
-                  <Label htmlFor="duracao">Duração</Label>
-                  <Input id="duracao" placeholder="Ex.: 45 min" className="placeholder:text-muted-foreground/50" />
+                  <Label htmlFor="local">Local</Label>
+                  <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
                 </div>
               )}
-
-              {/* Campo Local - comum a todas as categorias */}
-              <div className="space-y-2">
-                <Label htmlFor="local">Local</Label>
-                <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
-              </div>
 
               {/* Campos Data e Hora */}
               <div className="grid grid-cols-2 gap-3">
