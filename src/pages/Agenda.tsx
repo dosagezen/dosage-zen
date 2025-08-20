@@ -687,24 +687,37 @@ const Agenda = () => {
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <ScrollArea className="h-48 w-20 border rounded-md">
                               <div className="p-1 space-y-1">
-                                {['00', '15', '30', '45'].map((minute) => (
-                                  <button
-                                    key={minute}
-                                    onClick={() => {
-                                      const hour = selectedTime.split(':')[0] || '00';
-                                      setSelectedTime(`${hour}:${minute}`);
-                                    }}
-                                    className={cn(
-                                      "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
-                                      selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
-                                    )}
-                                  >
-                                    {minute}
-                                  </button>
-                                ))}
+                                {Array.from({length: 12}, (_, i) => {
+                                  const minute = (i * 5).toString().padStart(2, '0');
+                                  return (
+                                    <button
+                                      key={minute}
+                                      onClick={() => {
+                                        const hour = selectedTime.split(':')[0] || '00';
+                                        setSelectedTime(`${hour}:${minute}`);
+                                      }}
+                                      className={cn(
+                                        "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
+                                        selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
+                                      )}
+                                    >
+                                      {minute}
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </ScrollArea>
                           </div>
+                        </div>
+                        <div className="mt-4 flex justify-center">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setSelectedTime("")}
+                            className="text-xs"
+                          >
+                            Limpar
+                          </Button>
                         </div>
                       </div>
                     </PopoverContent>
