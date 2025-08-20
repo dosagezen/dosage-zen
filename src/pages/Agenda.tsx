@@ -672,11 +672,12 @@ const Agenda = () => {
                               const minute = selectedTime.split(':')[1] || '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
-                            className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-20"
+                            className="w-16 p-2 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm relative z-20 min-h-[44px] cursor-pointer"
                             style={{ 
                               position: 'relative',
                               zIndex: 20,
-                              WebkitTapHighlightColor: 'transparent'
+                              WebkitTapHighlightColor: 'transparent',
+                              touchAction: 'manipulation'
                             }}
                           >
                             {Array.from({length: 24}, (_, i) => (
