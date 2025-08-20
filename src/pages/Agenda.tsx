@@ -661,10 +661,8 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-y-scroll bg-background relative"
+                              className="h-48 w-20 border rounded-md overflow-auto"
                               tabIndex={0}
-                              role="listbox"
-                              aria-label="Selecionar hora"
                               onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                                   e.preventDefault();
@@ -676,14 +674,10 @@ const Agenda = () => {
                                   setSelectedTime(`${newHour.toString().padStart(2, '0')}:${minute}`);
                                 }
                               }}
-                              style={{
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: 'hsl(var(--border)) transparent'
-                              }}
                             >
-                              <div className="p-1 space-y-1 min-h-full">
+                              <div className="py-2">
                                 {Array.from({length: 24}, (_, i) => (
-                                  <button
+                                  <div
                                     key={i}
                                     onClick={() => {
                                       const hour = i.toString().padStart(2, '0');
@@ -691,12 +685,12 @@ const Agenda = () => {
                                       setSelectedTime(`${hour}:${minute}`);
                                     }}
                                     className={cn(
-                                      "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
+                                      "px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
                                       selectedTime.split(':')[0] === i.toString().padStart(2, '0') && "bg-primary text-primary-foreground"
                                     )}
                                   >
                                     {i.toString().padStart(2, '0')}
-                                  </button>
+                                  </div>
                                 ))}
                               </div>
                             </div>
@@ -705,10 +699,8 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-y-scroll bg-background relative"
+                              className="h-48 w-20 border rounded-md overflow-auto"
                               tabIndex={0}
-                              role="listbox"
-                              aria-label="Selecionar minuto"
                               onKeyDown={(e) => {
                                 if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                                   e.preventDefault();
@@ -722,28 +714,24 @@ const Agenda = () => {
                                   setSelectedTime(`${hour}:${newMinute}`);
                                 }
                               }}
-                              style={{
-                                scrollbarWidth: 'thin',
-                                scrollbarColor: 'hsl(var(--border)) transparent'
-                              }}
                             >
-                              <div className="p-1 space-y-1 min-h-full">
+                              <div className="py-2">
                                 {Array.from({length: 12}, (_, i) => {
                                   const minute = (i * 5).toString().padStart(2, '0');
                                   return (
-                                    <button
+                                    <div
                                       key={minute}
                                       onClick={() => {
                                         const hour = selectedTime.split(':')[0] || '00';
                                         setSelectedTime(`${hour}:${minute}`);
                                       }}
                                       className={cn(
-                                        "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
+                                        "px-3 py-2 text-sm cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
                                         selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
                                       )}
                                     >
                                       {minute}
-                                    </button>
+                                    </div>
                                   );
                                 })}
                               </div>
