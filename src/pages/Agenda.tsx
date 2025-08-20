@@ -623,7 +623,7 @@ const Agenda = () => {
                 <div className="space-y-2">
                   <Label>Dias da semana</Label>
                   <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex justify-between gap-1">
                       {[
                         { short: 'Seg', full: 'Segunda' },
                         { short: 'Ter', full: 'Terça' },
@@ -633,7 +633,8 @@ const Agenda = () => {
                         { short: 'Sáb', full: 'Sábado' },
                         { short: 'Dom', full: 'Domingo' }
                       ].map((day) => (
-                        <label key={day.short} className="flex items-center space-x-2 cursor-pointer min-h-[44px] sm:min-h-[32px]">
+                        <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
+                          <span className="text-xs text-foreground font-medium">{day.short}</span>
                           <Checkbox 
                             checked={selectedDays.includes(day.short)}
                             onCheckedChange={(checked) => {
@@ -645,7 +646,6 @@ const Agenda = () => {
                             }}
                             className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
                           />
-                          <span className="text-sm text-foreground">{day.short}</span>
                         </label>
                       ))}
                     </div>
