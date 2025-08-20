@@ -656,7 +656,7 @@ const Agenda = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-4" align="start" side="top">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-end gap-4">
                         <div className="space-y-2">
                           <Label className="text-sm font-medium mr-1">Hora</Label>
                           <select 
