@@ -137,21 +137,4 @@
   }
 }
 
-/* Força o comportamento de scroll nativo para containers específicos */
-.time-picker-scroll {
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  overscroll-behavior: contain !important;
-}
-
-/* Oculta scrollbar apenas no mobile */
-@media (max-width: 768px) {
-  .time-picker-scroll {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-  }
-  
-  .time-picker-scroll::-webkit-scrollbar {
-    display: none !important;
-  }
-}
+/* Remove CSS customizado do time picker - usando overflow-y-auto padrão do Tailwind */

@@ -661,15 +661,21 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md time-picker-scroll"
-                              style={{
-                                overflowY: 'scroll',
-                                WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y'
+                              className="h-48 w-20 border rounded-md overflow-y-auto"
+                              tabIndex={0}
+                              role="listbox"
+                              aria-label="Selecionar hora"
+                              onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                  e.preventDefault();
+                                  const currentHour = parseInt(selectedTime.split(':')[0] || '0');
+                                  const newHour = e.key === 'ArrowUp' 
+                                    ? Math.max(0, currentHour - 1)
+                                    : Math.min(23, currentHour + 1);
+                                  const minute = selectedTime.split(':')[1] || '00';
+                                  setSelectedTime(`${newHour.toString().padStart(2, '0')}:${minute}`);
+                                }
                               }}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchMove={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => e.stopPropagation()}
                             >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 24}, (_, i) => (
@@ -696,15 +702,23 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md time-picker-scroll"
-                              style={{
-                                overflowY: 'scroll',
-                                WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y'
+                              className="h-48 w-20 border rounded-md overflow-y-auto"
+                              tabIndex={0}
+                              role="listbox"
+                              aria-label="Selecionar minuto"
+                              onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                  e.preventDefault();
+                                  const currentMinute = parseInt(selectedTime.split(':')[1] || '0');
+                                  const currentIndex = Math.round(currentMinute / 5);
+                                  const newIndex = e.key === 'ArrowUp' 
+                                    ? Math.max(0, currentIndex - 1)
+                                    : Math.min(11, currentIndex + 1);
+                                  const newMinute = (newIndex * 5).toString().padStart(2, '0');
+                                  const hour = selectedTime.split(':')[0] || '00';
+                                  setSelectedTime(`${hour}:${newMinute}`);
+                                }
                               }}
-                              onTouchStart={(e) => e.stopPropagation()}
-                              onTouchMove={(e) => e.stopPropagation()}
-                              onTouchEnd={(e) => e.stopPropagation()}
                             >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 12}, (_, i) => {
