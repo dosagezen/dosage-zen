@@ -666,7 +666,17 @@ const Agenda = () => {
                               const minute = selectedTime.split(':')[1] || '00';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
+                            onFocus={() => {
+                              // Garantir que há um valor inicial para mobile
+                              if (!selectedTime) {
+                                setSelectedTime('09:00');
+                              }
+                            }}
                             className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                            style={{ 
+                              WebkitAppearance: 'menulist',
+                              appearance: 'menulist'
+                            }}
                           >
                             {Array.from({length: 24}, (_, i) => (
                               <option key={i} value={i.toString().padStart(2, '0')}>
@@ -685,7 +695,17 @@ const Agenda = () => {
                               const hour = selectedTime.split(':')[0] || '09';
                               setSelectedTime(`${hour}:${minute}`);
                             }}
+                            onFocus={() => {
+                              // Garantir que há um valor inicial para mobile
+                              if (!selectedTime) {
+                                setSelectedTime('09:00');
+                              }
+                            }}
                             className="w-14 p-1 border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                            style={{ 
+                              WebkitAppearance: 'menulist',
+                              appearance: 'menulist'
+                            }}
                           >
                             {Array.from({length: 12}, (_, i) => {
                               const minute = (i * 5).toString().padStart(2, '0');
