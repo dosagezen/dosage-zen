@@ -683,21 +683,18 @@ const Agenda = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
-                    <Input
-                      id="hora"
-                      type="time"
-                      value={getCurrentCategoryData().time}
-                      onChange={(e) => {
-                        const value = e.target.value || "06:00";
-                        updateCurrentCategoryData('time', value);
-                      }}
-                      onReset={() => updateCurrentCategoryData('time', "06:00")}
-                      className="h-10 pl-10 text-left"
-                      style={{ textAlign: 'left' }}
-                    />
-                  </div>
+                  <Input
+                    id="hora"
+                    type="time"
+                    value={getCurrentCategoryData().time}
+                    onChange={(e) => {
+                      const value = e.target.value || "06:00";
+                      updateCurrentCategoryData('time', value);
+                    }}
+                    onReset={() => updateCurrentCategoryData('time', "06:00")}
+                    className="h-10 text-left"
+                    style={{ textAlign: 'left' }}
+                  />
                 </div>
               </div>
 
