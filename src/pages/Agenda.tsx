@@ -656,83 +656,68 @@ const Agenda = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start" side="top">
-                      <div className="p-4">
-                        <div className="flex items-center justify-center space-x-4">
-                          <div className="text-center">
-                            <Label className="text-sm font-medium mb-2 block">Hora</Label>
-                            <div 
-                              className="h-48 w-20 border rounded-md overflow-y-scroll"
-                              style={{
-                                WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y',
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none'
-                              }}
-                            >
-                              <div className="p-1 space-y-1">
-                                {Array.from({length: 24}, (_, i) => (
+                      <div className="p-4 max-h-80 overflow-y-auto">
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-sm font-medium mb-3 block">Selecione a Hora</Label>
+                            <div className="grid grid-cols-6 gap-2 max-h-32 overflow-y-auto p-2 border rounded-md">
+                              {Array.from({length: 24}, (_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    const hour = i.toString().padStart(2, '0');
+                                    const minute = selectedTime.split(':')[1] || '00';
+                                    setSelectedTime(`${hour}:${minute}`);
+                                  }}
+                                  className={cn(
+                                    "p-2 text-sm rounded-md border hover:bg-accent hover:text-accent-foreground transition-colors",
+                                    selectedTime.split(':')[0] === i.toString().padStart(2, '0') 
+                                      ? "bg-primary text-primary-foreground border-primary" 
+                                      : "bg-background border-border"
+                                  )}
+                                >
+                                  {i.toString().padStart(2, '0')}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <Label className="text-sm font-medium mb-3 block">Selecione os Minutos</Label>
+                            <div className="grid grid-cols-6 gap-2">
+                              {Array.from({length: 12}, (_, i) => {
+                                const minute = (i * 5).toString().padStart(2, '0');
+                                return (
                                   <button
-                                    key={i}
+                                    key={minute}
                                     onClick={() => {
-                                      const hour = i.toString().padStart(2, '0');
-                                      const minute = selectedTime.split(':')[1] || '00';
+                                      const hour = selectedTime.split(':')[0] || '00';
                                       setSelectedTime(`${hour}:${minute}`);
                                     }}
                                     className={cn(
-                                      "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
-                                      selectedTime.split(':')[0] === i.toString().padStart(2, '0') && "bg-primary text-primary-foreground"
+                                      "p-2 text-sm rounded-md border hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      selectedTime.split(':')[1] === minute 
+                                        ? "bg-primary text-primary-foreground border-primary" 
+                                        : "bg-background border-border"
                                     )}
                                   >
-                                    {i.toString().padStart(2, '0')}
+                                    {minute}
                                   </button>
-                                ))}
-                              </div>
+                                );
+                              })}
                             </div>
                           </div>
-                          <div className="text-lg font-medium self-center mt-6">:</div>
-                          <div className="text-center">
-                            <Label className="text-sm font-medium mb-2 block">Minuto</Label>
-                            <div 
-                              className="h-48 w-20 border rounded-md overflow-y-scroll"
-                              style={{
-                                WebkitOverflowScrolling: 'touch',
-                                touchAction: 'pan-y',
-                                scrollbarWidth: 'none',
-                                msOverflowStyle: 'none'
-                              }}
+                          
+                          <div className="flex justify-center pt-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setSelectedTime("")}
+                              className="text-xs"
                             >
-                              <div className="p-1 space-y-1">
-                                {Array.from({length: 12}, (_, i) => {
-                                  const minute = (i * 5).toString().padStart(2, '0');
-                                  return (
-                                    <button
-                                      key={minute}
-                                      onClick={() => {
-                                        const hour = selectedTime.split(':')[0] || '00';
-                                        setSelectedTime(`${hour}:${minute}`);
-                                      }}
-                                      className={cn(
-                                        "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
-                                        selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
-                                      )}
-                                    >
-                                      {minute}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
+                              Limpar
+                            </Button>
                           </div>
-                        </div>
-                        <div className="mt-4 flex justify-center">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setSelectedTime("")}
-                            className="text-xs"
-                          >
-                            Limpar
-                          </Button>
                         </div>
                       </div>
                     </PopoverContent>
