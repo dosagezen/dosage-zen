@@ -4,10 +4,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
-import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2 } from "lucide-react"
+import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2, Heart } from "lucide-react"
 import SwipeableCard from './SwipeableCard'
 import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
+import SwipeableAtividadeCard from './SwipeableAtividadeCard'
 
 interface HorarioStatus {
   hora: string;
@@ -52,9 +53,21 @@ interface ExameCompleto {
   completed_at?: string;
 }
 
+interface AtividadeCompleta {
+  id: number;
+  tipo: string;
+  local: string;
+  hora: string;
+  duracao: string;
+  status: "pendente" | "concluido_hoje";
+  removed_from_today?: boolean;
+  removal_reason?: 'completed' | 'excluded';
+  completed_at?: string;
+}
+
 interface UndoAction {
   itemId: number;
-  itemType: 'medicacao' | 'consulta' | 'exame';
+  itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade';
   action: 'complete' | 'remove';
   timestamp: number;
   previousData?: any;
@@ -131,9 +144,29 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     }
   ]
 
+  const initialAtividades: AtividadeCompleta[] = [
+    {
+      id: 7,
+      tipo: "Fisioterapia",
+      local: "Clínica Movimento",
+      hora: "07:30",
+      duracao: "45min",
+      status: "pendente"
+    },
+    {
+      id: 8,
+      tipo: "Caminhada",
+      local: "Parque da Cidade",
+      hora: "18:00",
+      duracao: "30min",
+      status: "pendente"
+    }
+  ]
+
   const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>(initialMedicacoes)
   const [consultasList, setConsultasList] = useState<ConsultaCompleta[]>(initialConsultas)
   const [examesList, setExamesList] = useState<ExameCompleto[]>(initialExames)
+  const [atividadesList, setAtividadesList] = useState<AtividadeCompleta[]>(initialAtividades)
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRemovedExpanded, setIsRemovedExpanded] = useState(false)
@@ -164,7 +197,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [])
 
   // Função genérica para marcar item como concluído
-  const handleComplete = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+  const handleComplete = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
@@ -329,6 +362,52 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           </Button>
         ),
       })
+    } else if (itemType === 'atividade') {
+      const atividade = atividadesList.find(a => a.id === itemId)
+      if (!atividade) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'atividade',
+        action: 'complete',
+        timestamp: Date.now(),
+        previousData: {
+          status: atividade.status,
+          removed_from_today: atividade.removed_from_today,
+          removal_reason: atividade.removal_reason
+        }
+      }
+
+      setAtividadesList(prev => prev.map(ativ => {
+        if (ativ.id === itemId) {
+          return {
+            ...ativ,
+            status: 'concluido_hoje' as const,
+            removed_from_today: true,
+            removal_reason: 'completed',
+            completed_at: new Date().toISOString()
+          }
+        }
+        return ativ
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Atividade concluída",
+        description: "A atividade foi marcada como concluída hoje.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
     }
 
     // Configurar timeout para limpar undo
@@ -340,10 +419,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, consultasList, examesList, calculateNextDose, undoTimeout])
+  }, [medicacoesList, consultasList, examesList, atividadesList, calculateNextDose, undoTimeout])
 
   // Função genérica para remover da lista
-  const handleRemove = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+  const handleRemove = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
@@ -473,6 +552,49 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           </Button>
         ),
       })
+    } else if (itemType === 'atividade') {
+      const atividade = atividadesList.find(a => a.id === itemId)
+      if (!atividade) return
+
+      const undoAction: UndoAction = {
+        itemId,
+        itemType: 'atividade',
+        action: 'remove',
+        timestamp: Date.now(),
+        previousData: {
+          removed_from_today: atividade.removed_from_today,
+          removal_reason: atividade.removal_reason
+        }
+      }
+
+      setAtividadesList(prev => prev.map(ativ => {
+        if (ativ.id === itemId) {
+          return {
+            ...ativ,
+            removed_from_today: true,
+            removal_reason: 'excluded'
+          }
+        }
+        return ativ
+      }))
+
+      setLastUndoAction(undoAction)
+
+      toast({
+        title: "Atividade removida da lista de hoje",
+        description: "A atividade foi excluída da lista principal.",
+        action: (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleUndo(undoAction)}
+            className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
+          >
+            <Undo2 className="w-4 h-4 mr-1" />
+            Desfazer
+          </Button>
+        ),
+      })
     }
 
     // Configurar timeout para limpar undo
@@ -484,7 +606,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, consultasList, examesList, undoTimeout])
+  }, [medicacoesList, consultasList, examesList, atividadesList, undoTimeout])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
@@ -533,6 +655,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         }
         return exam
       }))
+    } else if (undoAction.itemType === 'atividade') {
+      setAtividadesList(prev => prev.map(ativ => {
+        if (ativ.id === undoAction.itemId && undoAction.previousData) {
+          return {
+            ...ativ,
+            status: undoAction.previousData.status,
+            removed_from_today: undoAction.previousData.removed_from_today,
+            removal_reason: undoAction.previousData.removal_reason
+          }
+        }
+        return ativ
+      }))
     }
 
     // Limpar undo action e timeout
@@ -543,7 +677,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     }
 
     const typeText = undoAction.itemType === 'medicacao' ? 'medicação' : 
-                     undoAction.itemType === 'consulta' ? 'consulta' : 'exame'
+                     undoAction.itemType === 'consulta' ? 'consulta' : 
+                     undoAction.itemType === 'exame' ? 'exame' : 'atividade'
     const actionText = undoAction.action === 'complete' ? 'desmarcada' : 'restaurada'
     toast({
       title: "Ação desfeita",
@@ -552,7 +687,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [undoTimeout])
 
   // Função genérica para restaurar item excluído
-  const handleRestore = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame') => {
+  const handleRestore = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       setMedicacoesList(prev => prev.map(med => {
         if (med.id === itemId) {
@@ -598,6 +733,21 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         title: "Exame restaurado",
         description: "O exame foi retornado à lista principal.",
       })
+    } else if (itemType === 'atividade') {
+      setAtividadesList(prev => prev.map(ativ => {
+        if (ativ.id === itemId) {
+          return {
+            ...ativ,
+            removed_from_today: false,
+            removal_reason: undefined
+          }
+        }
+        return ativ
+      }))
+      toast({
+        title: "Atividade restaurada",
+        description: "A atividade foi retornada à lista principal.",
+      })
     }
   }, [])
 
@@ -628,11 +778,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     .filter(exam => !exam.removed_from_today)
     .sort((a, b) => getTimeForSorting(a.hora) - getTimeForSorting(b.hora))
 
+  const atividadesPrincipais = atividadesList
+    .filter(ativ => !ativ.removed_from_today)
+    .sort((a, b) => getTimeForSorting(a.hora) - getTimeForSorting(b.hora))
+
   // Itens removidos/concluídos de todas as categorias
   const itensRemovidos = [
     ...medicacoesList.filter(med => med.removed_from_today),
     ...consultasList.filter(cons => cons.removed_from_today),
-    ...examesList.filter(exam => exam.removed_from_today)
+    ...examesList.filter(exam => exam.removed_from_today),
+    ...atividadesList.filter(ativ => ativ.removed_from_today)
   ].sort((a, b) => {
     const timeA = 'proximaDose' in a ? getTimeForSorting(a.proximaDose) : getTimeForSorting(a.hora)
     const timeB = 'proximaDose' in b ? getTimeForSorting(b.proximaDose) : getTimeForSorting(b.hora)
@@ -654,6 +809,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setMedicacoesList(initialMedicacoes)
       setConsultasList(initialConsultas)
       setExamesList(initialExames)
+      setAtividadesList(initialAtividades)
       setLastUndoAction(null)
       setIsRemovedExpanded(false)
       if (undoTimeout) {
@@ -663,7 +819,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     }
   }, [isOpen, undoTimeout])
 
-  const getStatusText = (item: any, itemType: 'medicacao' | 'consulta' | 'exame') => {
+  const getStatusText = (item: any, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (item.removal_reason === 'completed') {
       return 'Concluído hoje'
     } else if (item.removal_reason === 'excluded') {
@@ -774,7 +930,37 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
             </div>
           )}
 
-          {/* Seção D: Sublista "Ver itens removidos" */}
+          {/* Seção D: Atividades */}
+          {atividadesPrincipais.length > 0 ? (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <Heart className="w-5 h-5" />
+                Atividades ({atividadesPrincipais.length})
+              </h3>
+              <div className="space-y-3">
+                {atividadesPrincipais.map((atividade) => (
+                  <SwipeableAtividadeCard
+                    key={atividade.id}
+                    atividade={atividade}
+                    onComplete={handleComplete}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <h3 className="flex items-center gap-2 font-semibold text-[#344E41] text-lg">
+                <Heart className="w-5 h-5" />
+                Atividades (0)
+              </h3>
+              <div className="text-muted-foreground/60 text-sm italic p-4 bg-muted/20 rounded-lg">
+                Ex.: Nenhum item pendente
+              </div>
+            </div>
+          )}
+
+          {/* Seção E: Sublista "Ver itens removidos" */}
           {itensRemovidos.length > 0 && (
             <div className="space-y-4 mt-6 pt-4 border-t border-border/50">
               <div 
@@ -801,13 +987,15 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                   {itensRemovidos.map((item: any) => {
                     const isCompleted = item.removal_reason === 'completed'
                     const itemType = item.horarios ? 'medicacao' : 
-                                    item.profissional ? 'consulta' : 'exame'
+                                    item.profissional ? 'consulta' : 
+                                    item.duracao ? 'atividade' : 'exame'
                     
                     const getIcon = () => {
                       switch (itemType) {
                         case 'medicacao': return <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
                         case 'consulta': return <User className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
                         case 'exame': return <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+                        case 'atividade': return <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
                         default: return <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
                       }
                     }
@@ -817,6 +1005,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                         case 'medicacao': return item.nome
                         case 'consulta': return item.especialidade
                         case 'exame': return item.tipo
+                        case 'atividade': return item.tipo
                         default: return 'Item'
                       }
                     }
@@ -826,6 +1015,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                         case 'medicacao': return `${item.dosagem} • ${item.forma}`
                         case 'consulta': return item.profissional
                         case 'exame': return item.local
+                        case 'atividade': return `${item.local} • ${item.duracao}`
                         default: return ''
                       }
                     }
@@ -911,7 +1101,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           )}
 
           {/* Caso não haja compromissos */}
-          {medicacoesPrincipais.length === 0 && consultasPrincipais.length === 0 && examesPrincipais.length === 0 && itensRemovidos.length === 0 && (
+          {medicacoesPrincipais.length === 0 && consultasPrincipais.length === 0 && examesPrincipais.length === 0 && atividadesPrincipais.length === 0 && itensRemovidos.length === 0 && (
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-primary mb-2">

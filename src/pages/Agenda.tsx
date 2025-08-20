@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ const Agenda = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
   const consultas = [
   // Eventos de Agosto 2025
   {
@@ -138,6 +139,46 @@ const Agenda = () => {
     status: "agendado"
   }];
 
+  // Mock de atividades para demonstrar no calendário
+  const atividades = [
+    {
+      id: 301,
+      tipo: "atividade",
+      nome: "Fisioterapia",
+      local: "Clínica Movimento",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "07:30",
+      duracao: "45min",
+      observacoes: "Exercícios para fortalecimento",
+      status: "pendente"
+    },
+    {
+      id: 302,
+      tipo: "atividade",
+      nome: "Caminhada",
+      local: "Parque da Cidade",
+      data: "2025-08-19",
+      dataFormatada: "19/08/2025",
+      hora: "18:00",
+      duracao: "30min",
+      observacoes: "Atividade ao ar livre",
+      status: "pendente"
+    },
+    {
+      id: 303,
+      tipo: "atividade",
+      nome: "Pilates",
+      local: "Studio Equilíbrio",
+      data: "2025-08-20",
+      dataFormatada: "20/08/2025",
+      hora: "08:00",
+      duracao: "50min",
+      observacoes: "Aula com foco no core",
+      status: "pendente"
+    }
+  ];
+
   // Mock de medicações para demonstrar no calendário
   const medicacoes = [
   // Medicações de Agosto
@@ -238,10 +279,12 @@ const Agenda = () => {
   }];
 
   // Combinar todos os compromissos
-  const todosCompromissos = [...consultas, ...medicacoes];
+  const todosCompromissos = [...consultas, ...medicacoes, ...atividades];
   const filteredConsultas = consultas.filter(consulta => consulta.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) || consulta.medico.toLowerCase().includes(searchTerm.toLowerCase()));
   const filteredCompromissos = todosCompromissos.filter(item => {
     if (item.tipo === "medicacao") {
+      return (item as any).nome.toLowerCase().includes(searchTerm.toLowerCase());
+    } else if (item.tipo === "atividade") {
       return (item as any).nome.toLowerCase().includes(searchTerm.toLowerCase());
     }
     return (item as any).especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) || (item as any).medico?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -266,6 +309,8 @@ const Agenda = () => {
         return Stethoscope;
       case "medicacao":
         return Pill;
+      case "atividade":
+        return Heart;
       default:
         return CalendarIcon;
     }
@@ -302,7 +347,8 @@ const Agenda = () => {
     return {
       medicacoes: compromissos.filter(c => c.tipo === "medicacao"),
       consultas: compromissos.filter(c => c.tipo === "consulta"),
-      exames: compromissos.filter(c => c.tipo === "exame")
+      exames: compromissos.filter(c => c.tipo === "exame"),
+      atividades: compromissos.filter(c => c.tipo === "atividade")
     };
   };
 
@@ -342,21 +388,128 @@ const Agenda = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle className="text-primary">Nova Consulta/ Exame/ Atividade</DialogTitle>
+              <DialogTitle className="text-primary">Adicionar compromisso</DialogTitle>
             </DialogHeader>
+            
+            {/* Botões de categoria em estilo chip */}
+            <div className="pt-4 pb-2">
+              <div role="radiogroup" aria-labelledby="category-label" className="flex gap-2 flex-wrap">
+                <span id="category-label" className="sr-only">Selecione o tipo de compromisso</span>
+                
+                <label className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="consulta"
+                    checked={selectedCategory === 'consulta'}
+                    onChange={() => setSelectedCategory('consulta')}
+                    className="sr-only"
+                    aria-checked={selectedCategory === 'consulta'}
+                  />
+                  <div className={`
+                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    ${selectedCategory === 'consulta' 
+                      ? 'bg-[#344E41] text-white' 
+                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                    }
+                  `}>
+                    <User className="w-4 h-4" />
+                    Consulta
+                  </div>
+                </label>
+                
+                <label className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="exame"
+                    checked={selectedCategory === 'exame'}
+                    onChange={() => setSelectedCategory('exame')}
+                    className="sr-only"
+                    aria-checked={selectedCategory === 'exame'}
+                  />
+                  <div className={`
+                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    ${selectedCategory === 'exame' 
+                      ? 'bg-[#344E41] text-white' 
+                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                    }
+                  `}>
+                    <Stethoscope className="w-4 h-4" />
+                    Exame
+                  </div>
+                </label>
+                
+                <label className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="category"
+                    value="atividade"
+                    checked={selectedCategory === 'atividade'}
+                    onChange={() => setSelectedCategory('atividade')}
+                    className="sr-only"
+                    aria-checked={selectedCategory === 'atividade'}
+                  />
+                  <div className={`
+                    flex items-center gap-2 px-4 py-2 rounded-full min-h-[44px] text-sm font-medium transition-colors
+                    ${selectedCategory === 'atividade' 
+                      ? 'bg-[#344E41] text-white' 
+                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                    }
+                  `}>
+                    <Heart className="w-4 h-4" />
+                    Atividade
+                  </div>
+                </label>
+              </div>
+            </div>
+            
             <div className="space-y-4 py-4">
+              {/* Campo Título/Nome - comum a todas as categorias */}
               <div className="space-y-2">
-                <Label htmlFor="especialidade">Especialidade</Label>
-                <Input id="especialidade" placeholder="Ex.: Oftalmologista, Pilates, Natação..." className="placeholder:text-muted-foreground/50" />
+                <Label htmlFor="titulo">
+                  {selectedCategory === 'consulta' ? 'Especialidade' : 
+                   selectedCategory === 'exame' ? 'Tipo de Exame' : 'Tipo de Atividade'}
+                </Label>
+                <Input 
+                  id="titulo" 
+                  placeholder={
+                    selectedCategory === 'consulta' ? "Ex.: Cardiologia" :
+                    selectedCategory === 'exame' ? "Ex.: Hemograma" : "Ex.: Fisioterapia / Pilates / Caminhada"
+                  } 
+                  className="placeholder:text-muted-foreground/50" 
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="medico">Médico/Profissional</Label>
-                <Input id="medico" placeholder="Ex.: Dr. João Silva" className="placeholder:text-muted-foreground/50" />
-              </div>
+
+              {/* Campos específicos por categoria */}
+              {selectedCategory === 'consulta' && (
+                <div className="space-y-2">
+                  <Label htmlFor="profissional">Profissional</Label>
+                  <Input id="profissional" placeholder="Ex.: Dr. João Silva" className="placeholder:text-muted-foreground/50" />
+                </div>
+              )}
+
+              {selectedCategory === 'exame' && (
+                <div className="space-y-2">
+                  <Label htmlFor="preparos">Preparos</Label>
+                  <Input id="preparos" placeholder="Ex.: Jejum 8h" className="placeholder:text-muted-foreground/50" />
+                </div>
+              )}
+
+              {selectedCategory === 'atividade' && (
+                <div className="space-y-2">
+                  <Label htmlFor="duracao">Duração</Label>
+                  <Input id="duracao" placeholder="Ex.: 45 min" className="placeholder:text-muted-foreground/50" />
+                </div>
+              )}
+
+              {/* Campo Local - comum a todas as categorias */}
               <div className="space-y-2">
                 <Label htmlFor="local">Local</Label>
-                <Input id="local" placeholder="Ex.: Hospital Central" className="placeholder:text-muted-foreground/50" />
+                <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
               </div>
+
+              {/* Campos Data e Hora */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="data">Data</Label>
@@ -367,9 +520,19 @@ const Agenda = () => {
                   <Input id="hora" type="time" placeholder="Ex.: 09:30" className="placeholder:text-muted-foreground/50" />
                 </div>
               </div>
+
+              {/* Campo Observações - comum a todas as categorias */}
               <div className="space-y-2">
                 <Label htmlFor="observacoes">Observações</Label>
-                <Textarea id="observacoes" placeholder="Ex.: Levar resultados de exames anteriores" className="placeholder:text-muted-foreground/50" rows={3} />
+                <Textarea 
+                  id="observacoes" 
+                  placeholder={
+                    selectedCategory === 'consulta' ? "Ex.: Levar resultados / Roupas confortáveis" :
+                    selectedCategory === 'exame' ? "Ex.: Levar resultados / Roupas confortáveis" : "Ex.: Roupas confortáveis"
+                  } 
+                  className="placeholder:text-muted-foreground/50" 
+                  rows={3} 
+                />
               </div>
             </div>
             <div className="flex justify-end gap-2">
@@ -377,7 +540,7 @@ const Agenda = () => {
                 Cancelar
               </Button>
               <Button className="bg-gradient-primary hover:bg-primary-hover">
-                Agendar
+                Salvar
               </Button>
             </div>
           </DialogContent>
@@ -458,6 +621,12 @@ const Agenda = () => {
                       {compromissosByType.exames.length > 0 && <div className="flex items-center gap-1 bg-accent/30 text-accent-foreground px-1 py-0.5 rounded text-xs">
                           <Stethoscope className="w-3 h-3" />
                           <span>{compromissosByType.exames.length}</span>
+                        </div>}
+                      
+                      {/* Ícone de Atividades */}
+                      {compromissosByType.atividades.length > 0 && <div className="flex items-center gap-1 bg-success/30 text-success px-1 py-0.5 rounded text-xs">
+                          <Heart className="w-3 h-3" />
+                          <span>{compromissosByType.atividades.length}</span>
                         </div>}
                     </div>}
                 </div>;
