@@ -657,12 +657,12 @@ const Agenda = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start" side="top">
-                      <div className="p-3 pointer-events-auto">
-                        <div className="flex items-center justify-center space-x-2">
+                      <div className="p-4 pointer-events-auto">
+                        <div className="flex items-center justify-center space-x-4">
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
-                            <ScrollArea className="h-32 w-16 border rounded-md">
-                              <div className="p-1">
+                            <ScrollArea className="h-48 w-20 border rounded-md">
+                              <div className="p-1 space-y-1">
                                 {Array.from({length: 24}, (_, i) => (
                                   <button
                                     key={i}
@@ -672,7 +672,7 @@ const Agenda = () => {
                                       setSelectedTime(`${hour}:${minute}`);
                                     }}
                                     className={cn(
-                                      "w-full px-2 py-1 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
                                       selectedTime.split(':')[0] === i.toString().padStart(2, '0') && "bg-primary text-primary-foreground"
                                     )}
                                   >
@@ -682,11 +682,11 @@ const Agenda = () => {
                               </div>
                             </ScrollArea>
                           </div>
-                          <div className="text-lg font-medium">:</div>
+                          <div className="text-lg font-medium self-center mt-6">:</div>
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
-                            <ScrollArea className="h-32 w-16 border rounded-md">
-                              <div className="p-1">
+                            <ScrollArea className="h-48 w-20 border rounded-md">
+                              <div className="p-1 space-y-1">
                                 {['00', '15', '30', '45'].map((minute) => (
                                   <button
                                     key={minute}
@@ -695,7 +695,7 @@ const Agenda = () => {
                                       setSelectedTime(`${hour}:${minute}`);
                                     }}
                                     className={cn(
-                                      "w-full px-2 py-1 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors",
+                                      "w-full px-2 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors block",
                                       selectedTime.split(':')[1] === minute && "bg-primary text-primary-foreground"
                                     )}
                                   >
