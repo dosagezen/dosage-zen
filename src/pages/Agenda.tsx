@@ -677,7 +677,7 @@ const Agenda = () => {
                         </div>
                         <div className="text-lg font-medium pt-6">:</div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium">Minuto</Label>
+                          <Label className="text-sm font-medium mr-1">Minuto</Label>
                           <select 
                             value={selectedTime.split(':')[1] || '00'}
                             onChange={(e) => {
