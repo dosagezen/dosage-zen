@@ -11,7 +11,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -657,18 +656,18 @@ const Agenda = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start" side="top">
-                      <div className="p-4 pointer-events-auto">
+                      <div className="p-4">
                         <div className="flex items-center justify-center space-x-4">
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Hora</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-y-auto time-picker-scroll"
+                              className="h-48 w-20 border rounded-md overflow-y-scroll"
                               style={{
                                 WebkitOverflowScrolling: 'touch',
                                 touchAction: 'pan-y',
-                                overscrollBehavior: 'contain'
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none'
                               }}
-                              onTouchStart={(e) => e.stopPropagation()}
                             >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 24}, (_, i) => (
@@ -694,13 +693,13 @@ const Agenda = () => {
                           <div className="text-center">
                             <Label className="text-sm font-medium mb-2 block">Minuto</Label>
                             <div 
-                              className="h-48 w-20 border rounded-md overflow-y-auto time-picker-scroll"
+                              className="h-48 w-20 border rounded-md overflow-y-scroll"
                               style={{
                                 WebkitOverflowScrolling: 'touch',
                                 touchAction: 'pan-y',
-                                overscrollBehavior: 'contain'
+                                scrollbarWidth: 'none',
+                                msOverflowStyle: 'none'
                               }}
-                              onTouchStart={(e) => e.stopPropagation()}
                             >
                               <div className="p-1 space-y-1">
                                 {Array.from({length: 12}, (_, i) => {
