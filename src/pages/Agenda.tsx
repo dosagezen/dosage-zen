@@ -31,7 +31,7 @@ const Agenda = () => {
   // Estados específicos para cada categoria
   const [consultaData, setConsultaData] = useState({
     date: undefined as Date | undefined,
-    time: "",
+    time: "00:00",
     especialidade: "",
     profissional: "",
     local: "",
@@ -39,7 +39,7 @@ const Agenda = () => {
   });
   const [exameData, setExameData] = useState({
     date: undefined as Date | undefined,
-    time: "",
+    time: "00:00",
     tipoExame: "",
     preparos: "",
     local: "",
@@ -47,13 +47,20 @@ const Agenda = () => {
   });
   const [atividadeData, setAtividadeData] = useState({
     date: undefined as Date | undefined,
-    time: "",
+    time: "00:00",
     tipoAtividade: "",
     local: "",
     duracao: "",
     observacoes: "",
     dias: [] as string[],
     repeticao: 'none' as 'weekly' | 'none'
+  });
+
+  // Estados para rastrear se os campos de hora foram tocados pelo usuário
+  const [timeFieldTouched, setTimeFieldTouched] = useState({
+    consulta: false,
+    exame: false,
+    atividade: false
   });
 
   const consultas = [
@@ -452,7 +459,7 @@ const Agenda = () => {
       // Reset form values when dialog closes - cada categoria mantém seus próprios dados
       setConsultaData({
         date: undefined,
-        time: "",
+        time: "00:00",
         especialidade: "",
         profissional: "",
         local: "",
@@ -460,7 +467,7 @@ const Agenda = () => {
       });
       setExameData({
         date: undefined,
-        time: "",
+        time: "00:00",
         tipoExame: "",
         preparos: "",
         local: "",
@@ -468,13 +475,18 @@ const Agenda = () => {
       });
       setAtividadeData({
         date: undefined,
-        time: "",
+        time: "00:00",
         tipoAtividade: "",
         local: "",
         duracao: "",
         observacoes: "",
         dias: [],
         repeticao: 'none'
+      });
+      setTimeFieldTouched({
+        consulta: false,
+        exame: false,
+        atividade: false
       });
     }
   };
@@ -494,12 +506,21 @@ const Agenda = () => {
     switch (selectedCategory) {
       case 'consulta':
         setConsultaData(prev => ({ ...prev, [field]: value }));
+        if (field === 'time') {
+          setTimeFieldTouched(prev => ({ ...prev, consulta: true }));
+        }
         break;
       case 'exame':
         setExameData(prev => ({ ...prev, [field]: value }));
+        if (field === 'time') {
+          setTimeFieldTouched(prev => ({ ...prev, exame: true }));
+        }
         break;
       case 'atividade':
         setAtividadeData(prev => ({ ...prev, [field]: value }));
+        if (field === 'time') {
+          setTimeFieldTouched(prev => ({ ...prev, atividade: true }));
+        }
         break;
     }
   };
@@ -708,7 +729,7 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${!consultaData.time ? 'text-muted-foreground' : ''}`}
+                          className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta ? 'text-muted-foreground' : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
@@ -806,7 +827,7 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${!exameData.time ? 'text-muted-foreground' : ''}`}
+                          className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame ? 'text-muted-foreground' : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
@@ -905,7 +926,7 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${!atividadeData.time ? 'text-muted-foreground' : ''}`}
+                          className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade ? 'text-muted-foreground' : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
