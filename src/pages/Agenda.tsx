@@ -75,6 +75,92 @@ const Agenda = () => {
     atividade: 'atividade-0'
   });
 
+  // Setup MutationObserver para detectar mudanças no DOM
+  useEffect(() => {
+    const setupObserver = (ref: React.RefObject<HTMLInputElement>, category: 'consulta' | 'exame' | 'atividade') => {
+      if (!ref.current) return;
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+            const currentValue = ref.current?.value;
+            if (currentValue === "00:00") {
+              console.log(`Reset detectado via MutationObserver em ${category}!`);
+              
+              // Atualiza o estado baseado na categoria
+              if (category === 'consulta') {
+                setConsultaData(prev => ({ ...prev, time: "00:00" }));
+              } else if (category === 'exame') {
+                setExameData(prev => ({ ...prev, time: "00:00" }));
+              } else if (category === 'atividade') {
+                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+              }
+              
+              setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
+            }
+          }
+        });
+      });
+
+      observer.observe(ref.current, {
+        attributes: true,
+        attributeFilter: ['value']
+      });
+
+      return observer;
+    };
+
+    // Polling como backup
+    const setupPolling = (ref: React.RefObject<HTMLInputElement>, category: 'consulta' | 'exame' | 'atividade') => {
+      return setInterval(() => {
+        if (ref.current) {
+          const currentValue = ref.current.value;
+          const currentStateValue = category === 'consulta' ? consultaData.time : 
+                                  category === 'exame' ? exameData.time : atividadeData.time;
+          
+          if (currentValue === "00:00" && currentStateValue !== "00:00") {
+            console.log(`Reset detectado via polling em ${category}!`);
+            
+            if (category === 'consulta') {
+              setConsultaData(prev => ({ ...prev, time: "00:00" }));
+            } else if (category === 'exame') {
+              setExameData(prev => ({ ...prev, time: "00:00" }));
+            } else if (category === 'atividade') {
+              setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+            }
+            
+            setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
+          }
+        }
+      }, 100);
+    };
+
+    const observers: MutationObserver[] = [];
+    const intervals: NodeJS.Timeout[] = [];
+
+    // Aguarda um pouco para os refs serem definidos
+    const timeout = setTimeout(() => {
+      if (consultaTimeRef.current) {
+        observers.push(setupObserver(consultaTimeRef, 'consulta'));
+        intervals.push(setupPolling(consultaTimeRef, 'consulta'));
+      }
+      if (exameTimeRef.current) {
+        observers.push(setupObserver(exameTimeRef, 'exame'));
+        intervals.push(setupPolling(exameTimeRef, 'exame'));
+      }
+      if (atividadeTimeRef.current) {
+        observers.push(setupObserver(atividadeTimeRef, 'atividade'));
+        intervals.push(setupPolling(atividadeTimeRef, 'atividade'));
+      }
+    }, 100);
+
+    return () => {
+      clearTimeout(timeout);
+      observers.forEach(observer => observer.disconnect());
+      intervals.forEach(interval => clearInterval(interval));
+    };
+  }, [consultaData.time, exameData.time, atividadeData.time]);
+
   const consultas = [
     // Eventos de Agosto 2025
     {
