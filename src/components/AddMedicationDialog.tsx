@@ -196,14 +196,39 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
             </div>
             <div className="space-y-2">
               <Label htmlFor="inicio">Hora de Início</Label>
-              <Input 
-                id="inicio" 
-                type="time" 
-                placeholder="Ex.: 08:00"
-                className="placeholder:text-muted-foreground/50"
-                value={formData.horario}
-                onChange={(e) => setFormData(prev => ({ ...prev, horario: e.target.value }))}
-              />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input 
+                    id="inicio" 
+                    type="text"
+                    value={formData.horario}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length >= 2) {
+                        value = value.substring(0, 2) + ':' + value.substring(2, 4);
+                      }
+                      if (value.length > 5) value = value.substring(0, 5);
+                      setFormData(prev => ({ ...prev, horario: value }));
+                    }}
+                    placeholder="00:00"
+                    maxLength={5}
+                    className={`w-full ${!formData.horario || formData.horario === ""
+                      ? 'text-muted-foreground/50' 
+                      : ''}`}
+                  />
+                </div>
+                {formData.horario && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, horario: "" }))}
+                    className="px-2"
+                  >
+                    ✕
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
