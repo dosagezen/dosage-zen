@@ -31,7 +31,7 @@ const Agenda = () => {
   // Estados específicos para cada categoria
   const [consultaData, setConsultaData] = useState({
     date: undefined as Date | undefined,
-    time: "00:00",
+    time: "",
     especialidade: "",
     profissional: "",
     local: "",
@@ -39,7 +39,7 @@ const Agenda = () => {
   });
   const [exameData, setExameData] = useState({
     date: undefined as Date | undefined,
-    time: "00:00",
+    time: "",
     tipoExame: "",
     preparos: "",
     local: "",
@@ -47,7 +47,7 @@ const Agenda = () => {
   });
   const [atividadeData, setAtividadeData] = useState({
     date: undefined as Date | undefined,
-    time: "00:00",
+    time: "",
     tipoAtividade: "",
     local: "",
     duracao: "",
@@ -74,50 +74,49 @@ const Agenda = () => {
     atividade: 'atividade-0'
   });
 
-  // Solução definitiva para reset do time picker
+  // Solução para reset do time picker
   const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
     console.log(`Time change ${category}: ${value}`);
     
-    // Detecta quando o time picker é resetado (volta para 00:00)
-    if (value === "00:00") {
-      console.log(`Reset detectado em ${category}!`);
+    if (category === 'consulta') {
+      setConsultaData(prev => ({ ...prev, time: value }));
+    } else if (category === 'exame') {
+      setExameData(prev => ({ ...prev, time: value }));
+    } else if (category === 'atividade') {
+      setAtividadeData(prev => ({ ...prev, time: value }));
+    }
+    
+    setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "" }));
+  };
+
+  // Função para detectar reset do campo hora via input event
+  const handleTimeInput = (category: 'consulta' | 'exame' | 'atividade', event: React.FormEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const value = input.value;
+    
+    console.log(`Time input ${category}: ${value}`);
+    
+    // Se o campo foi limpo ou resetado para vazio
+    if (value === "" || value === "00:00") {
+      console.log(`Reset detectado em ${category}! Valor: "${value}"`);
       
-      // Reset completo: limpa o campo e força recriação
+      // Limpa o estado e força recriação do input
       if (category === 'consulta') {
         setConsultaData(prev => ({ ...prev, time: "" }));
-        if (consultaTimeRef.current) {
-          consultaTimeRef.current.value = "";
-        }
       } else if (category === 'exame') {
         setExameData(prev => ({ ...prev, time: "" }));
-        if (exameTimeRef.current) {
-          exameTimeRef.current.value = "";
-        }
       } else if (category === 'atividade') {
         setAtividadeData(prev => ({ ...prev, time: "" }));
-        if (atividadeTimeRef.current) {
-          atividadeTimeRef.current.value = "";
-        }
       }
       
       setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
       
-      // Força recriação do input
+      // Força recriação do input após limpar
       setTimeout(() => {
         setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
+        // Limpa o valor do input DOM também
+        input.value = "";
       }, 10);
-      
-    } else {
-      // Mudança normal de hora
-      if (category === 'consulta') {
-        setConsultaData(prev => ({ ...prev, time: value }));
-      } else if (category === 'exame') {
-        setExameData(prev => ({ ...prev, time: value }));
-      } else if (category === 'atividade') {
-        setAtividadeData(prev => ({ ...prev, time: value }));
-      }
-      
-      setTimeFieldTouched(prev => ({ ...prev, [category]: true }));
     }
   };
 
@@ -517,7 +516,7 @@ const Agenda = () => {
       // Reset form values when dialog closes - cada categoria mantém seus próprios dados
       setConsultaData({
         date: undefined,
-        time: "00:00",
+        time: "",
         especialidade: "",
         profissional: "",
         local: "",
@@ -525,7 +524,7 @@ const Agenda = () => {
       });
       setExameData({
         date: undefined,
-        time: "00:00",
+        time: "",
         tipoExame: "",
         preparos: "",
         local: "",
@@ -533,7 +532,7 @@ const Agenda = () => {
       });
       setAtividadeData({
         date: undefined,
-        time: "00:00",
+        time: "",
         tipoAtividade: "",
         local: "",
         duracao: "",
@@ -592,7 +591,7 @@ const Agenda = () => {
       case 'consulta':
         setConsultaData({
           date: undefined,
-          time: "00:00",
+          time: "",
           especialidade: "",
           profissional: "",
           local: "",
@@ -604,7 +603,7 @@ const Agenda = () => {
       case 'exame':
         setExameData({
           date: undefined,
-          time: "00:00",
+          time: "",
           tipoExame: "",
           preparos: "",
           local: "",
@@ -616,7 +615,7 @@ const Agenda = () => {
       case 'atividade':
         setAtividadeData({
           date: undefined,
-          time: "00:00",
+          time: "",
           tipoAtividade: "",
           local: "",
           duracao: "",
@@ -827,22 +826,23 @@ const Agenda = () => {
                     </div>
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
-                             <Input
-                              key={inputKeys.consulta}
-                              ref={consultaTimeRef}
-                              id="hora"
-                              type="time"
-                              value={consultaData.time}
-                              onChange={(e) => handleTimeChange('consulta', e.target.value)}
-                              className={`w-full ${!consultaData.time || (consultaData.time === "00:00" && !timeFieldTouched.consulta)
-                                ? 'text-muted-foreground/50' 
-                                : ''}`}
-                              placeholder="Selecionar horário"
-                              style={{
-                                WebkitAppearance: 'none',
-                                MozAppearance: 'textfield'
-                              }}
-                            />
+                              <Input
+                               key={inputKeys.consulta}
+                               ref={consultaTimeRef}
+                               id="hora"
+                               type="time"
+                               value={consultaData.time}
+                               onChange={(e) => handleTimeChange('consulta', e.target.value)}
+                               onInput={(e) => handleTimeInput('consulta', e)}
+                               className={`w-full ${!consultaData.time || consultaData.time === ""
+                                 ? 'text-muted-foreground/50' 
+                                 : ''}`}
+                               placeholder="Selecionar horário"
+                               style={{
+                                 WebkitAppearance: 'none',
+                                 MozAppearance: 'textfield'
+                               }}
+                             />
                      </div>
                   </div>
 
@@ -928,20 +928,21 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
-                            key={inputKeys.exame}
-                            ref={exameTimeRef}
-                            type="time"
-                            value={exameData.time}
-                            onChange={(e) => handleTimeChange('exame', e.target.value)}
-                            className={`w-full ${!exameData.time || (exameData.time === "00:00" && !timeFieldTouched.exame)
-                              ? 'text-muted-foreground/50' 
-                              : ''}`}
-                            placeholder="Selecionar horário"
-                            style={{
-                              WebkitAppearance: 'none',
-                              MozAppearance: 'textfield'
-                            }}
-                          />
+                             key={inputKeys.exame}
+                             ref={exameTimeRef}
+                             type="time"
+                             value={exameData.time}
+                             onChange={(e) => handleTimeChange('exame', e.target.value)}
+                             onInput={(e) => handleTimeInput('exame', e)}
+                             className={`w-full ${!exameData.time || exameData.time === ""
+                               ? 'text-muted-foreground/50' 
+                               : ''}`}
+                             placeholder="Selecionar horário"
+                             style={{
+                               WebkitAppearance: 'none',
+                               MozAppearance: 'textfield'
+                             }}
+                           />
                       </div>
                   </div>
 
@@ -1028,20 +1029,21 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
-                            key={inputKeys.atividade}
-                            ref={atividadeTimeRef}
-                            type="time"
-                            value={atividadeData.time}
-                            onChange={(e) => handleTimeChange('atividade', e.target.value)}
-                            className={`w-full ${!atividadeData.time || (atividadeData.time === "00:00" && !timeFieldTouched.atividade)
-                              ? 'text-muted-foreground/50' 
-                              : ''}`}
-                            placeholder="Selecionar horário"
-                            style={{
-                              WebkitAppearance: 'none',
-                              MozAppearance: 'textfield'
-                            }}
-                          />
+                             key={inputKeys.atividade}
+                             ref={atividadeTimeRef}
+                             type="time"
+                             value={atividadeData.time}
+                             onChange={(e) => handleTimeChange('atividade', e.target.value)}
+                             onInput={(e) => handleTimeInput('atividade', e)}
+                             className={`w-full ${!atividadeData.time || atividadeData.time === ""
+                               ? 'text-muted-foreground/50' 
+                               : ''}`}
+                             placeholder="Selecionar horário"
+                             style={{
+                               WebkitAppearance: 'none',
+                               MozAppearance: 'textfield'
+                             }}
+                           />
                       </div>
                   </div>
 
