@@ -603,33 +603,33 @@ const Agenda = () => {
             
             <div className="space-y-3 py-2 sm:pt-0">
               {/* Campo Título/Nome - comum a todas as categorias */}
-              <div className="space-y-2">
-                <Label htmlFor="titulo">
-                  {selectedCategory === 'consulta' ? 'Especialidade' : 
-                   selectedCategory === 'exame' ? 'Tipo de Exame' : 'Tipo de Atividade'}
-                </Label>
-                <Input 
-                  id="titulo" 
-                  placeholder={
-                    selectedCategory === 'consulta' ? "Ex.: Cardiologia" :
-                    selectedCategory === 'exame' ? "Ex.: Hemograma" : "Ex.: Fisioterapia / Pilates / Caminhada"
-                  } 
-                  className="placeholder:text-muted-foreground/50" 
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="titulo">
+                    {selectedCategory === 'consulta' ? 'Especialidade' : 
+                     selectedCategory === 'exame' ? 'Tipo de Exame' : 'Tipo de Atividade'}
+                  </Label>
+                  <Input 
+                    id="titulo" 
+                    placeholder={
+                      selectedCategory === 'consulta' ? "Ex.: Cardiologia" :
+                      selectedCategory === 'exame' ? "Ex.: Hemograma" : "Ex.: Fisioterapia / Pilates / Caminhada"
+                    } 
+                    className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                  />
+                </div>
 
               {/* Campos específicos por categoria */}
               {selectedCategory === 'consulta' && (
                 <div className="space-y-2">
                   <Label htmlFor="profissional">Profissional</Label>
-                  <Input id="profissional" placeholder="Ex.: Dr. João Silva" className="placeholder:text-muted-foreground/50" />
+                  <Input id="profissional" placeholder="Ex.: Dr. João Silva" className="h-10 font-normal placeholder:text-muted-foreground/50" />
                 </div>
               )}
 
               {selectedCategory === 'exame' && (
                 <div className="space-y-2">
                   <Label htmlFor="preparos">Preparos</Label>
-                  <Input id="preparos" placeholder="Ex.: Jejum 8h" className="placeholder:text-muted-foreground/50" />
+                  <Input id="preparos" placeholder="Ex.: Jejum 8h" className="h-10 font-normal placeholder:text-muted-foreground/50" />
                 </div>
               )}
 
@@ -637,17 +637,17 @@ const Agenda = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="local">Local</Label>
-                    <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
+                    <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="h-10 font-normal placeholder:text-muted-foreground/50" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="duracao">Duração</Label>
-                    <Input id="duracao" placeholder="Ex.: 45 min" className="placeholder:text-muted-foreground/50" />
+                    <Input id="duracao" placeholder="Ex.: 45 min" className="h-10 font-normal placeholder:text-muted-foreground/50" />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <Label htmlFor="local">Local</Label>
-                  <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="placeholder:text-muted-foreground/50" />
+                  <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="h-10 font-normal placeholder:text-muted-foreground/50" />
                 </div>
               )}
 
