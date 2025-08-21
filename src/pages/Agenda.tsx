@@ -660,12 +660,12 @@ const Agenda = () => {
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal h-10 text-sm",
+                          "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
                           !getCurrentCategoryData().date && "text-muted-foreground"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {getCurrentCategoryData().date ? format(getCurrentCategoryData().date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-sm">20/08/25</span>}
+                        {getCurrentCategoryData().date ? format(getCurrentCategoryData().date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -692,7 +692,7 @@ const Agenda = () => {
                       updateCurrentCategoryData('time', value);
                     }}
                     onReset={() => updateCurrentCategoryData('time', "06:00")}
-                    className="h-10 text-left font-normal text-sm [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                    className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                     style={{ textAlign: 'left' }}
                   />
                 </div>
