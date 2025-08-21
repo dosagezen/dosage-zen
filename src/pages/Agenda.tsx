@@ -525,6 +525,47 @@ const Agenda = () => {
     }
   };
 
+  // Função para redefinir dados da categoria atual
+  const resetCurrentCategoryData = () => {
+    switch (selectedCategory) {
+      case 'consulta':
+        setConsultaData({
+          date: undefined,
+          time: "00:00",
+          especialidade: "",
+          profissional: "",
+          local: "",
+          observacoes: ""
+        });
+        setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+        break;
+      case 'exame':
+        setExameData({
+          date: undefined,
+          time: "00:00",
+          tipoExame: "",
+          preparos: "",
+          local: "",
+          observacoes: ""
+        });
+        setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+        break;
+      case 'atividade':
+        setAtividadeData({
+          date: undefined,
+          time: "00:00",
+          tipoAtividade: "",
+          local: "",
+          duracao: "",
+          observacoes: "",
+          dias: [],
+          repeticao: 'none'
+        });
+        setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+        break;
+    }
+  };
+
   // Get compromissos by type for a day
   const getCompromissosByType = (day: Date) => {
     const compromissos = getCompromissosForDay(day);
@@ -1010,16 +1051,21 @@ const Agenda = () => {
                 </>
               )}
             </div>
-            <div className="flex justify-end gap-2 sm:pb-2 sm:pt-0">
-              <Button variant="outline" onClick={() => handleDialogClose(false)}>
-                Cancelar
+            <div className="flex justify-between sm:pb-2 sm:pt-0">
+              <Button variant="outline" onClick={resetCurrentCategoryData}>
+                Redefinir
               </Button>
-              <Button 
-                className="bg-gradient-primary hover:bg-primary-hover"
-                disabled={selectedCategory === 'atividade' && atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0}
-              >
-                Salvar
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => handleDialogClose(false)}>
+                  Cancelar
+                </Button>
+                <Button 
+                  className="bg-gradient-primary hover:bg-primary-hover"
+                  disabled={selectedCategory === 'atividade' && atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0}
+                >
+                  Salvar
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
