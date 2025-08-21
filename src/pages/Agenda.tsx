@@ -64,16 +64,21 @@ const Agenda = () => {
   });
 
   const timeInputRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+  const lastKnownValues = useRef<{[key: string]: string}>({});
 
   // Monitora mudanças no valor dos inputs time para detectar reset
   useEffect(() => {
     const checkForReset = () => {
       Object.entries(timeInputRefs.current).forEach(([key, input]) => {
-        if (input && input.value === "00:00") {
-          const currentData = getCurrentCategoryData();
-          if (currentData.time !== "00:00") {
-            console.log(`Reset detectado no ${key}!`);
-            // Atualiza o estado correspondente
+        if (input) {
+          const currentDOMValue = input.value;
+          const lastValue = lastKnownValues.current[key];
+          
+          // Se mudou de um valor para 00:00, é um reset
+          if (currentDOMValue === "00:00" && lastValue && lastValue !== "00:00") {
+            console.log(`Reset detectado no ${key}! De ${lastValue} para ${currentDOMValue}`);
+            
+            // Força atualização do estado correspondente
             switch(key) {
               case 'consulta':
                 setConsultaData(prev => ({ ...prev, time: "00:00" }));
@@ -89,13 +94,16 @@ const Agenda = () => {
                 break;
             }
           }
+          
+          // Atualiza o valor conhecido
+          lastKnownValues.current[key] = currentDOMValue;
         }
       });
     };
 
-    const interval = setInterval(checkForReset, 200);
+    const interval = setInterval(checkForReset, 100);
     return () => clearInterval(interval);
-  }, [consultaData.time, exameData.time, atividadeData.time]);
+  }, []); // Remove dependências para evitar loop
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -814,6 +822,7 @@ const Agenda = () => {
                              }}
                              ref={(el) => {
                                timeInputRefs.current['consulta'] = el;
+                               if (el) lastKnownValues.current['consulta'] = el.value;
                              }}
                              className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                                ? 'text-muted-foreground/50' 
@@ -946,6 +955,7 @@ const Agenda = () => {
                            }}
                              ref={(el) => {
                                timeInputRefs.current['exame'] = el;
+                               if (el) lastKnownValues.current['exame'] = el.value;
                              }}
                            />
                       </div>
@@ -1071,6 +1081,7 @@ const Agenda = () => {
                            }}
                              ref={(el) => {
                                timeInputRefs.current['atividade'] = el;
+                               if (el) lastKnownValues.current['atividade'] = el.value;
                              }}
                            />
                       </div>
