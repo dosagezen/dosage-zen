@@ -778,15 +778,18 @@ const Agenda = () => {
                               updateCurrentCategoryData('time', value);
                               setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
                             }}
-                            onInput={(e) => {
-                              // Captura evento quando usuário clica em "Redefinir" no time picker
-                              const value = (e.target as HTMLInputElement).value;
-                              if (value === "00:00") {
-                                // Força atualização do estado e visual do campo
-                                setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                              }
-                            }}
+                             onInput={(e) => {
+                               // Captura evento quando usuário clica em "Redefinir" no time picker
+                               const value = (e.target as HTMLInputElement).value;
+                               console.log('onInput triggered - value:', value);
+                               console.log('consultaData.time before:', consultaData.time);
+                               if (value === "00:00") {
+                                 console.log('Redefinir detectado! Resetando...');
+                                 // Força atualização do estado e visual do campo
+                                 setConsultaData(prev => ({ ...prev, time: "00:00" }));
+                                 setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                               }
+                             }}
                             className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                               ? 'text-muted-foreground/50' 
                               : ''}`}
