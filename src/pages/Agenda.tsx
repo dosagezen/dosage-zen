@@ -729,14 +729,13 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className="w-full"
+                          className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
+                            ? 'text-muted-foreground/50' 
+                            : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield',
-                            color: consultaData.time === "00:00" && !timeFieldTouched.consulta 
-                              ? 'hsl(var(--muted-foreground))' 
-                              : 'hsl(var(--foreground))'
+                            MozAppearance: 'textfield'
                           }}
                         />
                     </div>
@@ -830,14 +829,13 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className="w-full"
+                          className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
+                            ? 'text-muted-foreground/50' 
+                            : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield',
-                            color: exameData.time === "00:00" && !timeFieldTouched.exame 
-                              ? 'hsl(var(--muted-foreground))' 
-                              : 'hsl(var(--foreground))'
+                            MozAppearance: 'textfield'
                           }}
                         />
                     </div>
@@ -932,14 +930,13 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className="w-full"
+                          className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
+                            ? 'text-muted-foreground/50' 
+                            : ''}`}
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield',
-                            color: atividadeData.time === "00:00" && !timeFieldTouched.atividade 
-                              ? 'hsl(var(--muted-foreground))' 
-                              : 'hsl(var(--foreground))'
+                            MozAppearance: 'textfield'
                           }}
                         />
                     </div>
