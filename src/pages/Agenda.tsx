@@ -78,21 +78,37 @@ const Agenda = () => {
           if (currentDOMValue === "00:00" && lastValue && lastValue !== "00:00") {
             console.log(`Reset detectado no ${key}! De ${lastValue} para ${currentDOMValue}`);
             
-            // Força atualização do estado correspondente
-            switch(key) {
-              case 'consulta':
-                setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                break;
-              case 'exame':
-                setExameData(prev => ({ ...prev, time: "00:00" }));
-                setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                break;
-              case 'atividade':
-                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-                setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                break;
-            }
+            // Força atualização do estado e re-render imediato
+            setTimeout(() => {
+              switch(key) {
+                case 'consulta':
+                  setConsultaData(prev => {
+                    console.log('Atualizando consultaData.time para 00:00');
+                    return { ...prev, time: "00:00" };
+                  });
+                  setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                  break;
+                case 'exame':
+                  setExameData(prev => {
+                    console.log('Atualizando exameData.time para 00:00');
+                    return { ...prev, time: "00:00" };
+                  });
+                  setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+                  break;
+                case 'atividade':
+                  setAtividadeData(prev => {
+                    console.log('Atualizando atividadeData.time para 00:00');
+                    return { ...prev, time: "00:00" };
+                  });
+                  setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+                  break;
+              }
+              
+              // Força re-render do input
+              if (input) {
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }, 0);
           }
           
           // Atualiza o valor conhecido
