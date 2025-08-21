@@ -89,35 +89,36 @@ const Agenda = () => {
     setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "" }));
   };
 
-  // Função para detectar reset do campo hora via input event
-  const handleTimeInput = (category: 'consulta' | 'exame' | 'atividade', event: React.FormEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
-    const value = input.value;
+  // Função para detectar e forçar reset do campo hora
+  const forceTimeReset = (category: 'consulta' | 'exame' | 'atividade') => {
+    console.log(`Forçando reset do campo ${category}`);
     
-    console.log(`Time input ${category}: ${value}`);
-    
-    // Se o campo foi limpo ou resetado para vazio
-    if (value === "" || value === "00:00") {
-      console.log(`Reset detectado em ${category}! Valor: "${value}"`);
-      
-      // Limpa o estado e força recriação do input
-      if (category === 'consulta') {
-        setConsultaData(prev => ({ ...prev, time: "" }));
-      } else if (category === 'exame') {
-        setExameData(prev => ({ ...prev, time: "" }));
-      } else if (category === 'atividade') {
-        setAtividadeData(prev => ({ ...prev, time: "" }));
-      }
-      
-      setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
-      
-      // Força recriação do input após limpar
-      setTimeout(() => {
-        setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
-        // Limpa o valor do input DOM também
-        input.value = "";
-      }, 10);
+    // Limpa o estado
+    if (category === 'consulta') {
+      setConsultaData(prev => ({ ...prev, time: "" }));
+    } else if (category === 'exame') {
+      setExameData(prev => ({ ...prev, time: "" }));
+    } else if (category === 'atividade') {
+      setAtividadeData(prev => ({ ...prev, time: "" }));
     }
+    
+    setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
+    
+    // Força recriação do input
+    setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
+  };
+
+  // Função para detectar clique no reset button do time picker
+  const handleTimeClick = (category: 'consulta' | 'exame' | 'atividade', event: React.MouseEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    
+    // Detecta se o valor foi limpo após um clique (indicando reset)
+    setTimeout(() => {
+      if (input.value === "" || input.value === "00:00") {
+        console.log(`Reset detectado no ${category} via click!`);
+        forceTimeReset(category);
+      }
+    }, 50);
   };
 
   const consultas = [
@@ -833,7 +834,7 @@ const Agenda = () => {
                                type="time"
                                value={consultaData.time}
                                onChange={(e) => handleTimeChange('consulta', e.target.value)}
-                               onInput={(e) => handleTimeInput('consulta', e)}
+                               onClick={(e) => handleTimeClick('consulta', e)}
                                className={`w-full ${!consultaData.time || consultaData.time === ""
                                  ? 'text-muted-foreground/50' 
                                  : ''}`}
@@ -933,7 +934,7 @@ const Agenda = () => {
                              type="time"
                              value={exameData.time}
                              onChange={(e) => handleTimeChange('exame', e.target.value)}
-                             onInput={(e) => handleTimeInput('exame', e)}
+                             onClick={(e) => handleTimeClick('exame', e)}
                              className={`w-full ${!exameData.time || exameData.time === ""
                                ? 'text-muted-foreground/50' 
                                : ''}`}
@@ -1034,7 +1035,7 @@ const Agenda = () => {
                              type="time"
                              value={atividadeData.time}
                              onChange={(e) => handleTimeChange('atividade', e.target.value)}
-                             onInput={(e) => handleTimeInput('atividade', e)}
+                             onClick={(e) => handleTimeClick('atividade', e)}
                              className={`w-full ${!atividadeData.time || atividadeData.time === ""
                                ? 'text-muted-foreground/50' 
                                : ''}`}
