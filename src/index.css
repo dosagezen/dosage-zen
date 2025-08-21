@@ -137,4 +137,21 @@
   }
 }
 
+/* Time picker customization */
+@layer utilities {
+  /* Oculta o botão reset nativo do time picker */
+  input[type="time"]::-webkit-clear-button {
+    display: none;
+  }
+  
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    background: transparent;
+  }
+  
+  /* Firefox */
+  input[type="time"]::-moz-clear {
+    display: none;
+  }
+}
+
 /* Remove CSS customizado do time picker - usando overflow-y-auto padrão do Tailwind */

@@ -824,7 +824,7 @@ const Agenda = () => {
                                className={`flex-1 ${!consultaData.time || consultaData.time === ""
                                  ? 'text-muted-foreground/50' 
                                  : ''}`}
-                               placeholder="Selecionar horário"
+                               placeholder="00:00"
                                style={{
                                  WebkitAppearance: 'none',
                                  MozAppearance: 'textfield'
@@ -936,7 +936,7 @@ const Agenda = () => {
                              className={`flex-1 ${!exameData.time || exameData.time === ""
                                ? 'text-muted-foreground/50' 
                                : ''}`}
-                             placeholder="Selecionar horário"
+                             placeholder="00:00"
                              style={{
                                WebkitAppearance: 'none',
                                MozAppearance: 'textfield'
@@ -1049,7 +1049,7 @@ const Agenda = () => {
                              className={`flex-1 ${!atividadeData.time || atividadeData.time === ""
                                ? 'text-muted-foreground/50' 
                                : ''}`}
-                             placeholder="Selecionar horário"
+                             placeholder="00:00"
                              style={{
                                WebkitAppearance: 'none',
                                MozAppearance: 'textfield'
