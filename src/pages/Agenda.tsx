@@ -67,6 +67,12 @@ const Agenda = () => {
   const consultaTimeRef = useRef<HTMLInputElement>(null);
   const exameTimeRef = useRef<HTMLInputElement>(null);
   const atividadeTimeRef = useRef<HTMLInputElement>(null);
+  // Estados para forçar recriação dos inputs
+  const [inputKeys, setInputKeys] = useState({
+    consulta: 'consulta-0',
+    exame: 'exame-0', 
+    atividade: 'atividade-0'
+  });
 
   // Controle mais robusto para detectar reset dos time pickers
   const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
@@ -86,25 +92,35 @@ const Agenda = () => {
   const handleTimeInput = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
     console.log(`Time input ${category}: ${value}`);
     
-    // onInput captura mudanças incluindo reset
-    if (category === 'consulta') {
-      setConsultaData(prev => ({ ...prev, time: value }));
-      if (value === "00:00" && consultaTimeRef.current) {
-        consultaTimeRef.current.value = "00:00";
+    // Detecta reset e força recriação do input
+    if (value === "00:00") {
+      console.log(`Reset detectado em ${category}!`);
+      
+      // Atualiza estado e força nova chave para recriar input
+      setTimeout(() => {
+        if (category === 'consulta') {
+          setConsultaData(prev => ({ ...prev, time: "00:00" }));
+        } else if (category === 'exame') {
+          setExameData(prev => ({ ...prev, time: "00:00" }));
+        } else if (category === 'atividade') {
+          setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+        }
+        
+        setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
+        setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
+      }, 0);
+    } else {
+      // Mudança normal
+      if (category === 'consulta') {
+        setConsultaData(prev => ({ ...prev, time: value }));
+      } else if (category === 'exame') {
+        setExameData(prev => ({ ...prev, time: value }));
+      } else if (category === 'atividade') {
+        setAtividadeData(prev => ({ ...prev, time: value }));
       }
-    } else if (category === 'exame') {
-      setExameData(prev => ({ ...prev, time: value }));
-      if (value === "00:00" && exameTimeRef.current) {
-        exameTimeRef.current.value = "00:00";
-      }
-    } else if (category === 'atividade') {
-      setAtividadeData(prev => ({ ...prev, time: value }));
-      if (value === "00:00" && atividadeTimeRef.current) {
-        atividadeTimeRef.current.value = "00:00";
-      }
+      
+      setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "00:00" }));
     }
-    
-    setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "00:00" }));
   };
 
   const consultas = [
@@ -814,6 +830,7 @@ const Agenda = () => {
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                             <Input
+                             key={inputKeys.consulta}
                              ref={consultaTimeRef}
                              id="hora"
                              type="time"
@@ -914,6 +931,7 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
+                            key={inputKeys.exame}
                             ref={exameTimeRef}
                             type="time"
                             value={exameData.time}
@@ -1014,6 +1032,7 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
+                            key={inputKeys.atividade}
                             ref={atividadeTimeRef}
                             type="time"
                             value={atividadeData.time}
