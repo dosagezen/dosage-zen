@@ -1057,12 +1057,30 @@ const Agenda = () => {
                 </>
               )}
             </div>
-            <div className="flex justify-between sm:pb-2 sm:pt-0">
-              <Button variant="outline" onClick={() => {
-                console.log('BOTÃO REDEFINIR CLICADO!');
-                resetCurrentCategoryData();
-              }}>
-                Redefinir
+            <div className="flex flex-col sm:flex-row justify-between gap-2 sm:pb-2 sm:pt-0">
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => {
+                  console.log('BOTÃO REDEFINIR CLICADO!');
+                  // Reset direto sem função separada
+                  switch (selectedCategory) {
+                    case 'consulta':
+                      setConsultaData(prev => ({ ...prev, time: "00:00" }));
+                      setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                      break;
+                    case 'exame':
+                      setExameData(prev => ({ ...prev, time: "00:00" }));
+                      setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+                      break;
+                    case 'atividade':
+                      setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+                      setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+                      break;
+                  }
+                }}
+              >
+                🔄 Redefinir Hora
               </Button>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => handleDialogClose(false)}>
