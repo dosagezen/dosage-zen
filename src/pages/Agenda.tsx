@@ -63,6 +63,40 @@ const Agenda = () => {
     atividade: false
   });
 
+  const timeInputRefs = useRef<{[key: string]: HTMLInputElement | null}>({});
+
+  // Monitora mudanças no valor dos inputs time para detectar reset
+  useEffect(() => {
+    const checkForReset = () => {
+      Object.entries(timeInputRefs.current).forEach(([key, input]) => {
+        if (input && input.value === "00:00") {
+          const currentData = getCurrentCategoryData();
+          if (currentData.time !== "00:00") {
+            console.log(`Reset detectado no ${key}!`);
+            // Atualiza o estado correspondente
+            switch(key) {
+              case 'consulta':
+                setConsultaData(prev => ({ ...prev, time: "00:00" }));
+                setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                break;
+              case 'exame':
+                setExameData(prev => ({ ...prev, time: "00:00" }));
+                setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+                break;
+              case 'atividade':
+                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+                setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+                break;
+            }
+          }
+        }
+      });
+    };
+
+    const interval = setInterval(checkForReset, 200);
+    return () => clearInterval(interval);
+  }, [consultaData.time, exameData.time, atividadeData.time]);
+
   const consultas = [
     // Eventos de Agosto 2025
     {
@@ -778,21 +812,8 @@ const Agenda = () => {
                                updateCurrentCategoryData('time', value);
                                setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
                              }}
-                             ref={(element) => {
-                               if (element) {
-                                 // Monitoramento contínuo do valor para detectar reset
-                                 const interval = setInterval(() => {
-                                   const currentValue = element.value;
-                                   if (currentValue === "00:00" && consultaData.time !== "00:00") {
-                                     console.log('Reset detectado via polling!');
-                                     setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                     setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                                   }
-                                 }, 100);
-                                 
-                                 // Cleanup
-                                 return () => clearInterval(interval);
-                               }
+                             ref={(el) => {
+                               timeInputRefs.current['consulta'] = el;
                              }}
                              className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                                ? 'text-muted-foreground/50' 
@@ -923,8 +944,11 @@ const Agenda = () => {
                              WebkitAppearance: 'none',
                              MozAppearance: 'textfield'
                            }}
-                         />
-                    </div>
+                             ref={(el) => {
+                               timeInputRefs.current['exame'] = el;
+                             }}
+                           />
+                      </div>
                   </div>
 
                   <div className="space-y-1.5">
@@ -1045,8 +1069,11 @@ const Agenda = () => {
                              WebkitAppearance: 'none',
                              MozAppearance: 'textfield'
                            }}
-                         />
-                    </div>
+                             ref={(el) => {
+                               timeInputRefs.current['atividade'] = el;
+                             }}
+                           />
+                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
