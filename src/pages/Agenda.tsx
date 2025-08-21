@@ -701,20 +701,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                       <Input
-                         id="hora"
-                         type="time"
-                         value={consultaData.time}
-                         onChange={(e) => {
-                           const value = e.target.value || "06:00";
-                           updateCurrentCategoryData('time', value);
-                         }}
-                         className="w-full"
-                         style={{
-                           WebkitAppearance: 'none',
-                           MozAppearance: 'textfield'
-                         }}
-                       />
+                        <Input
+                          id="hora"
+                          type="time"
+                          value={consultaData.time}
+                          onChange={(e) => {
+                            updateCurrentCategoryData('time', e.target.value);
+                          }}
+                          className={`w-full ${!consultaData.time ? 'text-muted-foreground' : ''}`}
+                          placeholder="Selecionar horário"
+                          style={{
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'textfield'
+                          }}
+                        />
                     </div>
                   </div>
 
@@ -799,20 +799,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                       <Input
-                         id="hora"
-                         type="time"
-                         value={exameData.time}
-                         onChange={(e) => {
-                           const value = e.target.value || "06:00";
-                           updateCurrentCategoryData('time', value);
-                         }}
-                         className="w-full"
-                         style={{
-                           WebkitAppearance: 'none',
-                           MozAppearance: 'textfield'
-                         }}
-                       />
+                        <Input
+                          id="hora"
+                          type="time"
+                          value={exameData.time}
+                          onChange={(e) => {
+                            updateCurrentCategoryData('time', e.target.value);
+                          }}
+                          className={`w-full ${!exameData.time ? 'text-muted-foreground' : ''}`}
+                          placeholder="Selecionar horário"
+                          style={{
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'textfield'
+                          }}
+                        />
                     </div>
                   </div>
 
@@ -898,20 +898,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                       <Input
-                         id="hora"
-                         type="time"
-                         value={atividadeData.time}
-                         onChange={(e) => {
-                           const value = e.target.value || "06:00";
-                           updateCurrentCategoryData('time', value);
-                         }}
-                         className="w-full"
-                         style={{
-                           WebkitAppearance: 'none',
-                           MozAppearance: 'textfield'
-                         }}
-                       />
+                        <Input
+                          id="hora"
+                          type="time"
+                          value={atividadeData.time}
+                          onChange={(e) => {
+                            updateCurrentCategoryData('time', e.target.value);
+                          }}
+                          className={`w-full ${!atividadeData.time ? 'text-muted-foreground' : ''}`}
+                          placeholder="Selecionar horário"
+                          style={{
+                            WebkitAppearance: 'none',
+                            MozAppearance: 'textfield'
+                          }}
+                        />
                     </div>
                   </div>
 
