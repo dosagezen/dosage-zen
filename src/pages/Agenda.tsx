@@ -814,21 +814,26 @@ const Agenda = () => {
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                         <div className="flex gap-2">
-                          <div className={`relative flex-1 time-input-container ${consultaData.time ? 'has-value' : ''}`}>
+                           <div className={`relative flex-1 time-input-container ${consultaData.time ? 'has-value' : ''}`}>
                                 <Input
                                  key={inputKeys.consulta}
                                  ref={consultaTimeRef}
                                  id="hora"
-                                 type="time"
+                                 type="text"
                                  value={consultaData.time}
-                                 onChange={(e) => handleTimeChange('consulta', e.target.value)}
+                                 onChange={(e) => {
+                                   let value = e.target.value.replace(/\D/g, '');
+                                   if (value.length >= 2) {
+                                     value = value.substring(0, 2) + ':' + value.substring(2, 4);
+                                   }
+                                   if (value.length > 5) value = value.substring(0, 5);
+                                   handleTimeChange('consulta', value);
+                                 }}
+                                 placeholder="00:00"
+                                 maxLength={5}
                                  className={`w-full ${!consultaData.time || consultaData.time === ""
                                    ? 'text-muted-foreground/50' 
                                    : ''}`}
-                                 style={{
-                                   WebkitAppearance: 'none',
-                                   MozAppearance: 'textfield'
-                                 }}
                                />
                           </div>
                               {consultaData.time && (
@@ -929,20 +934,25 @@ const Agenda = () => {
                        <Label htmlFor="hora">Hora</Label>
                        <div className="flex gap-2">
                          <div className={`relative flex-1 time-input-container ${exameData.time ? 'has-value' : ''}`}>
-                           <Input
-                              key={inputKeys.exame}
-                              ref={exameTimeRef}
-                              type="time"
-                              value={exameData.time}
-                              onChange={(e) => handleTimeChange('exame', e.target.value)}
-                              className={`w-full ${!exameData.time || exameData.time === ""
-                                ? 'text-muted-foreground/50' 
-                                : ''}`}
-                              style={{
-                                WebkitAppearance: 'none',
-                                MozAppearance: 'textfield'
-                              }}
-                            />
+                            <Input
+                               key={inputKeys.exame}
+                               ref={exameTimeRef}
+                               type="text"
+                               value={exameData.time}
+                               onChange={(e) => {
+                                 let value = e.target.value.replace(/\D/g, '');
+                                 if (value.length >= 2) {
+                                   value = value.substring(0, 2) + ':' + value.substring(2, 4);
+                                 }
+                                 if (value.length > 5) value = value.substring(0, 5);
+                                 handleTimeChange('exame', value);
+                               }}
+                               placeholder="00:00"
+                               maxLength={5}
+                               className={`w-full ${!exameData.time || exameData.time === ""
+                                 ? 'text-muted-foreground/50' 
+                                 : ''}`}
+                             />
                          </div>
                             {exameData.time && (
                               <Button
@@ -1043,20 +1053,25 @@ const Agenda = () => {
                        <Label htmlFor="hora">Hora</Label>
                        <div className="flex gap-2">
                          <div className={`relative flex-1 time-input-container ${atividadeData.time ? 'has-value' : ''}`}>
-                           <Input
-                              key={inputKeys.atividade}
-                              ref={atividadeTimeRef}
-                              type="time"
-                              value={atividadeData.time}
-                              onChange={(e) => handleTimeChange('atividade', e.target.value)}
-                              className={`w-full ${!atividadeData.time || atividadeData.time === ""
-                                ? 'text-muted-foreground/50' 
-                                : ''}`}
-                              style={{
-                                WebkitAppearance: 'none',
-                                MozAppearance: 'textfield'
-                              }}
-                            />
+                            <Input
+                               key={inputKeys.atividade}
+                               ref={atividadeTimeRef}
+                               type="text"
+                               value={atividadeData.time}
+                               onChange={(e) => {
+                                 let value = e.target.value.replace(/\D/g, '');
+                                 if (value.length >= 2) {
+                                   value = value.substring(0, 2) + ':' + value.substring(2, 4);
+                                 }
+                                 if (value.length > 5) value = value.substring(0, 5);
+                                 handleTimeChange('atividade', value);
+                               }}
+                               placeholder="00:00"
+                               maxLength={5}
+                               className={`w-full ${!atividadeData.time || atividadeData.time === ""
+                                 ? 'text-muted-foreground/50' 
+                                 : ''}`}
+                             />
                          </div>
                             {atividadeData.time && (
                               <Button
