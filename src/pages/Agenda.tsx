@@ -729,11 +729,14 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta ? 'text-muted-foreground' : ''}`}
+                          className="w-full"
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
+                            MozAppearance: 'textfield',
+                            color: consultaData.time === "00:00" && !timeFieldTouched.consulta 
+                              ? 'hsl(var(--muted-foreground))' 
+                              : 'hsl(var(--foreground))'
                           }}
                         />
                     </div>
@@ -827,11 +830,14 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame ? 'text-muted-foreground' : ''}`}
+                          className="w-full"
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
+                            MozAppearance: 'textfield',
+                            color: exameData.time === "00:00" && !timeFieldTouched.exame 
+                              ? 'hsl(var(--muted-foreground))' 
+                              : 'hsl(var(--foreground))'
                           }}
                         />
                     </div>
@@ -926,11 +932,14 @@ const Agenda = () => {
                           onChange={(e) => {
                             updateCurrentCategoryData('time', e.target.value);
                           }}
-                          className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade ? 'text-muted-foreground' : ''}`}
+                          className="w-full"
                           placeholder="Selecionar horário"
                           style={{
                             WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
+                            MozAppearance: 'textfield',
+                            color: atividadeData.time === "00:00" && !timeFieldTouched.atividade 
+                              ? 'hsl(var(--muted-foreground))' 
+                              : 'hsl(var(--foreground))'
                           }}
                         />
                     </div>
