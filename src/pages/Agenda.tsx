@@ -774,7 +774,6 @@ const Agenda = () => {
                            type="time"
                            value={consultaData.time}
                            onChange={(e) => {
-                             console.log('Time field changed - consulta:', e.target.value);
                              updateCurrentCategoryData('time', e.target.value);
                            }}
                            className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
@@ -786,10 +785,6 @@ const Agenda = () => {
                              MozAppearance: 'textfield'
                            }}
                          />
-                         {/* Debug info */}
-                         <div className="text-xs text-gray-500">
-                           Debug: time={consultaData.time}, touched={timeFieldTouched.consulta ? 'true' : 'false'}
-                         </div>
                      </div>
                   </div>
 
