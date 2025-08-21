@@ -139,18 +139,39 @@
 
 /* Time picker customization */
 @layer utilities {
-  /* Oculta o botão reset nativo do time picker */
+  /* Oculta o botão reset nativo do time picker e seu texto */
   input[type="time"]::-webkit-clear-button {
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
   }
   
   input[type="time"]::-webkit-calendar-picker-indicator {
     background: transparent;
   }
   
+  input[type="time"]::-webkit-inner-spin-button {
+    display: none !important;
+  }
+  
   /* Firefox */
   input[type="time"]::-moz-clear {
-    display: none;
+    display: none !important;
+  }
+  
+  /* Oculta qualquer texto de reset/redefinir */
+  input[type="time"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+  
+  /* Remove qualquer overlay ou tooltip do navegador */
+  input[type="time"]::-webkit-datetime-edit-text {
+    opacity: 0;
+  }
+  
+  input[type="time"]::-webkit-datetime-edit-hour-field,
+  input[type="time"]::-webkit-datetime-edit-minute-field {
+    background: transparent;
   }
 
   /* Container para time input com pseudo placeholder */
