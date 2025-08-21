@@ -1058,7 +1058,10 @@ const Agenda = () => {
               )}
             </div>
             <div className="flex justify-between sm:pb-2 sm:pt-0">
-              <Button variant="outline" onClick={resetCurrentCategoryData}>
+              <Button variant="outline" onClick={() => {
+                console.log('BOTÃO REDEFINIR CLICADO!');
+                resetCurrentCategoryData();
+              }}>
                 Redefinir
               </Button>
               <div className="flex gap-2">
