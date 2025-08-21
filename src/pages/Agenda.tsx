@@ -709,8 +709,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                        style={{ textAlign: 'left' }}
+                        className="h-10 font-normal text-left text-base md:text-sm placeholder:text-muted-foreground/50 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
@@ -804,8 +803,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                        style={{ textAlign: 'left' }}
+                        className="h-10 font-normal text-left text-base md:text-sm placeholder:text-muted-foreground/50 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
@@ -900,8 +898,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                        style={{ textAlign: 'left' }}
+                        className="h-10 font-normal text-left text-base md:text-sm placeholder:text-muted-foreground/50 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
