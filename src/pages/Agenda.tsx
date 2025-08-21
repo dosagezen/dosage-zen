@@ -813,35 +813,36 @@ const Agenda = () => {
                     </div>
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
-                       <div className="flex gap-2">
-                              <Input
-                               key={inputKeys.consulta}
-                               ref={consultaTimeRef}
-                               id="hora"
-                               type="time"
-                               value={consultaData.time}
-                               onChange={(e) => handleTimeChange('consulta', e.target.value)}
-                               className={`flex-1 ${!consultaData.time || consultaData.time === ""
-                                 ? 'text-muted-foreground/50' 
-                                 : ''}`}
-                               placeholder="00:00"
-                               style={{
-                                 WebkitAppearance: 'none',
-                                 MozAppearance: 'textfield'
-                               }}
-                             />
-                             {consultaData.time && (
-                               <Button
-                                 type="button"
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => resetTimeField('consulta')}
-                                 className="px-2"
-                               >
-                                 ✕
-                               </Button>
-                             )}
-                       </div>
+                        <div className="flex gap-2">
+                          <div className={`relative flex-1 time-input-container ${consultaData.time ? 'has-value' : ''}`}>
+                                <Input
+                                 key={inputKeys.consulta}
+                                 ref={consultaTimeRef}
+                                 id="hora"
+                                 type="time"
+                                 value={consultaData.time}
+                                 onChange={(e) => handleTimeChange('consulta', e.target.value)}
+                                 className={`w-full ${!consultaData.time || consultaData.time === ""
+                                   ? 'text-muted-foreground/50' 
+                                   : ''}`}
+                                 style={{
+                                   WebkitAppearance: 'none',
+                                   MozAppearance: 'textfield'
+                                 }}
+                               />
+                          </div>
+                              {consultaData.time && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => resetTimeField('consulta')}
+                                  className="px-2"
+                                >
+                                  ✕
+                                </Button>
+                              )}
+                        </div>
                       </div>
                   </div>
 
@@ -927,33 +928,34 @@ const Agenda = () => {
                     <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                        <div className="flex gap-2">
-                          <Input
-                             key={inputKeys.exame}
-                             ref={exameTimeRef}
-                             type="time"
-                             value={exameData.time}
-                             onChange={(e) => handleTimeChange('exame', e.target.value)}
-                             className={`flex-1 ${!exameData.time || exameData.time === ""
-                               ? 'text-muted-foreground/50' 
-                               : ''}`}
-                             placeholder="00:00"
-                             style={{
-                               WebkitAppearance: 'none',
-                               MozAppearance: 'textfield'
-                             }}
-                           />
-                           {exameData.time && (
-                             <Button
-                               type="button"
-                               variant="outline"
-                               size="sm"
-                               onClick={() => resetTimeField('exame')}
-                               className="px-2"
-                             >
-                               ✕
-                             </Button>
-                           )}
-                       </div>
+                         <div className={`relative flex-1 time-input-container ${exameData.time ? 'has-value' : ''}`}>
+                           <Input
+                              key={inputKeys.exame}
+                              ref={exameTimeRef}
+                              type="time"
+                              value={exameData.time}
+                              onChange={(e) => handleTimeChange('exame', e.target.value)}
+                              className={`w-full ${!exameData.time || exameData.time === ""
+                                ? 'text-muted-foreground/50' 
+                                : ''}`}
+                              style={{
+                                WebkitAppearance: 'none',
+                                MozAppearance: 'textfield'
+                              }}
+                            />
+                         </div>
+                            {exameData.time && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => resetTimeField('exame')}
+                                className="px-2"
+                              >
+                                ✕
+                              </Button>
+                            )}
+                        </div>
                        </div>
                   </div>
 
@@ -1040,33 +1042,34 @@ const Agenda = () => {
                     <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                        <div className="flex gap-2">
-                          <Input
-                             key={inputKeys.atividade}
-                             ref={atividadeTimeRef}
-                             type="time"
-                             value={atividadeData.time}
-                             onChange={(e) => handleTimeChange('atividade', e.target.value)}
-                             className={`flex-1 ${!atividadeData.time || atividadeData.time === ""
-                               ? 'text-muted-foreground/50' 
-                               : ''}`}
-                             placeholder="00:00"
-                             style={{
-                               WebkitAppearance: 'none',
-                               MozAppearance: 'textfield'
-                             }}
-                           />
-                           {atividadeData.time && (
-                             <Button
-                               type="button"
-                               variant="outline"
-                               size="sm"
-                               onClick={() => resetTimeField('atividade')}
-                               className="px-2"
-                             >
-                               ✕
-                             </Button>
-                           )}
-                       </div>
+                         <div className={`relative flex-1 time-input-container ${atividadeData.time ? 'has-value' : ''}`}>
+                           <Input
+                              key={inputKeys.atividade}
+                              ref={atividadeTimeRef}
+                              type="time"
+                              value={atividadeData.time}
+                              onChange={(e) => handleTimeChange('atividade', e.target.value)}
+                              className={`w-full ${!atividadeData.time || atividadeData.time === ""
+                                ? 'text-muted-foreground/50' 
+                                : ''}`}
+                              style={{
+                                WebkitAppearance: 'none',
+                                MozAppearance: 'textfield'
+                              }}
+                            />
+                         </div>
+                            {atividadeData.time && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => resetTimeField('atividade')}
+                                className="px-2"
+                              >
+                                ✕
+                              </Button>
+                            )}
+                        </div>
                        </div>
                   </div>
 

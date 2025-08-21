@@ -152,6 +152,36 @@
   input[type="time"]::-moz-clear {
     display: none;
   }
+
+  /* Container para time input com pseudo placeholder */
+  .time-input-container {
+    position: relative;
+  }
+  
+  .time-input-container::before {
+    content: "00:00";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+    font-size: 14px;
+    z-index: 1;
+  }
+  
+  .time-input-container input[type="time"]:not(:placeholder-shown)::before,
+  .time-input-container input[type="time"]:focus::before {
+    display: none;
+  }
+  
+  .time-input-container input[type="time"]:not(:empty) + .pseudo-placeholder {
+    display: none;
+  }
+  
+  .time-input-container.has-value::before {
+    display: none;
+  }
 }
 
 /* Remove CSS customizado do time picker - usando overflow-y-auto padrão do Tailwind */
