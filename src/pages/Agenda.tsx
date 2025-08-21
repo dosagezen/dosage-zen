@@ -769,22 +769,31 @@ const Agenda = () => {
                     </div>
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
-                         <Input
-                           id="hora"
-                           type="time"
-                           value={consultaData.time}
-                           onChange={(e) => {
-                             updateCurrentCategoryData('time', e.target.value);
-                           }}
-                           className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
-                             ? 'text-muted-foreground/50' 
-                             : ''}`}
-                           placeholder="Selecionar horário"
-                           style={{
-                             WebkitAppearance: 'none',
-                             MozAppearance: 'textfield'
-                           }}
-                         />
+                          <Input
+                            id="hora"
+                            type="time"
+                            value={consultaData.time}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              updateCurrentCategoryData('time', value);
+                              setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
+                            }}
+                            onInput={(e) => {
+                              // Captura evento quando usuário clica em "Redefinir" no time picker
+                              const value = (e.target as HTMLInputElement).value;
+                              if (value === "00:00") {
+                                setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                              }
+                            }}
+                            className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
+                              ? 'text-muted-foreground/50' 
+                              : ''}`}
+                            placeholder="Selecionar horário"
+                            style={{
+                              WebkitAppearance: 'none',
+                              MozAppearance: 'textfield'
+                            }}
+                          />
                      </div>
                   </div>
 
@@ -869,22 +878,31 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                        <Input
-                          id="hora"
-                          type="time"
-                          value={exameData.time}
-                          onChange={(e) => {
-                            updateCurrentCategoryData('time', e.target.value);
-                          }}
-                          className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
-                            ? 'text-muted-foreground/50' 
-                            : ''}`}
-                          placeholder="Selecionar horário"
-                          style={{
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
-                          }}
-                        />
+                         <Input
+                           id="hora"
+                           type="time"
+                           value={exameData.time}
+                           onChange={(e) => {
+                             const value = e.target.value;
+                             updateCurrentCategoryData('time', value);
+                             setTimeFieldTouched(prev => ({ ...prev, exame: value !== "00:00" }));
+                           }}
+                           onInput={(e) => {
+                             // Captura evento quando usuário clica em "Redefinir" no time picker
+                             const value = (e.target as HTMLInputElement).value;
+                             if (value === "00:00") {
+                               setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+                             }
+                           }}
+                           className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
+                             ? 'text-muted-foreground/50' 
+                             : ''}`}
+                           placeholder="Selecionar horário"
+                           style={{
+                             WebkitAppearance: 'none',
+                             MozAppearance: 'textfield'
+                           }}
+                         />
                     </div>
                   </div>
 
@@ -970,22 +988,31 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                        <Input
-                          id="hora"
-                          type="time"
-                          value={atividadeData.time}
-                          onChange={(e) => {
-                            updateCurrentCategoryData('time', e.target.value);
-                          }}
-                          className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
-                            ? 'text-muted-foreground/50' 
-                            : ''}`}
-                          placeholder="Selecionar horário"
-                          style={{
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
-                          }}
-                        />
+                         <Input
+                           id="hora"
+                           type="time"
+                           value={atividadeData.time}
+                           onChange={(e) => {
+                             const value = e.target.value;
+                             updateCurrentCategoryData('time', value);
+                             setTimeFieldTouched(prev => ({ ...prev, atividade: value !== "00:00" }));
+                           }}
+                           onInput={(e) => {
+                             // Captura evento quando usuário clica em "Redefinir" no time picker
+                             const value = (e.target as HTMLInputElement).value;
+                             if (value === "00:00") {
+                               setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+                             }
+                           }}
+                           className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
+                             ? 'text-muted-foreground/50' 
+                             : ''}`}
+                           placeholder="Selecionar horário"
+                           style={{
+                             WebkitAppearance: 'none',
+                             MozAppearance: 'textfield'
+                           }}
+                         />
                     </div>
                   </div>
 
