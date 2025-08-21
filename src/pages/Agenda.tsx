@@ -701,16 +701,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                      <Input
-                        id="hora"
-                        type="time"
-                        value={consultaData.time}
-                        onChange={(e) => {
-                          const value = e.target.value || "06:00";
-                          updateCurrentCategoryData('time', value);
-                        }}
-                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                      />
+                       <Input
+                         id="hora"
+                         type="time"
+                         value={consultaData.time}
+                         onChange={(e) => {
+                           const value = e.target.value || "06:00";
+                           updateCurrentCategoryData('time', value);
+                         }}
+                         className="w-full"
+                         style={{
+                           WebkitAppearance: 'none',
+                           MozAppearance: 'textfield'
+                         }}
+                       />
                     </div>
                   </div>
 
@@ -795,16 +799,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                      <Input
-                        id="hora"
-                        type="time"
-                        value={exameData.time}
-                        onChange={(e) => {
-                          const value = e.target.value || "06:00";
-                          updateCurrentCategoryData('time', value);
-                        }}
-                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                      />
+                       <Input
+                         id="hora"
+                         type="time"
+                         value={exameData.time}
+                         onChange={(e) => {
+                           const value = e.target.value || "06:00";
+                           updateCurrentCategoryData('time', value);
+                         }}
+                         className="w-full"
+                         style={{
+                           WebkitAppearance: 'none',
+                           MozAppearance: 'textfield'
+                         }}
+                       />
                     </div>
                   </div>
 
@@ -890,16 +898,20 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                      <Input
-                        id="hora"
-                        type="time"
-                        value={atividadeData.time}
-                        onChange={(e) => {
-                          const value = e.target.value || "06:00";
-                          updateCurrentCategoryData('time', value);
-                        }}
-                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                      />
+                       <Input
+                         id="hora"
+                         type="time"
+                         value={atividadeData.time}
+                         onChange={(e) => {
+                           const value = e.target.value || "06:00";
+                           updateCurrentCategoryData('time', value);
+                         }}
+                         className="w-full"
+                         style={{
+                           WebkitAppearance: 'none',
+                           MozAppearance: 'textfield'
+                         }}
+                       />
                     </div>
                   </div>
 
