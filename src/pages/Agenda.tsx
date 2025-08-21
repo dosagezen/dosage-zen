@@ -63,6 +63,11 @@ const Agenda = () => {
     atividade: false
   });
 
+  // Refs para os inputs de tempo
+  const consultaTimeRef = useRef<HTMLInputElement>(null);
+  const exameTimeRef = useRef<HTMLInputElement>(null);
+  const atividadeTimeRef = useRef<HTMLInputElement>(null);
+
   // Estados para controlar o reset do time picker
   const [inputKeys, setInputKeys] = useState({
     consulta: 'consulta-0',
@@ -777,7 +782,7 @@ const Agenda = () => {
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                             <Input
-                             key={inputKeys.consulta}
+                             ref={consultaTimeRef}
                              id="hora"
                              type="time"
                              value={consultaData.time}
@@ -785,28 +790,6 @@ const Agenda = () => {
                                const value = e.target.value;
                                updateCurrentCategoryData('time', value);
                                setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
-                             }}
-                             onFocus={(e) => {
-                               // Detecta reset quando o focus volta e o valor é 00:00
-                               setTimeout(() => {
-                                 const currentValue = e.target.value;
-                                 if (currentValue === "00:00" && consultaData.time !== "00:00") {
-                                   console.log('Reset detectado no onFocus!');
-                                   setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                   setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                                   setInputKeys(prev => ({ ...prev, consulta: `consulta-${Date.now()}` }));
-                                 }
-                               }, 100);
-                             }}
-                             onBlur={(e) => {
-                               // Também detecta reset quando perde o focus
-                               const currentValue = e.target.value;
-                               if (currentValue === "00:00" && consultaData.time !== "00:00") {
-                                 console.log('Reset detectado no onBlur!');
-                                 setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                                 setInputKeys(prev => ({ ...prev, consulta: `consulta-${Date.now()}` }));
-                               }
                              }}
                              className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                                ? 'text-muted-foreground/50' 
@@ -902,6 +885,7 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
+                            ref={exameTimeRef}
                             key={inputKeys.exame}
                             type="time"
                             value={exameData.time}
@@ -1043,7 +1027,8 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                         <Input
+                          <Input
+                            ref={atividadeTimeRef}
                             key={inputKeys.atividade}
                            type="time"
                            value={atividadeData.time}
