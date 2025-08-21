@@ -27,24 +27,33 @@ const Agenda = () => {
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [repetitionType, setRepetitionType] = useState<'weekly' | 'none'>('none');
-  // Estados separados para cada categoria
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string>("");
   
   // Estados específicos para cada categoria
   const [consultaData, setConsultaData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00"
+    time: "06:00",
+    especialidade: "",
+    profissional: "",
+    local: "",
+    observacoes: ""
   });
   const [exameData, setExameData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00"
+    time: "06:00",
+    tipoExame: "",
+    preparos: "",
+    local: "",
+    observacoes: ""
   });
   const [atividadeData, setAtividadeData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00"
+    time: "06:00",
+    tipoAtividade: "",
+    local: "",
+    duracao: "",
+    observacoes: "",
+    dias: [] as string[],
+    repeticao: 'none' as 'weekly' | 'none'
   });
 
   const consultas = [
@@ -440,10 +449,33 @@ const Agenda = () => {
   const handleDialogClose = (open: boolean) => {
     setIsDialogOpen(open);
     if (!open) {
-      // Reset form values when dialog closes
-      setSelectedDays([]);
-      setRepetitionType('none');
-      setSelectedTime("");
+      // Reset form values when dialog closes - cada categoria mantém seus próprios dados
+      setConsultaData({
+        date: undefined,
+        time: "06:00",
+        especialidade: "",
+        profissional: "",
+        local: "",
+        observacoes: ""
+      });
+      setExameData({
+        date: undefined,
+        time: "06:00",
+        tipoExame: "",
+        preparos: "",
+        local: "",
+        observacoes: ""
+      });
+      setAtividadeData({
+        date: undefined,
+        time: "06:00",
+        tipoAtividade: "",
+        local: "",
+        duracao: "",
+        observacoes: "",
+        dias: [],
+        repeticao: 'none'
+      });
     }
   };
 
@@ -458,7 +490,7 @@ const Agenda = () => {
   };
 
   // Função para atualizar dados da categoria atual
-  const updateCurrentCategoryData = (field: 'date' | 'time', value: any) => {
+  const updateCurrentCategoryData = (field: string, value: any) => {
     switch (selectedCategory) {
       case 'consulta':
         setConsultaData(prev => ({ ...prev, [field]: value }));
@@ -602,172 +634,345 @@ const Agenda = () => {
             </div>
             
             <div className="space-y-3 py-2 sm:pt-0">
-              {/* Campo Título/Nome - comum a todas as categorias */}
-                <div className="space-y-2">
-                  <Label htmlFor="titulo">
-                    {selectedCategory === 'consulta' ? 'Especialidade' : 
-                     selectedCategory === 'exame' ? 'Tipo de Exame' : 'Tipo de Atividade'}
-                  </Label>
-                  <Input 
-                    id="titulo" 
-                    placeholder={
-                      selectedCategory === 'consulta' ? "Ex.: Cardiologia" :
-                      selectedCategory === 'exame' ? "Ex.: Hemograma" : "Ex.: Fisioterapia / Pilates / Caminhada"
-                    } 
-                    className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                  />
-                </div>
-
-              {/* Campos específicos por categoria */}
+              {/* FORMULÁRIO PARA CONSULTAS */}
               {selectedCategory === 'consulta' && (
-                <div className="space-y-2">
-                  <Label htmlFor="profissional">Profissional</Label>
-                  <Input id="profissional" placeholder="Ex.: Dr. João Silva" className="h-10 font-normal placeholder:text-muted-foreground/50" />
-                </div>
-              )}
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="especialidade">Especialidade</Label>
+                    <Input 
+                      id="especialidade"
+                      value={consultaData.especialidade}
+                      onChange={(e) => updateCurrentCategoryData('especialidade', e.target.value)}
+                      placeholder="Ex.: Cardiologia"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
 
-              {selectedCategory === 'exame' && (
-                <div className="space-y-2">
-                  <Label htmlFor="preparos">Preparos</Label>
-                  <Input id="preparos" placeholder="Ex.: Jejum 8h" className="h-10 font-normal placeholder:text-muted-foreground/50" />
-                </div>
-              )}
+                  <div className="space-y-2">
+                    <Label htmlFor="profissional">Profissional</Label>
+                    <Input 
+                      id="profissional"
+                      value={consultaData.profissional}
+                      onChange={(e) => updateCurrentCategoryData('profissional', e.target.value)}
+                      placeholder="Ex.: Dr. João Silva"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
 
-              {selectedCategory === 'atividade' ? (
-                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="local">Local</Label>
-                    <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="h-10 font-normal placeholder:text-muted-foreground/50" />
+                    <Input 
+                      id="local"
+                      value={consultaData.local}
+                      onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
+                      placeholder="Ex.: Clínica Boa Saúde"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="duracao">Duração</Label>
-                    <Input id="duracao" placeholder="Ex.: 45 min" className="h-10 font-normal placeholder:text-muted-foreground/50" />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="local">Local</Label>
-                  <Input id="local" placeholder="Ex.: Clínica Boa Saúde" className="h-10 font-normal placeholder:text-muted-foreground/50" />
-                </div>
-              )}
 
-              {/* Campos Data e Hora */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="data">Data</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
-                          !getCurrentCategoryData().date && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {getCurrentCategoryData().date ? format(getCurrentCategoryData().date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={getCurrentCategoryData().date}
-                        onSelect={(date) => updateCurrentCategoryData('date', date)}
-                        initialFocus
-                        locale={ptBR}
-                        weekStartsOn={1}
-                        className={cn("p-3 pointer-events-auto")}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="data">Data</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                              !consultaData.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {consultaData.date ? format(consultaData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={consultaData.date}
+                            onSelect={(date) => updateCurrentCategoryData('date', date)}
+                            initialFocus
+                            locale={ptBR}
+                            weekStartsOn={1}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hora">Hora</Label>
+                      <Input
+                        id="hora"
+                        type="time"
+                        value={consultaData.time}
+                        onChange={(e) => {
+                          const value = e.target.value || "06:00";
+                          updateCurrentCategoryData('time', value);
+                        }}
+                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        style={{ textAlign: 'left' }}
                       />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hora">Hora</Label>
-                  <Input
-                    id="hora"
-                    type="time"
-                    value={getCurrentCategoryData().time}
-                    onChange={(e) => {
-                      const value = e.target.value || "06:00";
-                      updateCurrentCategoryData('time', value);
-                    }}
-                    onReset={() => updateCurrentCategoryData('time', "06:00")}
-                    className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
-                    style={{ textAlign: 'left' }}
-                  />
-                </div>
-              </div>
-
-              {/* Nova seção: Dias da semana e Repetição - apenas para Atividades */}
-              {selectedCategory === "atividade" && (
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Coluna 1: Dias da semana */}
-                  <div className="space-y-2">
-                    <Label>Dias da semana</Label>
-                    <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
-                      <div className="flex justify-between gap-1">
-                        {[
-                          { short: 'Seg', full: 'Segunda' },
-                          { short: 'Ter', full: 'Terça' },
-                          { short: 'Qua', full: 'Quarta' },
-                          { short: 'Qui', full: 'Quinta' },
-                          { short: 'Sex', full: 'Sexta' },
-                          { short: 'Sáb', full: 'Sábado' },
-                          { short: 'Dom', full: 'Domingo' }
-                        ].map((day) => (
-                          <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
-                            <span className="text-xs text-foreground font-medium">{day.short}</span>
-                            <Checkbox 
-                              checked={selectedDays.includes(day.short)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedDays([...selectedDays, day.short]);
-                                } else {
-                                  setSelectedDays(selectedDays.filter(d => d !== day.short));
-                                }
-                              }}
-                              className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
-                            />
-                          </label>
-                        ))}
-                      </div>
-                      {repetitionType === 'weekly' && selectedDays.length === 0 && (
-                        <p className="text-xs text-destructive" role="alert" aria-live="polite">
-                          Selecione ao menos um dia
-                        </p>
-                      )}
                     </div>
                   </div>
 
-                  {/* Coluna 2: Repetição */}
-                  <div className="space-y-2">
-                    <Label htmlFor="repeticao">Repetição</Label>
-                    <Select value={repetitionType} onValueChange={(value: 'weekly' | 'none') => setRepetitionType(value)}>
-                      <SelectTrigger className="min-h-[44px] sm:min-h-[32px]">
-                        <SelectValue placeholder="Selecione..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border border-border shadow-lg z-50">
-                        <SelectItem value="weekly">Toda semana</SelectItem>
-                        <SelectItem value="none">Não se repete</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="observacoes">Observações</Label>
+                    <Textarea 
+                      id="observacoes"
+                      value={consultaData.observacoes}
+                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
+                      placeholder="Ex.: Levar resultados / Roupas confortáveis"
+                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
+                      rows={2} 
+                    />
                   </div>
-                </div>
+                </>
               )}
 
-              {/* Campo Observações - comum a todas as categorias */}
-              <div className="space-y-1.5">
-                <Label htmlFor="observacoes">Observações</Label>
-                <Textarea 
-                  id="observacoes" 
-                  placeholder={
-                    selectedCategory === 'consulta' ? "Ex.: Levar resultados / Roupas confortáveis" :
-                    selectedCategory === 'exame' ? "Ex.: Levar resultados / Roupas confortáveis" : "Ex.: Roupas confortáveis"
-                  } 
-                   className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
-                   rows={2} 
-                />
-              </div>
+              {/* FORMULÁRIO PARA EXAMES */}
+              {selectedCategory === 'exame' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoExame">Tipo de Exame</Label>
+                    <Input 
+                      id="tipoExame"
+                      value={exameData.tipoExame}
+                      onChange={(e) => updateCurrentCategoryData('tipoExame', e.target.value)}
+                      placeholder="Ex.: Hemograma"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="preparos">Preparos</Label>
+                    <Input 
+                      id="preparos"
+                      value={exameData.preparos}
+                      onChange={(e) => updateCurrentCategoryData('preparos', e.target.value)}
+                      placeholder="Ex.: Jejum 8h"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="local">Local</Label>
+                    <Input 
+                      id="local"
+                      value={exameData.local}
+                      onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
+                      placeholder="Ex.: Clínica Boa Saúde"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="data">Data</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                              !exameData.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {exameData.date ? format(exameData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={exameData.date}
+                            onSelect={(date) => updateCurrentCategoryData('date', date)}
+                            initialFocus
+                            locale={ptBR}
+                            weekStartsOn={1}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hora">Hora</Label>
+                      <Input
+                        id="hora"
+                        type="time"
+                        value={exameData.time}
+                        onChange={(e) => {
+                          const value = e.target.value || "06:00";
+                          updateCurrentCategoryData('time', value);
+                        }}
+                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        style={{ textAlign: 'left' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="observacoes">Observações</Label>
+                    <Textarea 
+                      id="observacoes"
+                      value={exameData.observacoes}
+                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
+                      placeholder="Ex.: Levar resultados / Roupas confortáveis"
+                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
+                      rows={2} 
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* FORMULÁRIO PARA ATIVIDADES */}
+              {selectedCategory === 'atividade' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="tipoAtividade">Tipo de Atividade</Label>
+                    <Input 
+                      id="tipoAtividade"
+                      value={atividadeData.tipoAtividade}
+                      onChange={(e) => updateCurrentCategoryData('tipoAtividade', e.target.value)}
+                      placeholder="Ex.: Fisioterapia / Pilates / Caminhada"
+                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="local">Local</Label>
+                      <Input 
+                        id="local"
+                        value={atividadeData.local}
+                        onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
+                        placeholder="Ex.: Clínica Boa Saúde"
+                        className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="duracao">Duração</Label>
+                      <Input 
+                        id="duracao"
+                        value={atividadeData.duracao}
+                        onChange={(e) => updateCurrentCategoryData('duracao', e.target.value)}
+                        placeholder="Ex.: 45 min"
+                        className="h-10 font-normal placeholder:text-muted-foreground/50" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="data">Data</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                              !atividadeData.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {atividadeData.date ? format(atividadeData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={atividadeData.date}
+                            onSelect={(date) => updateCurrentCategoryData('date', date)}
+                            initialFocus
+                            locale={ptBR}
+                            weekStartsOn={1}
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="hora">Hora</Label>
+                      <Input
+                        id="hora"
+                        type="time"
+                        value={atividadeData.time}
+                        onChange={(e) => {
+                          const value = e.target.value || "06:00";
+                          updateCurrentCategoryData('time', value);
+                        }}
+                        className="h-10 text-left font-normal [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        style={{ textAlign: 'left' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label>Dias da semana</Label>
+                      <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
+                        <div className="flex justify-between gap-1">
+                          {[
+                            { short: 'Seg', full: 'Segunda' },
+                            { short: 'Ter', full: 'Terça' },
+                            { short: 'Qua', full: 'Quarta' },
+                            { short: 'Qui', full: 'Quinta' },
+                            { short: 'Sex', full: 'Sexta' },
+                            { short: 'Sáb', full: 'Sábado' },
+                            { short: 'Dom', full: 'Domingo' }
+                          ].map((day) => (
+                            <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
+                              <span className="text-xs text-foreground font-medium">{day.short}</span>
+                              <Checkbox 
+                                checked={atividadeData.dias.includes(day.short)}
+                                onCheckedChange={(checked) => {
+                                  const newDias = checked 
+                                    ? [...atividadeData.dias, day.short]
+                                    : atividadeData.dias.filter(d => d !== day.short);
+                                  updateCurrentCategoryData('dias', newDias);
+                                }}
+                                className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
+                              />
+                            </label>
+                          ))}
+                        </div>
+                        {atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0 && (
+                          <p className="text-xs text-destructive" role="alert" aria-live="polite">
+                            Selecione ao menos um dia
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="repeticao">Repetição</Label>
+                      <Select 
+                        value={atividadeData.repeticao} 
+                        onValueChange={(value: 'weekly' | 'none') => updateCurrentCategoryData('repeticao', value)}
+                      >
+                        <SelectTrigger className="min-h-[44px] sm:min-h-[32px]">
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border border-border shadow-lg z-50">
+                          <SelectItem value="weekly">Toda semana</SelectItem>
+                          <SelectItem value="none">Não se repete</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="observacoes">Observações</Label>
+                    <Textarea 
+                      id="observacoes"
+                      value={atividadeData.observacoes}
+                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
+                      placeholder="Ex.: Roupas confortáveis"
+                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
+                      rows={2} 
+                    />
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex justify-end gap-2 sm:pb-2 sm:pt-0">
               <Button variant="outline" onClick={() => handleDialogClose(false)}>
@@ -775,7 +980,7 @@ const Agenda = () => {
               </Button>
               <Button 
                 className="bg-gradient-primary hover:bg-primary-hover"
-                disabled={repetitionType === 'weekly' && selectedDays.length === 0}
+                disabled={selectedCategory === 'atividade' && atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0}
               >
                 Salvar
               </Button>
