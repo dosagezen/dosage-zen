@@ -139,53 +139,49 @@
 
 /* Time picker customization */
 @layer utilities {
-  /* Oculta o botão reset nativo do time picker e seu texto */
-  input[type="time"]::-webkit-clear-button {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  input[type="time"]::-webkit-calendar-picker-indicator {
-    background: transparent;
-  }
-  
-  input[type="time"]::-webkit-inner-spin-button {
-    display: none !important;
-  }
-  
-  /* Firefox */
-  input[type="time"]::-moz-clear {
-    display: none !important;
-  }
-  
-  /* Oculta qualquer texto de reset/redefinir */
+  /* Remove aparência nativa completamente */
   input[type="time"] {
-    -webkit-appearance: none;
-    -moz-appearance: textfield;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    position: relative;
   }
-  
-  /* Remove qualquer overlay ou tooltip do navegador */
-  input[type="time"]::-webkit-datetime-edit-text {
+
+  /* Oculta todos os elementos internos do time picker */
+  input[type="time"]::-webkit-clear-button,
+  input[type="time"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-datetime-edit,
+  input[type="time"]::-webkit-datetime-edit-text,
+  input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="time"]::-webkit-datetime-edit-hour-field,
+  input[type="time"]::-webkit-datetime-edit-minute-field,
+  input[type="time"]::-webkit-datetime-edit-second-field,
+  input[type="time"]::-webkit-datetime-edit-ampm-field {
+    display: none !important;
+    visibility: hidden !important;
     opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Firefox */
+  input[type="time"]::-moz-clear,
+  input[type="time"]::-moz-focus-inner {
+    display: none !important;
     visibility: hidden !important;
   }
-  
-  input[type="time"]::-webkit-datetime-edit-hour-field,
-  input[type="time"]::-webkit-datetime-edit-minute-field {
-    background: transparent;
+
+  /* Edge/IE */
+  input[type="time"]::-ms-clear,
+  input[type="time"]::-ms-reveal {
+    display: none !important;
+    visibility: hidden !important;
   }
-  
-  /* Oculta especificamente qualquer elemento que contenha "Redefinir" */
-  input[type="time"]::-webkit-datetime-edit,
-  input[type="time"]::-webkit-datetime-edit-fields-wrapper {
-    opacity: 1 !important;
-  }
-  
-  /* Remove completamente qualquer aparência nativa */
-  input[type="time"]::-webkit-datetime-edit-ampm-field,
-  input[type="time"]::-webkit-datetime-edit-day-field,
-  input[type="time"]::-webkit-datetime-edit-month-field,
-  input[type="time"]::-webkit-datetime-edit-year-field {
+
+  /* Remove todos os pseudo-elementos possíveis */
+  input[type="time"]::before,
+  input[type="time"]::after {
     display: none !important;
   }
 
