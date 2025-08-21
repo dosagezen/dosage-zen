@@ -31,7 +31,7 @@ const Agenda = () => {
   // Estados específicos para cada categoria
   const [consultaData, setConsultaData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00",
+    time: "",
     especialidade: "",
     profissional: "",
     local: "",
@@ -39,7 +39,7 @@ const Agenda = () => {
   });
   const [exameData, setExameData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00",
+    time: "",
     tipoExame: "",
     preparos: "",
     local: "",
@@ -47,7 +47,7 @@ const Agenda = () => {
   });
   const [atividadeData, setAtividadeData] = useState({
     date: undefined as Date | undefined,
-    time: "06:00",
+    time: "",
     tipoAtividade: "",
     local: "",
     duracao: "",
@@ -452,7 +452,7 @@ const Agenda = () => {
       // Reset form values when dialog closes - cada categoria mantém seus próprios dados
       setConsultaData({
         date: undefined,
-        time: "06:00",
+        time: "",
         especialidade: "",
         profissional: "",
         local: "",
@@ -460,7 +460,7 @@ const Agenda = () => {
       });
       setExameData({
         date: undefined,
-        time: "06:00",
+        time: "",
         tipoExame: "",
         preparos: "",
         local: "",
@@ -468,7 +468,7 @@ const Agenda = () => {
       });
       setAtividadeData({
         date: undefined,
-        time: "06:00",
+        time: "",
         tipoAtividade: "",
         local: "",
         duracao: "",
