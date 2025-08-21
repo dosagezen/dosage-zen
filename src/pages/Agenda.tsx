@@ -527,6 +527,9 @@ const Agenda = () => {
 
   // Função para redefinir dados da categoria atual
   const resetCurrentCategoryData = () => {
+    console.log('Reset button clicked for category:', selectedCategory);
+    console.log('Current timeFieldTouched before reset:', timeFieldTouched);
+    
     switch (selectedCategory) {
       case 'consulta':
         setConsultaData({
@@ -538,6 +541,7 @@ const Agenda = () => {
           observacoes: ""
         });
         setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+        console.log('Reset consulta data');
         break;
       case 'exame':
         setExameData({
@@ -549,6 +553,7 @@ const Agenda = () => {
           observacoes: ""
         });
         setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+        console.log('Reset exame data');
         break;
       case 'atividade':
         setAtividadeData({
@@ -562,6 +567,7 @@ const Agenda = () => {
           repeticao: 'none'
         });
         setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+        console.log('Reset atividade data');
         break;
     }
   };
@@ -761,25 +767,30 @@ const Agenda = () => {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="hora">Hora</Label>
-                        <Input
-                          id="hora"
-                          type="time"
-                          value={consultaData.time}
-                          onChange={(e) => {
-                            updateCurrentCategoryData('time', e.target.value);
-                          }}
-                          className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
-                            ? 'text-muted-foreground/50' 
-                            : ''}`}
-                          placeholder="Selecionar horário"
-                          style={{
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'textfield'
-                          }}
-                        />
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="hora">Hora</Label>
+                         <Input
+                           id="hora"
+                           type="time"
+                           value={consultaData.time}
+                           onChange={(e) => {
+                             console.log('Time field changed - consulta:', e.target.value);
+                             updateCurrentCategoryData('time', e.target.value);
+                           }}
+                           className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
+                             ? 'text-muted-foreground/50' 
+                             : ''}`}
+                           placeholder="Selecionar horário"
+                           style={{
+                             WebkitAppearance: 'none',
+                             MozAppearance: 'textfield'
+                           }}
+                         />
+                         {/* Debug info */}
+                         <div className="text-xs text-gray-500">
+                           Debug: time={consultaData.time}, touched={timeFieldTouched.consulta ? 'true' : 'false'}
+                         </div>
+                     </div>
                   </div>
 
                   <div className="space-y-1.5">
