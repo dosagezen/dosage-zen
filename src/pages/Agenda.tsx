@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -769,43 +769,40 @@ const Agenda = () => {
                     </div>
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
-                           <Input
-                            id="hora"
-                            type="time"
-                            value={consultaData.time}
+                            <Input
+                             id="hora"
+                             type="time"
+                             value={consultaData.time}
                              onChange={(e) => {
                                const value = e.target.value;
-                               console.log('onChange triggered - value:', value, 'previous:', consultaData.time);
-                               
-                               // Se mudou para 00:00, trata como reset (botão redefinir)
-                               if (value === "00:00" && consultaData.time !== "00:00") {
-                                 console.log('Reset detectado no onChange!');
-                                 setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                               } else {
-                                 updateCurrentCategoryData('time', value);
-                                 setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
+                               updateCurrentCategoryData('time', value);
+                               setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
+                             }}
+                             ref={(element) => {
+                               if (element) {
+                                 // Monitoramento contínuo do valor para detectar reset
+                                 const interval = setInterval(() => {
+                                   const currentValue = element.value;
+                                   if (currentValue === "00:00" && consultaData.time !== "00:00") {
+                                     console.log('Reset detectado via polling!');
+                                     setConsultaData(prev => ({ ...prev, time: "00:00" }));
+                                     setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
+                                   }
+                                 }, 100);
+                                 
+                                 // Cleanup
+                                 return () => clearInterval(interval);
                                }
                              }}
-                             onInput={(e) => {
-                               // Captura evento quando usuário clica em "Redefinir" no time picker
-                               const value = (e.target as HTMLInputElement).value;
-                               console.log('onInput triggered - value:', value, 'previous:', consultaData.time);
-                               if (value === "00:00" && consultaData.time !== "00:00") {
-                                 console.log('Reset detectado no onInput!');
-                                 setConsultaData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-                               }
+                             className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
+                               ? 'text-muted-foreground/50' 
+                               : ''}`}
+                             placeholder="Selecionar horário"
+                             style={{
+                               WebkitAppearance: 'none',
+                               MozAppearance: 'textfield'
                              }}
-                            className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
-                              ? 'text-muted-foreground/50' 
-                              : ''}`}
-                            placeholder="Selecionar horário"
-                            style={{
-                              WebkitAppearance: 'none',
-                              MozAppearance: 'textfield'
-                            }}
-                          />
+                           />
                      </div>
                   </div>
 
