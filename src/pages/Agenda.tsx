@@ -769,7 +769,7 @@ const Agenda = () => {
                     </div>
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
-                          <Input
+                           <Input
                             id="hora"
                             type="time"
                             value={consultaData.time}
@@ -782,6 +782,8 @@ const Agenda = () => {
                               // Captura evento quando usuário clica em "Redefinir" no time picker
                               const value = (e.target as HTMLInputElement).value;
                               if (value === "00:00") {
+                                // Força atualização do estado e visual do campo
+                                setConsultaData(prev => ({ ...prev, time: "00:00" }));
                                 setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
                               }
                             }}
@@ -878,22 +880,24 @@ const Agenda = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
-                         <Input
-                           id="hora"
-                           type="time"
-                           value={exameData.time}
-                           onChange={(e) => {
-                             const value = e.target.value;
-                             updateCurrentCategoryData('time', value);
-                             setTimeFieldTouched(prev => ({ ...prev, exame: value !== "00:00" }));
-                           }}
-                           onInput={(e) => {
-                             // Captura evento quando usuário clica em "Redefinir" no time picker
-                             const value = (e.target as HTMLInputElement).value;
-                             if (value === "00:00") {
-                               setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                             }
-                           }}
+                          <Input
+                            id="hora"
+                            type="time"
+                            value={exameData.time}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              updateCurrentCategoryData('time', value);
+                              setTimeFieldTouched(prev => ({ ...prev, exame: value !== "00:00" }));
+                            }}
+                            onInput={(e) => {
+                              // Captura evento quando usuário clica em "Redefinir" no time picker
+                              const value = (e.target as HTMLInputElement).value;
+                              if (value === "00:00") {
+                                // Força atualização do estado e visual do campo
+                                setExameData(prev => ({ ...prev, time: "00:00" }));
+                                setTimeFieldTouched(prev => ({ ...prev, exame: false }));
+                              }
+                            }}
                            className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
                              ? 'text-muted-foreground/50' 
                              : ''}`}
@@ -997,13 +1001,15 @@ const Agenda = () => {
                              updateCurrentCategoryData('time', value);
                              setTimeFieldTouched(prev => ({ ...prev, atividade: value !== "00:00" }));
                            }}
-                           onInput={(e) => {
-                             // Captura evento quando usuário clica em "Redefinir" no time picker
-                             const value = (e.target as HTMLInputElement).value;
-                             if (value === "00:00") {
-                               setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                             }
-                           }}
+                            onInput={(e) => {
+                              // Captura evento quando usuário clica em "Redefinir" no time picker
+                              const value = (e.target as HTMLInputElement).value;
+                              if (value === "00:00") {
+                                // Força atualização do estado e visual do campo
+                                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
+                                setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
+                              }
+                            }}
                            className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
                              ? 'text-muted-foreground/50' 
                              : ''}`}
