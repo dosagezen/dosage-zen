@@ -709,7 +709,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 font-normal placeholder:text-muted-foreground/50 text-left [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
@@ -803,7 +803,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 font-normal placeholder:text-muted-foreground/50 text-left [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
@@ -898,7 +898,7 @@ const Agenda = () => {
                           const value = e.target.value || "06:00";
                           updateCurrentCategoryData('time', value);
                         }}
-                        className="h-10 font-normal placeholder:text-muted-foreground/50 text-left [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
+                        className="[&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:opacity-0"
                       />
                     </div>
                   </div>
