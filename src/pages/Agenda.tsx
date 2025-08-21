@@ -678,12 +678,12 @@ const Agenda = () => {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                               "w-full justify-start text-left font-normal h-10",
                               !consultaData.date && "text-muted-foreground"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {consultaData.date ? format(consultaData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                            {consultaData.date ? format(consultaData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -772,12 +772,12 @@ const Agenda = () => {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                               "w-full justify-start text-left font-normal h-10",
                               !exameData.date && "text-muted-foreground"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {exameData.date ? format(exameData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                            {exameData.date ? format(exameData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -867,12 +867,12 @@ const Agenda = () => {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
+                              "w-full justify-start text-left font-normal h-10",
                               !atividadeData.date && "text-muted-foreground"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {atividadeData.date ? format(atividadeData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
+                            {atividadeData.date ? format(atividadeData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal">20/08/25</span>}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
