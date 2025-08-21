@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,10 @@ const Agenda = () => {
     atividade: false
   });
 
+  // Refs para forçar reset visual dos inputs
+  const consultaTimeRef = useRef<HTMLInputElement>(null);
+  const exameTimeRef = useRef<HTMLInputElement>(null);
+  const atividadeTimeRef = useRef<HTMLInputElement>(null);
 
   // Controle mais robusto para detectar reset dos time pickers
   const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
@@ -82,13 +86,22 @@ const Agenda = () => {
   const handleTimeInput = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
     console.log(`Time input ${category}: ${value}`);
     
-    // onInput captura mais mudanças, incluindo reset
+    // onInput captura mudanças incluindo reset
     if (category === 'consulta') {
       setConsultaData(prev => ({ ...prev, time: value }));
+      if (value === "00:00" && consultaTimeRef.current) {
+        consultaTimeRef.current.value = "00:00";
+      }
     } else if (category === 'exame') {
       setExameData(prev => ({ ...prev, time: value }));
+      if (value === "00:00" && exameTimeRef.current) {
+        exameTimeRef.current.value = "00:00";
+      }
     } else if (category === 'atividade') {
       setAtividadeData(prev => ({ ...prev, time: value }));
+      if (value === "00:00" && atividadeTimeRef.current) {
+        atividadeTimeRef.current.value = "00:00";
+      }
     }
     
     setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "00:00" }));
@@ -801,6 +814,7 @@ const Agenda = () => {
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                             <Input
+                             ref={consultaTimeRef}
                              id="hora"
                              type="time"
                              value={consultaData.time}
@@ -900,6 +914,7 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
+                            ref={exameTimeRef}
                             type="time"
                             value={exameData.time}
                             onChange={(e) => handleTimeChange('exame', e.target.value)}
@@ -999,6 +1014,7 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
+                            ref={atividadeTimeRef}
                             type="time"
                             value={atividadeData.time}
                             onChange={(e) => handleTimeChange('atividade', e.target.value)}
