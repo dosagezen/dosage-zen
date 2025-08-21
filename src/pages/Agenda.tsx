@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,103 +63,21 @@ const Agenda = () => {
     atividade: false
   });
 
-  // Refs para os inputs de tempo
-  const consultaTimeRef = useRef<HTMLInputElement>(null);
-  const exameTimeRef = useRef<HTMLInputElement>(null);
-  const atividadeTimeRef = useRef<HTMLInputElement>(null);
 
-  // Estados para controlar o reset do time picker
-  const [inputKeys, setInputKeys] = useState({
-    consulta: 'consulta-0',
-    exame: 'exame-0', 
-    atividade: 'atividade-0'
-  });
-
-  // Setup MutationObserver para detectar mudanças no DOM
-  useEffect(() => {
-    const setupObserver = (ref: React.RefObject<HTMLInputElement>, category: 'consulta' | 'exame' | 'atividade') => {
-      if (!ref.current) return;
-
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
-            const currentValue = ref.current?.value;
-            if (currentValue === "00:00") {
-              console.log(`Reset detectado via MutationObserver em ${category}!`);
-              
-              // Atualiza o estado baseado na categoria
-              if (category === 'consulta') {
-                setConsultaData(prev => ({ ...prev, time: "00:00" }));
-              } else if (category === 'exame') {
-                setExameData(prev => ({ ...prev, time: "00:00" }));
-              } else if (category === 'atividade') {
-                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-              }
-              
-              setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
-            }
-          }
-        });
-      });
-
-      observer.observe(ref.current, {
-        attributes: true,
-        attributeFilter: ['value']
-      });
-
-      return observer;
-    };
-
-    // Polling como backup
-    const setupPolling = (ref: React.RefObject<HTMLInputElement>, category: 'consulta' | 'exame' | 'atividade') => {
-      return setInterval(() => {
-        if (ref.current) {
-          const currentValue = ref.current.value;
-          const currentStateValue = category === 'consulta' ? consultaData.time : 
-                                  category === 'exame' ? exameData.time : atividadeData.time;
-          
-          if (currentValue === "00:00" && currentStateValue !== "00:00") {
-            console.log(`Reset detectado via polling em ${category}!`);
-            
-            if (category === 'consulta') {
-              setConsultaData(prev => ({ ...prev, time: "00:00" }));
-            } else if (category === 'exame') {
-              setExameData(prev => ({ ...prev, time: "00:00" }));
-            } else if (category === 'atividade') {
-              setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-            }
-            
-            setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
-          }
-        }
-      }, 100);
-    };
-
-    const observers: MutationObserver[] = [];
-    const intervals: NodeJS.Timeout[] = [];
-
-    // Aguarda um pouco para os refs serem definidos
-    const timeout = setTimeout(() => {
-      if (consultaTimeRef.current) {
-        observers.push(setupObserver(consultaTimeRef, 'consulta'));
-        intervals.push(setupPolling(consultaTimeRef, 'consulta'));
-      }
-      if (exameTimeRef.current) {
-        observers.push(setupObserver(exameTimeRef, 'exame'));
-        intervals.push(setupPolling(exameTimeRef, 'exame'));
-      }
-      if (atividadeTimeRef.current) {
-        observers.push(setupObserver(atividadeTimeRef, 'atividade'));
-        intervals.push(setupPolling(atividadeTimeRef, 'atividade'));
-      }
-    }, 100);
-
-    return () => {
-      clearTimeout(timeout);
-      observers.forEach(observer => observer.disconnect());
-      intervals.forEach(interval => clearInterval(interval));
-    };
-  }, [consultaData.time, exameData.time, atividadeData.time]);
+  // Controle simples de reset dos time pickers
+  const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
+    console.log(`Time change ${category}: ${value}`);
+    
+    if (category === 'consulta') {
+      setConsultaData(prev => ({ ...prev, time: value }));
+    } else if (category === 'exame') {
+      setExameData(prev => ({ ...prev, time: value }));
+    } else if (category === 'atividade') {
+      setAtividadeData(prev => ({ ...prev, time: value }));
+    }
+    
+    setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "00:00" }));
+  };
 
   const consultas = [
     // Eventos de Agosto 2025
@@ -868,15 +786,10 @@ const Agenda = () => {
                      <div className="space-y-2">
                        <Label htmlFor="hora">Hora</Label>
                             <Input
-                             ref={consultaTimeRef}
                              id="hora"
                              type="time"
                              value={consultaData.time}
-                             onChange={(e) => {
-                               const value = e.target.value;
-                               updateCurrentCategoryData('time', value);
-                               setTimeFieldTouched(prev => ({ ...prev, consulta: value !== "00:00" }));
-                             }}
+                             onChange={(e) => handleTimeChange('consulta', e.target.value)}
                              className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                                ? 'text-muted-foreground/50' 
                                : ''}`}
@@ -971,62 +884,17 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
-                            ref={exameTimeRef}
-                            key={inputKeys.exame}
                             type="time"
                             value={exameData.time}
-                             onChange={(e) => {
-                               const value = e.target.value;
-                               console.log('onChange exame - value:', value, 'previous:', exameData.time);
-                               
-                               // Se mudou para 00:00, trata como reset (botão redefinir)
-                               if (value === "00:00" && exameData.time !== "00:00") {
-                                 console.log('Reset detectado no onChange exame!');
-                                 setExameData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                               } else {
-                                 updateCurrentCategoryData('time', value);
-                                 setTimeFieldTouched(prev => ({ ...prev, exame: value !== "00:00" }));
-                               }
-                             }}
-                             onInput={(e) => {
-                               // Captura evento quando usuário clica em "Redefinir" no time picker
-                               const value = (e.target as HTMLInputElement).value;
-                               console.log('onInput exame - value:', value, 'previous:', exameData.time);
-                               if (value === "00:00" && exameData.time !== "00:00") {
-                                 console.log('Reset detectado no onInput exame!');
-                                 setExameData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                               }
-                             }}
-                           className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
-                             ? 'text-muted-foreground/50' 
-                             : ''}`}
-                           placeholder="Selecionar horário"
-                           style={{
-                             WebkitAppearance: 'none',
-                             MozAppearance: 'textfield'
-                           }}
-                             onFocus={(e) => {
-                               setTimeout(() => {
-                                 const currentValue = e.target.value;
-                                 if (currentValue === "00:00" && exameData.time !== "00:00") {
-                                   console.log('Reset detectado no exame onFocus!');
-                                   setExameData(prev => ({ ...prev, time: "00:00" }));
-                                   setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                                   setInputKeys(prev => ({ ...prev, exame: `exame-${Date.now()}` }));
-                                 }
-                               }, 100);
-                             }}
-                             onBlur={(e) => {
-                               const currentValue = e.target.value;
-                               if (currentValue === "00:00" && exameData.time !== "00:00") {
-                                 console.log('Reset detectado no exame onBlur!');
-                                 setExameData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-                                 setInputKeys(prev => ({ ...prev, exame: `exame-${Date.now()}` }));
-                               }
-                             }}
+                            onChange={(e) => handleTimeChange('exame', e.target.value)}
+                            className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
+                              ? 'text-muted-foreground/50' 
+                              : ''}`}
+                            placeholder="Selecionar horário"
+                            style={{
+                              WebkitAppearance: 'none',
+                              MozAppearance: 'textfield'
+                            }}
                            />
                       </div>
                   </div>
@@ -1114,62 +982,17 @@ const Agenda = () => {
                     <div className="space-y-2">
                       <Label htmlFor="hora">Hora</Label>
                           <Input
-                            ref={atividadeTimeRef}
-                            key={inputKeys.atividade}
-                           type="time"
-                           value={atividadeData.time}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              console.log('onChange atividade - value:', value, 'previous:', atividadeData.time);
-                              
-                              // Se mudou para 00:00, trata como reset (botão redefinir)
-                              if (value === "00:00" && atividadeData.time !== "00:00") {
-                                console.log('Reset detectado no onChange atividade!');
-                                setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-                                setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                              } else {
-                                updateCurrentCategoryData('time', value);
-                                setTimeFieldTouched(prev => ({ ...prev, atividade: value !== "00:00" }));
-                              }
+                            type="time"
+                            value={atividadeData.time}
+                            onChange={(e) => handleTimeChange('atividade', e.target.value)}
+                            className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
+                              ? 'text-muted-foreground/50' 
+                              : ''}`}
+                            placeholder="Selecionar horário"
+                            style={{
+                              WebkitAppearance: 'none',
+                              MozAppearance: 'textfield'
                             }}
-                             onInput={(e) => {
-                               // Captura evento quando usuário clica em "Redefinir" no time picker
-                               const value = (e.target as HTMLInputElement).value;
-                               console.log('onInput atividade - value:', value, 'previous:', atividadeData.time);
-                               if (value === "00:00" && atividadeData.time !== "00:00") {
-                                 console.log('Reset detectado no onInput atividade!');
-                                 setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                               }
-                             }}
-                           className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
-                             ? 'text-muted-foreground/50' 
-                             : ''}`}
-                           placeholder="Selecionar horário"
-                           style={{
-                             WebkitAppearance: 'none',
-                             MozAppearance: 'textfield'
-                           }}
-                             onFocus={(e) => {
-                               setTimeout(() => {
-                                 const currentValue = e.target.value;
-                                 if (currentValue === "00:00" && atividadeData.time !== "00:00") {
-                                   console.log('Reset detectado na atividade onFocus!');
-                                   setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-                                   setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                                   setInputKeys(prev => ({ ...prev, atividade: `atividade-${Date.now()}` }));
-                                 }
-                               }, 100);
-                             }}
-                             onBlur={(e) => {
-                               const currentValue = e.target.value;
-                               if (currentValue === "00:00" && atividadeData.time !== "00:00") {
-                                 console.log('Reset detectado na atividade onBlur!');
-                                 setAtividadeData(prev => ({ ...prev, time: "00:00" }));
-                                 setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-                                 setInputKeys(prev => ({ ...prev, atividade: `atividade-${Date.now()}` }));
-                               }
-                             }}
                            />
                       </div>
                   </div>
