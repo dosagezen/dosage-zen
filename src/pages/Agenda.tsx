@@ -64,10 +64,25 @@ const Agenda = () => {
   });
 
 
-  // Controle simples de reset dos time pickers
+  // Controle mais robusto para detectar reset dos time pickers
   const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
     console.log(`Time change ${category}: ${value}`);
     
+    if (category === 'consulta') {
+      setConsultaData(prev => ({ ...prev, time: value }));
+    } else if (category === 'exame') {
+      setExameData(prev => ({ ...prev, time: value }));
+    } else if (category === 'atividade') {
+      setAtividadeData(prev => ({ ...prev, time: value }));
+    }
+    
+    setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "00:00" }));
+  };
+
+  const handleTimeInput = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
+    console.log(`Time input ${category}: ${value}`);
+    
+    // onInput captura mais mudanças, incluindo reset
     if (category === 'consulta') {
       setConsultaData(prev => ({ ...prev, time: value }));
     } else if (category === 'exame') {
@@ -790,6 +805,7 @@ const Agenda = () => {
                              type="time"
                              value={consultaData.time}
                              onChange={(e) => handleTimeChange('consulta', e.target.value)}
+                             onInput={(e) => handleTimeInput('consulta', (e.target as HTMLInputElement).value)}
                              className={`w-full ${consultaData.time === "00:00" && !timeFieldTouched.consulta 
                                ? 'text-muted-foreground/50' 
                                : ''}`}
@@ -887,6 +903,7 @@ const Agenda = () => {
                             type="time"
                             value={exameData.time}
                             onChange={(e) => handleTimeChange('exame', e.target.value)}
+                            onInput={(e) => handleTimeInput('exame', (e.target as HTMLInputElement).value)}
                             className={`w-full ${exameData.time === "00:00" && !timeFieldTouched.exame 
                               ? 'text-muted-foreground/50' 
                               : ''}`}
@@ -985,6 +1002,7 @@ const Agenda = () => {
                             type="time"
                             value={atividadeData.time}
                             onChange={(e) => handleTimeChange('atividade', e.target.value)}
+                            onInput={(e) => handleTimeInput('atividade', (e.target as HTMLInputElement).value)}
                             className={`w-full ${atividadeData.time === "00:00" && !timeFieldTouched.atividade 
                               ? 'text-muted-foreground/50' 
                               : ''}`}
