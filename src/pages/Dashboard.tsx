@@ -157,11 +157,9 @@ const Dashboard = () => {
                 <Stethoscope className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Exame de Sangue</p>
-                  <Badge variant="secondary" className="text-xs">Exame</Badge>
-                </div>
+                <p className="font-medium text-primary">Exame de Sangue</p>
                 <p className="text-sm text-muted-foreground">Lab. Central • 16/05/2025 às 08:00</p>
+                <Badge variant="secondary" className="text-xs">Exame</Badge>
               </div>
             </div>
 
