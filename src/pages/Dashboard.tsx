@@ -118,31 +118,57 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Próximas Consultas */}
+        {/* Próximos Compromissos */}
         <Card className="shadow-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-primary flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Próximas Consultas
+              Próximos Compromissos
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => navigate('/agenda')}>Ver Agenda</Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {proximasConsultas.map((consulta, index) => <div key={index} className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-success-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-primary">{consulta.especialidade}</p>
-                    <p className="text-sm text-muted-foreground">{consulta.medico}</p>
-                  </div>
+          <CardContent className="space-y-3">
+            {/* Consulta */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/10">
+              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Cardiologia</p>
+                  <Badge variant="outline" className="text-xs">Consulta</Badge>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-primary">{consulta.data}</p>
-                  <p className="text-sm text-muted-foreground">{consulta.horario}</p>
+                <p className="text-sm text-muted-foreground">Dr. João Silva • 15/05/2025 às 09:00</p>
+              </div>
+            </div>
+
+            {/* Exame */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Exame de Sangue</p>
+                  <Badge variant="secondary" className="text-xs">Exame</Badge>
                 </div>
-              </div>)}
+                <p className="text-sm text-muted-foreground">Lab. Central • 16/05/2025 às 08:00</p>
+              </div>
+            </div>
+
+            {/* Atividade */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-success/5 to-success/10 border border-success/10">
+              <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
+                <Users className="w-5 h-5 text-success-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Fisioterapia</p>
+                  <Badge className="text-xs bg-success text-success-foreground">Atividade</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Clínica Vida • 17/05/2025 às 15:30</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
