@@ -134,11 +134,9 @@ const Dashboard = () => {
                 <User className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Cardiologia</p>
-                  <Badge variant="secondary" className="text-xs">Consulta</Badge>
-                </div>
+                <p className="font-medium text-primary">Cardiologia</p>
                 <p className="text-sm text-muted-foreground">Dr. João Silva • 15/05/2025 às 09:00</p>
+                <Badge variant="secondary" className="text-xs">Consulta</Badge>
               </div>
             </div>
 
@@ -147,11 +145,9 @@ const Dashboard = () => {
                 <User className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Endocrinologia</p>
-                  <Badge variant="secondary" className="text-xs">Consulta</Badge>
-                </div>
+                <p className="font-medium text-primary">Endocrinologia</p>
                 <p className="text-sm text-muted-foreground">Dra. Maria Santos • 22/05/2025 às 14:30</p>
+                <Badge variant="secondary" className="text-xs">Consulta</Badge>
               </div>
             </div>
 
