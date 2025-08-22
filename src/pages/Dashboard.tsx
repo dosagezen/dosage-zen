@@ -1,41 +1,67 @@
-import { Calendar, Clock, Pill, Plus, TrendingUp, Users } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
-import AddMedicationDialog from "@/components/AddMedicationDialog"
-import CompromissosModal from "@/components/CompromissosModal"
-
+import { Calendar, Clock, Pill, Plus, TrendingUp, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import AddMedicationDialog from "@/components/AddMedicationDialog";
+import CompromissosModal from "@/components/CompromissosModal";
 const Dashboard = () => {
-  const navigate = useNavigate()
-  const [isDayModalOpen, setIsDayModalOpen] = useState(false)
-  
-  const proximasMedicacoes = [
-    { nome: "Atorvastatina", dosagem: "10 mg", horario: "08:00", status: "próximo" },
-    { nome: "Metformina", dosagem: "500 mg", horario: "12:00", status: "pendente" },
-    { nome: "Losartana", dosagem: "50 mg", horario: "20:00", status: "pendente" }
-  ]
-
-  const proximasConsultas = [
-    { especialidade: "Cardiologia", medico: "Dr. João Silva", data: "15/05/2025", horario: "09:00" },
-    { especialidade: "Endocrinologia", medico: "Dra. Maria Santos", data: "22/05/2025", horario: "14:30" }
-  ]
-
-  const estatisticas = [
-    { titulo: "Compromissos Hoje", valor: "5", icone: Pill, cor: "success" },
-    { titulo: "Próxima Consulta", valor: "3 dias", icone: Calendar, cor: "accent" },
-    { titulo: "Aderência Semanal", valor: "92%", icone: TrendingUp, cor: "primary" },
-    { titulo: "Cuidadores", valor: "2", icone: Users, cor: "muted" }
-  ]
-
-
-  return (
-    <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
+  const navigate = useNavigate();
+  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const proximasMedicacoes = [{
+    nome: "Atorvastatina",
+    dosagem: "10 mg",
+    horario: "08:00",
+    status: "próximo"
+  }, {
+    nome: "Metformina",
+    dosagem: "500 mg",
+    horario: "12:00",
+    status: "pendente"
+  }, {
+    nome: "Losartana",
+    dosagem: "50 mg",
+    horario: "20:00",
+    status: "pendente"
+  }];
+  const proximasConsultas = [{
+    especialidade: "Cardiologia",
+    medico: "Dr. João Silva",
+    data: "15/05/2025",
+    horario: "09:00"
+  }, {
+    especialidade: "Endocrinologia",
+    medico: "Dra. Maria Santos",
+    data: "22/05/2025",
+    horario: "14:30"
+  }];
+  const estatisticas = [{
+    titulo: "Compromissos Hoje",
+    valor: "5",
+    icone: Pill,
+    cor: "success"
+  }, {
+    titulo: "Próxima Consulta",
+    valor: "3 dias",
+    icone: Calendar,
+    cor: "accent"
+  }, {
+    titulo: "Aderência Semanal",
+    valor: "92%",
+    icone: TrendingUp,
+    cor: "primary"
+  }, {
+    titulo: "Cuidadores",
+    valor: "2",
+    icone: Users,
+    cor: "muted"
+  }];
+  return <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-primary">Bom dia, Val!</h1>
+          <h1 className="text-3xl font-bold text-primary">Bom dia, Sena!</h1>
           <p className="text-muted-foreground">Quinta-feira, 14 de agosto de 2025</p>
         </div>
         <AddMedicationDialog>
@@ -48,14 +74,7 @@ const Dashboard = () => {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {estatisticas.map((stat, index) => (
-          <Card 
-            key={index} 
-            className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${
-              index === 0 ? 'cursor-pointer hover:scale-105 transition-transform' : ''
-            }`}
-            onClick={index === 0 ? () => setIsDayModalOpen(true) : undefined}
-          >
+        {estatisticas.map((stat, index) => <Card key={index} className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${index === 0 ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`} onClick={index === 0 ? () => setIsDayModalOpen(true) : undefined}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.titulo}
@@ -65,8 +84,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold text-primary">{stat.valor}</div>
             </CardContent>
-          </Card>
-        ))}
+          </Card>)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -80,8 +98,7 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/medicacoes')}>Ver Todas</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {proximasMedicacoes.map((med, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
+            {proximasMedicacoes.map((med, index) => <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center">
                     <Pill className="w-5 h-5 text-accent-foreground" />
@@ -97,8 +114,7 @@ const Dashboard = () => {
                     {med.status === "próximo" ? "Próximo" : "Pendente"}
                   </Badge>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </CardContent>
         </Card>
 
@@ -112,8 +128,7 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/agenda')}>Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {proximasConsultas.map((consulta, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
+            {proximasConsultas.map((consulta, index) => <div key={index} className="flex items-center justify-between p-3 bg-success/10 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-success-foreground" />
@@ -127,8 +142,7 @@ const Dashboard = () => {
                   <p className="font-semibold text-primary">{consulta.data}</p>
                   <p className="text-sm text-muted-foreground">{consulta.horario}</p>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </CardContent>
         </Card>
       </div>
@@ -140,27 +154,15 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-2 hover:bg-accent/20"
-              onClick={() => navigate('/medicacoes')}
-            >
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/medicacoes')}>
               <Pill className="w-6 h-6" />
               Registrar Dose
             </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-2 hover:bg-accent/20"
-              onClick={() => navigate('/agenda')}
-            >
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')}>
               <Calendar className="w-6 h-6" />
               Agendar Consulta
             </Button>
-            <Button 
-              variant="outline" 
-              className="h-16 flex-col gap-2 hover:bg-accent/20"
-              onClick={() => navigate('/compartilhar')}
-            >
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')}>
               <Users className="w-6 h-6" />
               Compartilhar Dados
             </Button>
@@ -169,12 +171,7 @@ const Dashboard = () => {
       </Card>
 
       {/* Modal de Compromissos do Dia */}
-      <CompromissosModal 
-        isOpen={isDayModalOpen} 
-        onClose={() => setIsDayModalOpen(false)} 
-      />
-    </div>
-  )
-}
-
-export default Dashboard
+      <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
+    </div>;
+};
+export default Dashboard;
