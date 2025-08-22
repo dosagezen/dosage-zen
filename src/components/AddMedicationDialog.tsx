@@ -226,7 +226,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="data-inicio">Data de Início</Label>
               <Popover>
@@ -234,16 +234,12 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
                       !formData.dataInicio && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dataInicio ? (
-                      format(formData.dataInicio, "dd/MM/yyyy", { locale: ptBR })
-                    ) : (
-                      <span>Selecione a data</span>
-                    )}
+                    {formData.dataInicio ? format(formData.dataInicio, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">14/08/25</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -252,8 +248,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                     selected={formData.dataInicio}
                     onSelect={(date) => setFormData(prev => ({ ...prev, dataInicio: date }))}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                     locale={ptBR}
+                    weekStartsOn={1}
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
@@ -265,16 +262,12 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
                       !formData.dataFim && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dataFim ? (
-                      format(formData.dataFim, "dd/MM/yyyy", { locale: ptBR })
-                    ) : (
-                      <span>Selecione a data</span>
-                    )}
+                    {formData.dataFim ? format(formData.dataFim, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">14/11/25</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -283,8 +276,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                     selected={formData.dataFim}
                     onSelect={(date) => setFormData(prev => ({ ...prev, dataFim: date }))}
                     initialFocus
-                    className={cn("p-3 pointer-events-auto")}
                     locale={ptBR}
+                    weekStartsOn={1}
+                    className={cn("p-3 pointer-events-auto")}
                     disabled={(date) => 
                       formData.dataInicio ? date < formData.dataInicio : false
                     }
