@@ -212,8 +212,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                     }}
                     placeholder="00:00"
                     maxLength={5}
-                    className="w-full placeholder:text-muted-foreground/50"
+                    className="w-full pl-10 placeholder:text-muted-foreground/50"
                   />
+                  <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 </div>
                 {formData.horario && (
                   <Button
