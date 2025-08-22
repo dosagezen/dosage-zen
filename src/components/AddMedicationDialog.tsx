@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { cn } from "@/lib/utils"
 
 interface HorarioStatus {
   hora: string;
@@ -46,7 +51,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
     forma: "",
     frequencia: "",
     horario: "",
-    estoque: ""
+    estoque: "",
+    dataInicio: undefined as Date | undefined,
+    dataFim: undefined as Date | undefined
   })
 
   // Atualizar dados quando medication muda
@@ -58,7 +65,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         forma: medication.forma || "",
         frequencia: medication.frequencia || "",
         horario: medication.horarios?.[0]?.hora || "",
-        estoque: medication.estoque?.toString() || ""
+        estoque: medication.estoque?.toString() || "",
+        dataInicio: undefined,
+        dataFim: undefined
       })
     } else {
       // Resetar formulário para nova medicação
@@ -68,7 +77,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         forma: "",
         frequencia: "",
         horario: "",
-        estoque: ""
+        estoque: "",
+        dataInicio: undefined,
+        dataFim: undefined
       })
     }
   }, [medication, isEditing])
@@ -218,21 +229,68 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="data-inicio">Data de Início</Label>
-              <Input 
-                id="data-inicio" 
-                type="date" 
-                placeholder="Ex.: 14/08/2025"
-                className="placeholder:text-muted-foreground/50"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.dataInicio && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.dataInicio ? (
+                      format(formData.dataInicio, "dd/MM/yyyy", { locale: ptBR })
+                    ) : (
+                      <span>Selecione a data</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dataInicio}
+                    onSelect={(date) => setFormData(prev => ({ ...prev, dataInicio: date }))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label htmlFor="data-fim">Data do Término</Label>
-              <Input 
-                id="data-fim" 
-                type="date" 
-                placeholder="Ex.: 14/11/2025"
-                className="placeholder:text-muted-foreground/50"
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.dataFim && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.dataFim ? (
+                      format(formData.dataFim, "dd/MM/yyyy", { locale: ptBR })
+                    ) : (
+                      <span>Selecione a data</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.dataFim}
+                    onSelect={(date) => setFormData(prev => ({ ...prev, dataFim: date }))}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                    locale={ptBR}
+                    disabled={(date) => 
+                      formData.dataInicio ? date < formData.dataInicio : false
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </div>
