@@ -169,11 +169,9 @@ const Dashboard = () => {
                 <Heart className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Fisioterapia</p>
-                  <Badge variant="secondary" className="text-xs">Atividade</Badge>
-                </div>
+                <p className="font-medium text-primary">Fisioterapia</p>
                 <p className="text-sm text-muted-foreground">Clínica Vida • 17/05/2025 às 15:30</p>
+                <Badge variant="secondary" className="text-xs">Atividade</Badge>
               </div>
             </div>
 
@@ -182,11 +180,9 @@ const Dashboard = () => {
                 <Heart className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Caminhada</p>
-                  <Badge variant="secondary" className="text-xs">Atividade</Badge>
-                </div>
+                <p className="font-medium text-primary">Caminhada</p>
                 <p className="text-sm text-muted-foreground">Parque Central • 18/05/2025 às 07:00</p>
+                <Badge variant="secondary" className="text-xs">Atividade</Badge>
               </div>
             </div>
 
@@ -195,11 +191,9 @@ const Dashboard = () => {
                 <Heart className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Hidroginástica</p>
-                  <Badge variant="secondary" className="text-xs">Atividade</Badge>
-                </div>
+                <p className="font-medium text-primary">Hidroginástica</p>
                 <p className="text-sm text-muted-foreground">Academia Aqua • 19/05/2025 às 16:00</p>
+                <Badge variant="secondary" className="text-xs">Atividade</Badge>
               </div>
             </div>
           </CardContent>
