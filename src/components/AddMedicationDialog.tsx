@@ -197,7 +197,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
             <div className="space-y-2">
               <Label htmlFor="inicio">Hora de Início</Label>
               <div className="flex gap-2">
-                <div className="relative flex-1">
+                <div className={`relative flex-1 time-input-container ${formData.horario ? 'has-value' : ''}`}>
                   <Input 
                     id="inicio" 
                     type="text"
@@ -214,7 +214,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                     maxLength={5}
                     className={`w-full ${!formData.horario || formData.horario === ""
                       ? 'text-muted-foreground/50' 
-                      : ''} placeholder:text-muted-foreground/50`}
+                      : ''}`}
                   />
                 </div>
                 {formData.horario && (
