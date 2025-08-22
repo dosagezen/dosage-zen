@@ -149,23 +149,52 @@ export default function Conquistas() {
     const percentual = dados.totalPlanejados > 0 ? Math.round((dados.totalConcluidos / dados.totalPlanejados) * 100) : 0
 
     return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">Resumo - Hoje</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-center">
-            <p className="text-2xl sm:text-3xl font-bold text-primary">
-              {dados.totalPlanejados} planejados / {dados.totalConcluidos} concluídos
-            </p>
-            <p className="text-lg text-muted-foreground">({percentual}%)</p>
+      <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 opacity-60"></div>
+        <CardContent className="relative p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
+              <p className="text-sm text-muted-foreground">Progresso diário</p>
+            </div>
+            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20">
+              <span className="text-2xl font-bold text-primary">{percentual}%</span>
+            </div>
           </div>
-          <Progress value={percentual} className="h-3" />
+
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Progresso</span>
+              <span className="font-medium text-foreground">{dados.totalConcluidos} de {dados.totalPlanejados}</span>
+            </div>
+            <div className="relative">
+              <Progress value={percentual} className="h-2 bg-muted/50" />
+              <div className="absolute -top-1 left-0 w-full flex justify-between">
+                <div className="w-2 h-4 bg-primary/20 rounded-full"></div>
+                <div className="w-2 h-4 bg-primary/20 rounded-full"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="text-center p-3 rounded-lg bg-background/50 border border-border/50">
+              <p className="text-lg font-bold text-primary">{dados.totalPlanejados}</p>
+              <p className="text-xs text-muted-foreground">Planejados</p>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-background/50 border border-border/50">
+              <p className="text-lg font-bold text-success">{dados.totalConcluidos}</p>
+              <p className="text-xs text-muted-foreground">Concluídos</p>
+            </div>
+          </div>
+
           <Button 
             onClick={scrollToGraficos}
-            className="w-full bg-primary hover:bg-primary-hover"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-11 font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
-            Ver detalhes
+            <span>Ver análise detalhada</span>
+            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Button>
         </CardContent>
       </Card>
