@@ -128,7 +128,34 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/agenda')}>Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Exame */}
+            {/* Consultas */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Cardiologia</p>
+                  <Badge variant="secondary" className="text-xs">Consulta</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Dr. João Silva • 15/05/2025 às 09:00</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Endocrinologia</p>
+                  <Badge variant="secondary" className="text-xs">Consulta</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Dra. Maria Santos • 22/05/2025 às 14:30</p>
+              </div>
+            </div>
+
+            {/* Exames */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
               <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
                 <Stethoscope className="w-5 h-5 text-accent-foreground" />
@@ -142,7 +169,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Atividade */}
+            {/* Atividades */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
               <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
                 <Heart className="w-5 h-5 text-accent-foreground" />
@@ -156,17 +183,29 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Consulta */}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
               <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-accent-foreground" />
+                <Heart className="w-5 h-5 text-accent-foreground" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-primary">Cardiologia</p>
-                  <Badge variant="secondary" className="text-xs">Consulta</Badge>
+                  <p className="font-medium text-primary">Caminhada</p>
+                  <Badge variant="secondary" className="text-xs">Atividade</Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">Dr. João Silva • 15/05/2025 às 09:00</p>
+                <p className="text-sm text-muted-foreground">Parque Central • 18/05/2025 às 07:00</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
+              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                <Heart className="w-5 h-5 text-accent-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-primary">Hidroginástica</p>
+                  <Badge variant="secondary" className="text-xs">Atividade</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">Academia Aqua • 19/05/2025 às 16:00</p>
               </div>
             </div>
           </CardContent>
