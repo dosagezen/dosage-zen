@@ -25,7 +25,7 @@ const App = () => (
           <AppSidebar />
           <div className="flex-1 flex flex-col">
             <header className="h-14 flex items-center border-b border-border/50 bg-card/50 backdrop-blur-sm px-4">
-              <SidebarTrigger className="mr-4 h-12 w-12 md:h-10 md:w-10" />
+              <SidebarTrigger className="mr-4" />
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
                   <span className="text-primary-foreground text-xs font-bold">D</span>
