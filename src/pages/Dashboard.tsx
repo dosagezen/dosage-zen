@@ -207,10 +207,12 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/medicacoes')}>
-              <Pill className="w-6 h-6" />
-              Registrar Dose
-            </Button>
+            <AddMedicationDialog>
+              <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+                <Pill className="w-6 h-6" />
+                Registrar Medicação
+              </Button>
+            </AddMedicationDialog>
             <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')}>
               <Calendar className="w-6 h-6" />
               Agendar Consulta
