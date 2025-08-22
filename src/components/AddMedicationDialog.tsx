@@ -214,7 +214,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                     maxLength={5}
                     className={`w-full ${!formData.horario || formData.horario === ""
                       ? 'text-muted-foreground/50' 
-                      : ''}`}
+                      : ''} placeholder:text-muted-foreground/50`}
                   />
                 </div>
                 {formData.horario && (
