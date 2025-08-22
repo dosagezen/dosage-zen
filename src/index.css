@@ -31,6 +31,14 @@
     --success: 118 39% 41%; /* #588157 - Verde Médio */
     --success-foreground: 0 0% 98%;
 
+    /* Cores específicas para categorias de compromissos */
+    --consulta: 146 42% 22%; /* #344E41 - Verde Escuro (mais escuro) */
+    --consulta-foreground: 0 0% 98%;
+    --exame: 118 39% 41%; /* #588157 - Verde Médio */
+    --exame-foreground: 0 0% 98%;
+    --atividade: 81 27% 62%; /* #A3B18A - Verde Claro (mais claro) */
+    --atividade-foreground: 146 42% 22%;
+
     /* Paleta específica do PRD */
     --filter-neutral: 52 20% 85%; /* #DAD7CD */
     --filter-neutral-foreground: 146 42% 22%; /* #344E41 */

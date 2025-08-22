@@ -51,6 +51,18 @@ export default {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))'
 				},
+				consulta: {
+					DEFAULT: 'hsl(var(--consulta))',
+					foreground: 'hsl(var(--consulta-foreground))'
+				},
+				exame: {
+					DEFAULT: 'hsl(var(--exame))',
+					foreground: 'hsl(var(--exame-foreground))'
+				},
+				atividade: {
+					DEFAULT: 'hsl(var(--atividade))',
+					foreground: 'hsl(var(--atividade-foreground))'
+				},
 				filter: {
 					neutral: 'hsl(var(--filter-neutral))',
 					'neutral-foreground': 'hsl(var(--filter-neutral-foreground))',

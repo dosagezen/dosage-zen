@@ -129,9 +129,9 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Consultas */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-consulta/5 to-consulta/10 border border-consulta/10">
+              <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-consulta-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Cardiologia</p>
@@ -140,9 +140,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-consulta/5 to-consulta/10 border border-consulta/10">
+              <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-consulta-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Endocrinologia</p>
@@ -152,9 +152,9 @@ const Dashboard = () => {
             </div>
 
             {/* Exames */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Stethoscope className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-exame/5 to-exame/10 border border-exame/10">
+              <div className="w-10 h-10 bg-exame rounded-full flex items-center justify-center">
+                <Stethoscope className="w-5 h-5 text-exame-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Exame de Sangue</p>
@@ -164,9 +164,9 @@ const Dashboard = () => {
             </div>
 
             {/* Atividades */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
+              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
+                <Heart className="w-5 h-5 text-atividade-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Fisioterapia</p>
@@ -175,9 +175,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
+              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
+                <Heart className="w-5 h-5 text-atividade-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Caminhada</p>
@@ -186,9 +186,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-accent/5 to-accent/10 border border-accent/10">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-accent-foreground" />
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
+              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
+                <Heart className="w-5 h-5 text-atividade-foreground" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Hidroginástica</p>
