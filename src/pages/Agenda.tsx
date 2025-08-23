@@ -645,6 +645,12 @@ const Agenda = () => {
     if (compromissos.length > 0) {
       setSelectedDay(day);
       setIsDayModalOpen(true);
+    } else {
+      // Se não há compromissos, abrir modal para adicionar com a data já setada
+      setConsultaData(prev => ({ ...prev, date: day }));
+      setExameData(prev => ({ ...prev, date: day }));
+      setAtividadeData(prev => ({ ...prev, date: day }));
+      setIsDialogOpen(true);
     }
   };
 
