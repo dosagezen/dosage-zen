@@ -213,9 +213,9 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')}>
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => setIsDayModalOpen(true)}>
               <Calendar className="w-6 h-6" />
-              Agendar Consulta
+              Agendar Compromisso
             </Button>
             <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')}>
               <Users className="w-6 h-6" />
