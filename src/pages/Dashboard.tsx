@@ -42,19 +42,19 @@ const Dashboard = () => {
     icone: Pill,
     cor: "success"
   }, {
-    titulo: "Próxima Consulta",
-    valor: "3 dias",
-    icone: Calendar,
-    cor: "accent"
-  }, {
     titulo: "Aderência Semanal",
     valor: "92%",
     icone: TrendingUp,
     cor: "primary"
   }, {
-    titulo: "Cuidadores",
-    valor: "2",
-    icone: Users,
+    titulo: "Próxima Consulta",
+    valor: "3 dias",
+    icone: User,
+    cor: "accent"
+  }, {
+    titulo: "Próximo Exame",
+    valor: "5 dias",
+    icone: Stethoscope,
     cor: "muted"
   }];
   return <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
@@ -73,7 +73,7 @@ const Dashboard = () => {
       </div>
 
       {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {estatisticas.map((stat, index) => <Card key={index} className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${index === 0 ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`} onClick={index === 0 ? () => setIsDayModalOpen(true) : undefined}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
