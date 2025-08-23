@@ -2,6 +2,7 @@ import { Calendar, Clock, Pill, Plus, TrendingUp, Users, User, Stethoscope, Hear
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
@@ -9,6 +10,7 @@ import CompromissosModal from "@/components/CompromissosModal";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [isCompromissoDialogOpen, setIsCompromissoDialogOpen] = useState(false);
   const proximasMedicacoes = [{
     nome: "Atorvastatina",
     dosagem: "10 mg",
@@ -213,10 +215,30 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => setIsDayModalOpen(true)}>
-              <Calendar className="w-6 h-6" />
-              Agendar Compromisso
-            </Button>
+            <Dialog open={isCompromissoDialogOpen} onOpenChange={setIsCompromissoDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+                  <Calendar className="w-6 h-6" />
+                  Agendar Compromisso
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle className="text-primary">Adicionar compromisso</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <p className="text-muted-foreground">Esta funcionalidade redirecionará você para a página Agenda.</p>
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button variant="outline" onClick={() => setIsCompromissoDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={() => { setIsCompromissoDialogOpen(false); navigate('/agenda'); }}>
+                      Ir para Agenda
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')}>
               <Users className="w-6 h-6" />
               Compartilhar Dados
