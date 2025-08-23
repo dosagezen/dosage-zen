@@ -215,7 +215,7 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')}>
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda?add=true')}>
               <Calendar className="w-6 h-6" />
               Agendar Compromisso
             </Button>

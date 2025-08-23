@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,12 @@ import { cn } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation } from "react-router-dom";
 import CompromissosModal from "@/components/CompromissosModal";
 
 const Agenda = () => {
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -645,6 +647,14 @@ const Agenda = () => {
       setIsDayModalOpen(true);
     }
   };
+
+  // Abrir modal automaticamente se vier da Dashboard
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('add') === 'true') {
+      setIsDialogOpen(true);
+    }
+  }, [location.search]);
 
   return (
     <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
