@@ -6,11 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
-import AddCompromissoDialog from "@/components/AddCompromissoDialog";
 import CompromissosModal from "@/components/CompromissosModal";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
+  const [isAddCompromissoOpen, setIsAddCompromissoOpen] = useState(false);
   const proximasMedicacoes = [{
     nome: "Atorvastatina",
     dosagem: "10 mg",
@@ -215,12 +215,10 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <AddCompromissoDialog>
-              <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
-                <Calendar className="w-6 h-6" />
-                Agendar Compromisso
-              </Button>
-            </AddCompromissoDialog>
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')}>
+              <Calendar className="w-6 h-6" />
+              Agendar Compromisso
+            </Button>
             <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')}>
               <Users className="w-6 h-6" />
               Compartilhar Dados
