@@ -3,14 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
 import CompromissosModal from "@/components/CompromissosModal";
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isAddCompromissoOpen, setIsAddCompromissoOpen] = useState(false);
+
+  // Detectar parâmetro modal=compromissos para reabrir o modal
+  useEffect(() => {
+    const modalParam = searchParams.get('modal');
+    if (modalParam === 'compromissos') {
+      setIsDayModalOpen(true);
+      // Limpar o parâmetro da URL
+      setSearchParams(new URLSearchParams());
+    }
+  }, [searchParams, setSearchParams]);
   const proximasMedicacoes = [{
     nome: "Atorvastatina",
     dosagem: "10 mg",

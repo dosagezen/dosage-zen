@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 import SwipeableCard from "@/components/SwipeableCard"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -39,6 +39,7 @@ interface UndoAction {
 
 const Medicacoes = () => {
   const isMobile = useIsMobile()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const medicacoes: MedicacaoCompleta[] = [
     // Medicações para hoje (ativas) - 5 medicações
@@ -234,12 +235,20 @@ const Medicacoes = () => {
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
     const editId = searchParams.get('edit')
+    const origin = searchParams.get('origin') as 'medicacoes' | 'compromissos' | null
+    
     if (editId) {
       const medicacaoToEdit = medicacoesList.find(m => m.id === parseInt(editId))
       if (medicacaoToEdit) {
         setEditingMedication(medicacaoToEdit)
         setIsEditDialogOpen(true)
-        // Remover o parâmetro da URL
+        
+        // Armazenar a origem no estado ou no histórico para usar quando fechar o modal
+        if (origin && window.history.state !== origin) {
+          window.history.replaceState({ origin }, '', window.location.pathname)
+        }
+        
+        // Remover os parâmetros da URL
         setSearchParams(new URLSearchParams())
       }
     }
@@ -809,6 +818,8 @@ const Medicacoes = () => {
                           onClick={() => {
                             setEditingMedication(medicacao)
                             setIsEditDialogOpen(true)
+                            // Armazenar origem quando abrir pela página medicações
+                            window.history.replaceState({ origin: 'medicacoes' }, '', window.location.pathname)
                           }}
                         >
                           Alterar
@@ -842,9 +853,11 @@ const Medicacoes = () => {
               medicacao={medicacao}
               onComplete={markDoseCompleted}
               onRemove={handleRemoveFromToday}
-              onEdit={(med) => {
+              onEdit={(med, origin) => {
                 setEditingMedication(med)
                 setIsEditDialogOpen(true)
+                // Armazenar origem quando abrir pela página medicações
+                window.history.replaceState({ origin: origin || 'medicacoes' }, '', window.location.pathname)
               }}
             />
           )
@@ -1007,7 +1020,23 @@ const Medicacoes = () => {
       {/* Modal de Edição */}
       <AddMedicationDialog
         open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingMedication(null)
+            
+            // Verificar origem e redirecionar apropriadamente
+            const origin = window.history.state?.origin
+            
+            if (isMobile && origin === 'compromissos') {
+              // Pequeno delay para evitar flicker
+              setTimeout(() => {
+                navigate('/?modal=compromissos', { replace: true })
+              }, 100)
+            }
+            // Se origin === 'medicacoes' ou não definido, permanecer na página atual
+          }
+          setIsEditDialogOpen(open)
+        }}
         medication={editingMedication}
         isEditing={true}
         onDelete={handleDeleteMedication}

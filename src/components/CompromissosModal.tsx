@@ -860,6 +860,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                     medicacao={medicacao}
                     onComplete={(id) => handleComplete(id, 'medicacao')}
                     onRemove={(id) => handleRemove(id, 'medicacao')}
+                    origin="compromissos"
                   />
                 ))}
               </div>

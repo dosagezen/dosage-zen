@@ -29,8 +29,9 @@ interface SwipeableCardProps {
   medicacao: MedicacaoCompleta;
   onComplete: (id: number) => void;
   onRemove: (id: number) => void;
-  onEdit?: (medicacao: MedicacaoCompleta) => void;
+  onEdit?: (medicacao: MedicacaoCompleta, origin?: 'medicacoes' | 'compromissos') => void;
   disabled?: boolean;
+  origin?: 'medicacoes' | 'compromissos';
 }
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
@@ -38,7 +39,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   onComplete, 
   onRemove, 
   onEdit,
-  disabled = false 
+  disabled = false,
+  origin = 'medicacoes'
 }) => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
@@ -194,7 +196,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleCardClick = () => {
     if (isMobile) {
-      navigate(`/medicacoes?edit=${medicacao.id}`)
+      navigate(`/medicacoes?edit=${medicacao.id}&origin=${origin}`)
     }
   }
 
@@ -296,7 +298,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
-                    onClick={() => onEdit?.(medicacao)}
+                    onClick={() => onEdit?.(medicacao, origin)}
                   >
                     <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Alterar
