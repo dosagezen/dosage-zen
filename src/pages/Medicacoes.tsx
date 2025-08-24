@@ -245,10 +245,14 @@ const Medicacoes = () => {
         
         // Remover os parâmetros da URL mas manter a origem no estado
         const currentState = window.history.state || {}
+        const finalOrigin = origin || 'medicacoes'
+        
+        console.log('Configurando modal de edição. Origin original:', origin, 'Final origin:', finalOrigin)
+        
         window.history.replaceState(
-          { ...currentState, origin: origin || 'medicacoes' }, 
+          { ...currentState, origin: finalOrigin }, 
           '', 
-          window.location.pathname
+          `/medicacoes?edit=${editId}`  // Manter o edit ID mas remover origem da URL para não confundir
         )
         setSearchParams(new URLSearchParams())
       }
@@ -1025,9 +1029,13 @@ const Medicacoes = () => {
         open={isEditDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
-            const origin = window.history.state?.origin
+            // Buscar origem dos URL params primeiro, depois do history state
+            const urlParams = new URLSearchParams(window.location.search)
+            const originFromUrl = urlParams.get('origin')
+            const originFromState = window.history.state?.origin
+            const origin = originFromUrl || originFromState
             
-            console.log('Fechando modal de edição. Origem:', origin, 'isMobile:', isMobile)
+            console.log('Fechando modal. Origin URL:', originFromUrl, 'Origin State:', originFromState, 'Final origin:', origin, 'isMobile:', isMobile)
             
             setIsEditDialogOpen(false)
             setEditingMedication(null)
@@ -1044,7 +1052,6 @@ const Medicacoes = () => {
             } else {
               console.log('Permanecendo na página atual (Desktop ou origem medicações)')
             }
-            // Se origin === 'medicacoes' ou desktop, permanece na página atual (comportamento padrão)
           }
           setIsEditDialogOpen(open)
         }}
