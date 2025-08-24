@@ -1027,16 +1027,22 @@ const Medicacoes = () => {
           if (!open) {
             const origin = window.history.state?.origin
             
+            console.log('Fechando modal de edição. Origem:', origin, 'isMobile:', isMobile)
+            
             setIsEditDialogOpen(false)
             setEditingMedication(null)
             
             // Controle de retorno baseado na origem
             if (origin === 'compromissos' && isMobile) {
+              console.log('Mobile - Voltando para Dashboard e reabrindo CompromissosModal')
               // Para mobile vindo do CompromissosModal, voltar para Dashboard e reabrir modal
               navigate('/', { replace: true })
               setTimeout(() => {
+                console.log('Navegando para Dashboard com modal=compromissos')
                 navigate('/?modal=compromissos', { replace: true })
-              }, 100)
+              }, 150)
+            } else {
+              console.log('Permanecendo na página atual (Desktop ou origem medicações)')
             }
             // Se origin === 'medicacoes' ou desktop, permanece na página atual (comportamento padrão)
           }
