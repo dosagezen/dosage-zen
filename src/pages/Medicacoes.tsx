@@ -243,12 +243,13 @@ const Medicacoes = () => {
         setEditingMedication(medicacaoToEdit)
         setIsEditDialogOpen(true)
         
-        // Armazenar a origem no estado ou no histórico para usar quando fechar o modal
-        if (origin && window.history.state !== origin) {
-          window.history.replaceState({ origin }, '', window.location.pathname)
-        }
-        
-        // Remover os parâmetros da URL
+        // Remover os parâmetros da URL mas manter a origem no estado
+        const currentState = window.history.state || {}
+        window.history.replaceState(
+          { ...currentState, origin: origin || 'medicacoes' }, 
+          '', 
+          window.location.pathname
+        )
         setSearchParams(new URLSearchParams())
       }
     }
@@ -815,12 +816,13 @@ const Medicacoes = () => {
                           variant="secondary"
                           size="sm"
                           className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 bg-red-600 hover:bg-red-700 text-white border-red-400"
-                          onClick={() => {
-                            setEditingMedication(medicacao)
-                            setIsEditDialogOpen(true)
-                            // Armazenar origem quando abrir pela página medicações
-                            window.history.replaceState({ origin: 'medicacoes' }, '', window.location.pathname)
-                          }}
+                        onClick={() => {
+                          setEditingMedication(medicacao)
+                          setIsEditDialogOpen(true)
+                          // Armazenar origem quando abrir pela página medicações
+                          const currentState = window.history.state || {}
+                          window.history.replaceState({ ...currentState, origin: 'medicacoes' }, '', window.location.pathname)
+                        }}
                         >
                           Alterar
                         </Button>
@@ -853,12 +855,13 @@ const Medicacoes = () => {
               medicacao={medicacao}
               onComplete={markDoseCompleted}
               onRemove={handleRemoveFromToday}
-              onEdit={(med, origin) => {
-                setEditingMedication(med)
-                setIsEditDialogOpen(true)
-                // Armazenar origem quando abrir pela página medicações
-                window.history.replaceState({ origin: origin || 'medicacoes' }, '', window.location.pathname)
-              }}
+                  onEdit={(med, origin) => {
+                    setEditingMedication(med)
+                    setIsEditDialogOpen(true)
+                    // Armazenar origem quando abrir pela página medicações
+                    const currentState = window.history.state || {}
+                    window.history.replaceState({ ...currentState, origin: 'medicacoes' }, '', window.location.pathname)
+                  }}
             />
           )
         })}
@@ -1018,22 +1021,23 @@ const Medicacoes = () => {
       )}
 
       {/* Modal de Edição */}
-      <AddMedicationDialog
+      <AddMedicationDialog 
         open={isEditDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
-            setEditingMedication(null)
-            
-            // Verificar origem e redirecionar apropriadamente
             const origin = window.history.state?.origin
             
-            if (isMobile && origin === 'compromissos') {
-              // Pequeno delay para evitar flicker
+            setIsEditDialogOpen(false)
+            setEditingMedication(null)
+            
+            // Controle de retorno baseado na origem
+            if (origin === 'compromissos' && isMobile) {
+              // Para mobile vindo do CompromissosModal, voltar para Dashboard e reabrir modal
               setTimeout(() => {
-                navigate('/?modal=compromissos', { replace: true })
+                navigate('/?modal=compromissos')
               }, 100)
             }
-            // Se origin === 'medicacoes' ou não definido, permanecer na página atual
+            // Se origin === 'medicacoes' ou desktop, permanece na página atual (comportamento padrão)
           }
           setIsEditDialogOpen(open)
         }}
