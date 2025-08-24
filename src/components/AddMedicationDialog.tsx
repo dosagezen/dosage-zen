@@ -138,9 +138,9 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         <div className="space-y-4 py-4">
           {/* Status Toggle */}
           <div className="grid grid-cols-3 items-center gap-3">
-            <div className="text-sm font-medium text-foreground">
+            <Label className="text-sm font-medium">
               Medicação Ativa
-            </div>
+            </Label>
             <button
               type="button"
               role="switch"
@@ -160,26 +160,13 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                   formData.status ? "translate-x-8" : "translate-x-1"
                 )}
               />
-              <span
-                className={cn(
-                  "absolute left-1 right-1 flex justify-between items-center text-xs font-medium px-1",
-                  formData.status ? "text-white" : "text-[hsl(146,29%,31%)]"
-                )}
-              >
-                <span className={cn("transition-opacity", formData.status ? "opacity-100" : "opacity-50")}>
-                  SIM
-                </span>
-                <span className={cn("transition-opacity", !formData.status ? "opacity-100" : "opacity-50")}>
-                  NÃO
-                </span>
-              </span>
             </button>
             <div 
               className={cn(
-                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors justify-self-start",
+                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
                 formData.status
                   ? "bg-[hsl(140,36%,42%)] text-white" // #588157 - sucesso
-                  : "bg-[hsl(58,19%,84%)] text-[hsl(146,29%,31%)]" // #DAD7CD neutro, texto #344E41
+                  : "bg-[hsl(0,65%,51%)] text-white" // Vermelho para inativa
               )}
               aria-live="polite"
               aria-label={`Medicação marcada como ${formData.status ? 'ATIVA' : 'INATIVA'}`}
