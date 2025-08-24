@@ -232,28 +232,22 @@ const Medicacoes = () => {
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
 
+  // Estado para rastrear origem
+  const [modalOrigin, setModalOrigin] = useState<string | null>(null)
+  
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
     const editId = searchParams.get('edit')
-    const origin = searchParams.get('origin') as 'medicacoes' | 'compromissos' | null
+    const origin = searchParams.get('origin')
     
     if (editId) {
       const medicacaoToEdit = medicacoesList.find(m => m.id === parseInt(editId))
       if (medicacaoToEdit) {
         setEditingMedication(medicacaoToEdit)
         setIsEditDialogOpen(true)
+        setModalOrigin(origin || 'medicacoes')
         
-        // Remover os parâmetros da URL mas manter a origem no estado
-        const currentState = window.history.state || {}
-        const finalOrigin = origin || 'medicacoes'
-        
-        console.log('Configurando modal de edição. Origin original:', origin, 'Final origin:', finalOrigin)
-        
-        window.history.replaceState(
-          { ...currentState, origin: finalOrigin }, 
-          '', 
-          `/medicacoes?edit=${editId}`  // Manter o edit ID mas remover origem da URL para não confundir
-        )
+        // Limpar parâmetros da URL
         setSearchParams(new URLSearchParams())
       }
     }
@@ -1029,29 +1023,17 @@ const Medicacoes = () => {
         open={isEditDialogOpen}
         onOpenChange={(open) => {
           if (!open) {
-            // Buscar origem dos URL params primeiro, depois do history state
-            const urlParams = new URLSearchParams(window.location.search)
-            const originFromUrl = urlParams.get('origin')
-            const originFromState = window.history.state?.origin
-            const origin = originFromUrl || originFromState
-            
-            console.log('Fechando modal. Origin URL:', originFromUrl, 'Origin State:', originFromState, 'Final origin:', origin, 'isMobile:', isMobile)
-            
             setIsEditDialogOpen(false)
             setEditingMedication(null)
             
             // Controle de retorno baseado na origem
-            if (origin === 'compromissos' && isMobile) {
-              console.log('Mobile - Voltando para Dashboard e reabrindo CompromissosModal')
+            if (modalOrigin === 'compromissos' && isMobile) {
               // Para mobile vindo do CompromissosModal, voltar para Dashboard e reabrir modal
-              navigate('/', { replace: true })
-              setTimeout(() => {
-                console.log('Navegando para Dashboard com modal=compromissos')
-                navigate('/?modal=compromissos', { replace: true })
-              }, 150)
-            } else {
-              console.log('Permanecendo na página atual (Desktop ou origem medicações)')
+              navigate('/?modal=compromissos', { replace: true })
             }
+            // Para outros casos (desktop ou origem medicações), permanece na página atual
+            
+            setModalOrigin(null)
           }
           setIsEditDialogOpen(open)
         }}
