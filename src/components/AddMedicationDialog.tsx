@@ -137,41 +137,41 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         </DialogHeader>
         <div className="space-y-4 py-4">
           {/* Status Toggle */}
-          <div className="grid grid-cols-3 items-center gap-3">
-            <Label htmlFor="status">
-              Medicação Ativa
-            </Label>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.status}
-              aria-label="Status da medicação"
-              onClick={() => setFormData(prev => ({ ...prev, status: !prev.status }))}
-              className={cn(
-                "relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                formData.status 
-                  ? "bg-[hsl(146,29%,31%)] border-[hsl(146,29%,31%)]" // #344E41
-                  : "bg-[hsl(58,19%,84%)] border-[hsl(58,19%,84%)]" // #DAD7CD
-              )}
-            >
-              <span
+          <div className="space-y-2">
+            <Label htmlFor="status">Medicação Ativa</Label>
+            <div className="grid grid-cols-2 items-center gap-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={formData.status}
+                aria-label="Status da medicação"
+                onClick={() => setFormData(prev => ({ ...prev, status: !prev.status }))}
                 className={cn(
-                  "inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-sm",
-                  formData.status ? "translate-x-8" : "translate-x-1"
+                  "relative inline-flex h-8 w-16 items-center rounded-full border-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                  formData.status 
+                    ? "bg-[hsl(146,29%,31%)] border-[hsl(146,29%,31%)]" // #344E41
+                    : "bg-[hsl(58,19%,84%)] border-[hsl(58,19%,84%)]" // #DAD7CD
                 )}
-              />
-            </button>
-            <div 
-              className={cn(
-                "inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
-                formData.status
-                  ? "bg-[hsl(140,36%,42%)] text-white" // #588157 - sucesso
-                  : "bg-[hsl(0,65%,51%)] text-white" // Vermelho para inativa
-              )}
-              aria-live="polite"
-              aria-label={`Medicação marcada como ${formData.status ? 'ATIVA' : 'INATIVA'}`}
-            >
-              {formData.status ? 'ATIVA' : 'INATIVA'}
+              >
+                <span
+                  className={cn(
+                    "inline-block h-6 w-6 transform rounded-full bg-white transition-transform shadow-sm",
+                    formData.status ? "translate-x-8" : "translate-x-1"
+                  )}
+                />
+              </button>
+              <div 
+                className={cn(
+                  "justify-self-start inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                  formData.status
+                    ? "bg-[hsl(140,36%,42%)] text-white" // #588157 - sucesso
+                    : "bg-[hsl(0,65%,51%)] text-white" // Vermelho para inativa
+                )}
+                aria-live="polite"
+                aria-label={`Medicação marcada como ${formData.status ? 'ATIVA' : 'INATIVA'}`}
+              >
+                {formData.status ? 'ATIVA' : 'INATIVA'}
+              </div>
             </div>
           </div>
           <div className="space-y-2">
