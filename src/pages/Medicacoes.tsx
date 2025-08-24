@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 import SwipeableCard from "@/components/SwipeableCard"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useSearchParams } from "react-router-dom"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -38,6 +39,7 @@ interface UndoAction {
 
 const Medicacoes = () => {
   const isMobile = useIsMobile()
+  const [searchParams, setSearchParams] = useSearchParams()
   const medicacoes: MedicacaoCompleta[] = [
     // Medicações para hoje (ativas) - 5 medicações
     {
@@ -228,6 +230,20 @@ const Medicacoes = () => {
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
+
+  // Detectar parâmetro de URL para abrir modal de edição
+  useEffect(() => {
+    const editId = searchParams.get('edit')
+    if (editId) {
+      const medicacaoToEdit = medicacoesList.find(m => m.id === parseInt(editId))
+      if (medicacaoToEdit) {
+        setEditingMedication(medicacaoToEdit)
+        setIsEditDialogOpen(true)
+        // Remover o parâmetro da URL
+        setSearchParams(new URLSearchParams())
+      }
+    }
+  }, [searchParams, medicacoesList, setSearchParams])
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {

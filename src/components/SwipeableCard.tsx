@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Clock, Pill, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useNavigate } from "react-router-dom"
 
 interface HorarioStatus {
   hora: string;
@@ -40,6 +41,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   disabled = false 
 }) => {
   const isMobile = useIsMobile()
+  const navigate = useNavigate()
   const [dragState, setDragState] = useState({
     isDragging: false,
     startX: 0,
@@ -190,16 +192,23 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
+  const handleCardClick = () => {
+    if (isMobile) {
+      navigate(`/medicacoes?edit=${medicacao.id}`)
+    }
+  }
+
   return (
     <div className="relative">
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y"
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y ${isMobile ? 'cursor-pointer' : ''}`}
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
@@ -306,20 +315,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 </div>
               )}
               
-              {/* Botão Alterar para Mobile (sempre visível) */}
-              {isMobile && (
-                <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
-                    onClick={() => onEdit?.(medicacao)}
-                  >
-                    <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    Alterar
-                  </Button>
-                </div>
-              )}
+              {/* No mobile, o card inteiro é clicável para editar */}
             </div>
           </div>
         </CardContent>
