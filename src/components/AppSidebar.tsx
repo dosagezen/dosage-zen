@@ -60,8 +60,10 @@ export function AppSidebar() {
             </div>
           )}
           {isCollapsed && (
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mx-auto">
-              <Pill className="w-5 h-5 text-primary-foreground" />
+            <div className="flex justify-center">
+              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
+                <Pill className="w-5 h-5 text-primary-foreground" />
+              </div>
             </div>
           )}
         </div>
