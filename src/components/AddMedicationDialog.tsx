@@ -138,7 +138,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         <div className="space-y-4 py-4">
           {/* Status Toggle */}
           <div className="grid grid-cols-3 items-center gap-3">
-            <Label className="text-sm font-medium">
+            <Label>
               Medicação Ativa
             </Label>
             <button
