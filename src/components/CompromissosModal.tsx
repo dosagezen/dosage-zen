@@ -860,6 +860,12 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                     medicacao={medicacao}
                     onComplete={(id) => handleComplete(id, 'medicacao')}
                     onRemove={(id) => handleRemove(id, 'medicacao')}
+                    onEdit={(med, origin) => {
+                      // Quando clicar para editar no CompromissosModal,
+                      // salvar estado de origem para voltar aqui quando fechar
+                      window.history.pushState({ origin: 'compromissos', returnModal: true }, '', '/medicacoes')
+                      onClose() // Fechar o CompromissosModal primeiro
+                    }}
                     origin="compromissos"
                   />
                 ))}

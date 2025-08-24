@@ -1033,8 +1033,9 @@ const Medicacoes = () => {
             // Controle de retorno baseado na origem
             if (origin === 'compromissos' && isMobile) {
               // Para mobile vindo do CompromissosModal, voltar para Dashboard e reabrir modal
+              navigate('/', { replace: true })
               setTimeout(() => {
-                navigate('/?modal=compromissos')
+                navigate('/?modal=compromissos', { replace: true })
               }, 100)
             }
             // Se origin === 'medicacoes' ou desktop, permanece na página atual (comportamento padrão)

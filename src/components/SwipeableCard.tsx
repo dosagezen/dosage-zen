@@ -196,10 +196,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleCardClick = () => {
     if (isMobile) {
-      if (origin === 'compromissos') {
-        // Para origem compromissos, salvar o estado e navegar
-        window.history.pushState({ origin: 'compromissos', returnModal: true }, '', '/medicacoes')
-        navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
+      if (origin === 'compromissos' && onEdit) {
+        // Chamar o onEdit do CompromissosModal para gerenciar o estado
+        onEdit(medicacao, origin)
+        // Após fechar o modal, navegar para medicações
+        setTimeout(() => {
+          navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
+        }, 100)
       } else {
         // Para origem medicações, apenas abrir o modal na mesma página
         navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
