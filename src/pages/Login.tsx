@@ -207,7 +207,7 @@ const Login = () => {
 
             {/* Link para Criar Conta */}
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mt-2">
                 Não tem uma conta?{" "}
                 <Button
                   type="button"
