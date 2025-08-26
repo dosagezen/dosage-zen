@@ -144,7 +144,7 @@ export function AppSidebar() {
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar logout</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja sair do sistema? Você precisará fazer login novamente para acessar sua conta.
             </AlertDialogDescription>
