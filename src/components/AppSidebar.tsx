@@ -61,10 +61,12 @@ export function AppSidebar() {
 
   const handleLogoutClick = () => {
     setShowLogoutDialog(true)
-    handleMobileNavClick()
   }
 
   const handleLogoutConfirm = () => {
+    // Fechar sidebar no mobile antes de redirecionar
+    handleMobileNavClick()
+    
     // Mock logout - redirect to login
     toast({
       title: "Logout realizado",
