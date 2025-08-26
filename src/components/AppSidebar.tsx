@@ -1,4 +1,4 @@
-import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut } from "lucide-react"
+import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut, AlertTriangle } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import {
@@ -144,7 +144,10 @@ export function AppSidebar() {
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Confirmar
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja sair do sistema? Você precisará fazer login novamente para acessar sua conta.
             </AlertDialogDescription>
