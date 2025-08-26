@@ -226,7 +226,16 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')} aria-label="Ir para agenda">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20" 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setTimeout(() => navigate('/agenda'), 0);
+              }} 
+              aria-label="Ir para agenda"
+            >
               <Calendar className="w-6 h-6" />
               Agendar Compromisso
             </Button>
