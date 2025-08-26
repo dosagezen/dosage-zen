@@ -78,7 +78,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Quinta-feira, 14 de agosto de 2025</p>
         </div>
         <AddMedicationDialog>
-          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12">
+          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12" aria-label="Adicionar nova medicação">
             <Plus className="w-4 h-4 md:mr-2" />
             <span className="hidden md:inline">Adicionar Medicação</span>
           </Button>
@@ -108,7 +108,7 @@ const Dashboard = () => {
               <Clock className="w-5 h-5" />
               Próximas Medicações
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => navigate('/medicacoes')}>Ver Todas</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {proximasMedicacoes.map((med, index) => <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
@@ -138,7 +138,7 @@ const Dashboard = () => {
               <Calendar className="w-5 h-5" />
               Próximos Compromissos
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => navigate('/agenda')}>Ver Agenda</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/agenda')} aria-label="Ver agenda completa">Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Consultas */}
@@ -221,16 +221,16 @@ const Dashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AddMedicationDialog>
-              <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20">
+              <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" aria-label="Adicionar nova medicação">
                 <Pill className="w-6 h-6" />
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda?add=true')}>
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/agenda')} aria-label="Ir para agenda">
               <Calendar className="w-6 h-6" />
               Agendar Compromisso
             </Button>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')}>
+            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')} aria-label="Compartilhar dados de saúde">
               <Users className="w-6 h-6" />
               Compartilhar Dados
             </Button>

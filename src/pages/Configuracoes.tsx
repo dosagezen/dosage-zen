@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Settings, Users, Shield, Key, Bell, CreditCard } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -7,7 +8,27 @@ import { Button } from "@/components/ui/button";
 import { UserProfileManager } from "@/components/UserProfileManager";
 
 const Configuracoes = () => {
-  const [activeSection, setActiveSection] = useState("perfis");
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [activeSection, setActiveSection] = useState("perfis")
+
+  // Sincronizar com URL params
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (section && sections.find(s => s.id === section)) {
+      setActiveSection(section)
+    }
+  }, [searchParams])
+
+  const handleSectionChange = (sectionId: string) => {
+    setActiveSection(sectionId)
+    // Atualizar rota interna sem reload
+    if (sectionId === 'perfis') {
+      navigate('/configuracoes', { replace: true })
+    } else {
+      navigate(`/configuracoes?section=${sectionId}`, { replace: true })
+    }
+  }
 
   const sections = [
     { id: "perfis", label: "Perfis de Usuário", icon: Users },
@@ -73,7 +94,8 @@ const Configuracoes = () => {
                             ? "bg-primary text-primary-foreground" 
                             : "text-muted-foreground hover:text-foreground hover:bg-accent"
                         }`}
-                        onClick={() => setActiveSection(section.id)}
+                        onClick={() => handleSectionChange(section.id)}
+                        aria-label={`Ir para seção ${section.label}`}
                       >
                         <Icon className="w-4 h-4 mr-3" />
                         {section.label}

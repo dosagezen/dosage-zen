@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -52,8 +53,44 @@ type Periodo = 'hoje' | 'semana' | 'mes' | 'historico'
 type Categoria = keyof typeof CATEGORIA_LABELS | 'todas'
 
 export default function Conquistas() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [periodoSelecionado, setPeriodoSelecionado] = useState<Periodo>('hoje')
   const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<Categoria[]>(['todas'])
+
+  // Sincronizar com URL params
+  useEffect(() => {
+    const periodo = searchParams.get('periodo') as Periodo
+    const categoria = searchParams.get('cat') as Categoria
+    
+    if (periodo && ['hoje', 'semana', 'mes', 'historico'].includes(periodo)) {
+      setPeriodoSelecionado(periodo)
+    }
+    
+    if (categoria && Object.keys(CATEGORIA_LABELS).includes(categoria)) {
+      setCategoriasSelecionadas([categoria])
+    } else if (categoria === 'todas') {
+      setCategoriasSelecionadas(['todas'])
+    }
+  }, [searchParams])
+
+  // Atualizar URL quando filtros mudarem
+  const updateFilters = (novoPeriodo?: Periodo, novaCategoria?: Categoria[]) => {
+    const newParams = new URLSearchParams(searchParams)
+    
+    if (novoPeriodo) {
+      newParams.set('periodo', novoPeriodo)
+    }
+    
+    if (novaCategoria) {
+      if (novaCategoria.includes('todas')) {
+        newParams.delete('cat')
+      } else {
+        newParams.set('cat', novaCategoria.join(','))
+      }
+    }
+    
+    setSearchParams(newParams)
+  }
 
   // Função para calcular dados filtrados
   const dadosFiltrados = useMemo(() => {
@@ -110,7 +147,11 @@ export default function Conquistas() {
                 ? 'bg-primary text-primary-foreground' 
                 : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
             }`}
-            onClick={() => setPeriodoSelecionado(periodo.key as Periodo)}
+            onClick={() => {
+              setPeriodoSelecionado(periodo.key as Periodo)
+              updateFilters(periodo.key as Periodo, categoriasSelecionadas)
+            }}
+            aria-label={`Filtrar por período: ${periodo.label}`}
           >
             {periodo.label}
           </Badge>
@@ -124,11 +165,14 @@ export default function Conquistas() {
       <Select
         value={categoriasSelecionadas.includes('todas') ? 'todas' : categoriasSelecionadas.join(',')}
         onValueChange={(value) => {
+          let novaCategoria: Categoria[]
           if (value === 'todas') {
-            setCategoriasSelecionadas(['todas'])
+            novaCategoria = ['todas']
           } else {
-            setCategoriasSelecionadas(value.split(',') as Categoria[])
+            novaCategoria = value.split(',') as Categoria[]
           }
+          setCategoriasSelecionadas(novaCategoria)
+          updateFilters(periodoSelecionado, novaCategoria)
         }}
       >
         <SelectTrigger className="w-full sm:w-[200px]">

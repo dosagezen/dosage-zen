@@ -672,7 +672,7 @@ const Agenda = () => {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
+            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]" aria-label="Adicionar novo compromisso">
               {isMobile ? (
                 <Plus className="w-4 h-4" />
               ) : (
@@ -1200,10 +1200,10 @@ const Agenda = () => {
               {format(currentDate, "MMMM yyyy", { locale: ptBR })}
             </CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={navigateToPreviousMonth} className="h-8 w-8 p-0">
+              <Button variant="outline" size="sm" onClick={navigateToPreviousMonth} className="h-8 w-8 p-0" aria-label="Mês anterior">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={navigateToNextMonth} className="h-8 w-8 p-0">
+              <Button variant="outline" size="sm" onClick={navigateToNextMonth} className="h-8 w-8 p-0" aria-label="Próximo mês">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>

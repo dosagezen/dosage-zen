@@ -297,8 +297,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
-                      onClick={() => onRemove(medicacao.id)}
+                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] hover:text-[#FF3B30]"
+                      onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
+                      aria-label={`Excluir medicação ${medicacao.nome}`}
                     >
                       <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                       Excluir
@@ -308,7 +309,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     variant="outline"
                     size="sm"
                     className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
-                    onClick={() => onEdit?.(medicacao, origin)}
+                    onClick={(e) => { e.stopPropagation(); onEdit?.(medicacao, origin); }}
+                    aria-label={`Alterar medicação ${medicacao.nome}`}
                   >
                     <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Alterar
@@ -318,7 +320,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       variant="outline"
                       size="sm"
                       className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
-                      onClick={() => onComplete(medicacao.id)}
+                      onClick={(e) => { e.stopPropagation(); onComplete(medicacao.id); }}
+                      aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
                     >
                       <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                       Concluir
