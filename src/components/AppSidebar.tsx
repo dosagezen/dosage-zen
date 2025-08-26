@@ -1,5 +1,6 @@
-import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp } from "lucide-react"
-import { NavLink, useLocation } from "react-router-dom"
+import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut } from "lucide-react"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { useState } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +12,18 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useToast } from "@/hooks/use-toast"
 
 const items = [
   { title: "Início", url: "/", icon: Home },
@@ -27,9 +39,12 @@ const items = [
 export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { toast } = useToast()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
   const isMobile = useIsMobile()
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   const isActive = (path: string) => currentPath === path
   const isInactive = (path: string) => ["/farmacias", "/compartilhar", "/relatorios"].includes(path)
@@ -42,6 +57,20 @@ export function AppSidebar() {
     if (isMobile) {
       setOpenMobile(false)
     }
+  }
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true)
+    handleMobileNavClick()
+  }
+
+  const handleLogoutConfirm = () => {
+    // Mock logout - redirect to login
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso."
+    })
+    navigate("/login")
   }
 
   return (
@@ -93,10 +122,41 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Item Sair */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button 
+                    onClick={handleLogoutClick}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/20 text-foreground/80 transition-colors"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    {!isCollapsed && <span>Sair</span>}
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Dialog de Confirmação de Logout */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja sair do sistema? Você precisará fazer login novamente para acessar sua conta.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogoutConfirm}>
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sidebar>
   )
 }
