@@ -109,8 +109,8 @@ const Agenda = () => {
     setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
   };
 
+  // Mock data simplificado para melhor performance
   const consultas = [
-    // Eventos de Agosto 2025
     {
       id: 1,
       tipo: "consulta",
@@ -123,7 +123,6 @@ const Agenda = () => {
       observacoes: "Levar resultados de exames anteriores",
       status: "agendado"
     },
-    // Eventos do dia 19/08/2025
     {
       id: 8,
       tipo: "consulta",
@@ -149,18 +148,6 @@ const Agenda = () => {
       status: "confirmado"
     },
     {
-      id: 10,
-      tipo: "exame",
-      especialidade: "Laboratório",
-      medico: "Lab Diagnóstica",
-      local: "Laboratório Diagnóstica",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "07:00",
-      observacoes: "Hemograma completo - jejum de 12 horas",
-      status: "agendado"
-    },
-    {
       id: 2,
       tipo: "exame",
       especialidade: "Endocrinologia",
@@ -171,71 +158,10 @@ const Agenda = () => {
       hora: "14:30",
       observacoes: "Jejum de 12 horas",
       status: "agendado"
-    },
-    {
-      id: 3,
-      tipo: "consulta",
-      especialidade: "Oftalmologia",
-      medico: "Dr. Carlos Oliveira",
-      local: "Centro Médico Visual",
-      data: "2025-08-28",
-      dataFormatada: "28/08/2025",
-      hora: "16:00",
-      observacoes: "Avaliação de rotina",
-      status: "confirmado"
-    },
-    // Eventos de Setembro 2025
-    {
-      id: 4,
-      tipo: "consulta",
-      especialidade: "Dermatologia",
-      medico: "Dra. Ana Costa",
-      local: "Clínica DermaCare",
-      data: "2025-09-05",
-      dataFormatada: "05/09/2025",
-      hora: "10:30",
-      observacoes: "Consulta para acompanhamento",
-      status: "agendado"
-    },
-    {
-      id: 5,
-      tipo: "exame",
-      especialidade: "Radiologia",
-      medico: "Dr. Roberto Lima",
-      local: "Centro de Diagnóstico",
-      data: "2025-09-12",
-      dataFormatada: "12/09/2025",
-      hora: "08:00",
-      observacoes: "Ultrassom abdominal - jejum de 8 horas",
-      status: "agendado"
-    },
-    {
-      id: 6,
-      tipo: "consulta",
-      especialidade: "Neurologia",
-      medico: "Dr. Fernando Souza",
-      local: "Hospital Neurológico",
-      data: "2025-09-18",
-      dataFormatada: "18/09/2025",
-      hora: "15:00",
-      observacoes: "Primeira consulta",
-      status: "agendado"
-    },
-    {
-      id: 7,
-      tipo: "exame",
-      especialidade: "Laboratório",
-      medico: "Lab Central",
-      local: "Laboratório Central",
-      data: "2025-09-25",
-      dataFormatada: "25/09/2025",
-      hora: "07:30",
-      observacoes: "Exames de sangue - jejum de 12 horas",
-      status: "agendado"
     }
   ];
 
-  // Mock de atividades para demonstrar no calendário
+  // Mock de atividades simplificado
   const atividades = [
     {
       id: 301,
@@ -264,69 +190,11 @@ const Agenda = () => {
       status: "pendente",
       dias: ["Dom"],
       repeticao: "Não se repete"
-    },
-    {
-      id: 303,
-      tipo: "atividade",
-      nome: "Pilates",
-      local: "Studio Equilíbrio",
-      data: "2025-08-20",
-      dataFormatada: "20/08/2025",
-      hora: "08:00",
-      duracao: "50min",
-      observacoes: "Aula com foco no core",
-      status: "pendente",
-      dias: ["Ter", "Qui"],
-      repeticao: "Toda semana"
-    },
-    // Novos exemplos mockados com recorrência
-    {
-      id: 304,
-      tipo: "atividade",
-      nome: "Fisioterapia",
-      local: "Clínica Movimento",
-      data: "2025-08-21",
-      dataFormatada: "21/08/2025",
-      hora: "07:30",
-      duracao: "45min",
-      observacoes: "Exercícios para fortalecimento",
-      status: "pendente",
-      dias: ["Seg", "Qua", "Sex"],
-      repeticao: "Toda semana"
-    },
-    {
-      id: 305,
-      tipo: "atividade",
-      nome: "Fisioterapia",
-      local: "Clínica Movimento",
-      data: "2025-08-23",
-      dataFormatada: "23/08/2025",
-      hora: "07:30",
-      duracao: "45min",
-      observacoes: "Exercícios para fortalecimento",
-      status: "pendente",
-      dias: ["Seg", "Qua", "Sex"],
-      repeticao: "Toda semana"
-    },
-    {
-      id: 306,
-      tipo: "atividade",
-      nome: "Pilates",
-      local: "Studio Equilíbrio",
-      data: "2025-08-22",
-      dataFormatada: "22/08/2025",
-      hora: "08:00",
-      duracao: "50min",
-      observacoes: "Aula com foco no core",
-      status: "pendente",
-      dias: ["Ter", "Qui"],
-      repeticao: "Toda semana"
     }
   ];
 
-  // Mock de medicações para demonstrar no calendário
+  // Mock de medicações simplificado
   const medicacoes = [
-    // Medicações de Agosto
     {
       id: 101,
       tipo: "medicacao",
@@ -338,7 +206,6 @@ const Agenda = () => {
       observacoes: "Tomar com o café da manhã",
       status: "pendente"
     },
-    // Medicações do dia 19/08/2025
     {
       id: 107,
       tipo: "medicacao",
@@ -351,81 +218,14 @@ const Agenda = () => {
       status: "pendente"
     },
     {
-      id: 108,
-      tipo: "medicacao",
-      nome: "Sinvastatina",
-      dosagem: "20 mg",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "22:00",
-      observacoes: "Tomar antes de dormir",
-      status: "pendente"
-    },
-    {
-      id: 109,
-      tipo: "medicacao",
-      nome: "Ácido Fólico",
-      dosagem: "5 mg",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "12:30",
-      observacoes: "Tomar após o almoço",
-      status: "pendente"
-    },
-    {
       id: 102,
-      tipo: "medicacao",
-      nome: "Glifarge XR",
-      dosagem: "500 mg",
-      data: "2025-08-22",
-      dataFormatada: "22/08/2025",
-      hora: "12:00",
-      observacoes: "Tomar antes do almoço",
-      status: "pendente"
-    },
-    {
-      id: 103,
-      tipo: "medicacao",
-      nome: "Omega 3",
-      dosagem: "1000 mg",
-      data: "2025-08-28",
-      dataFormatada: "28/08/2025",
-      hora: "20:00",
-      observacoes: "Tomar após o jantar",
-      status: "pendente"
-    },
-    // Medicações de Setembro
-    {
-      id: 104,
-      tipo: "medicacao",
-      nome: "Vitamina D",
-      dosagem: "2000 UI",
-      data: "2025-09-05",
-      dataFormatada: "05/09/2025",
-      hora: "09:00",
-      observacoes: "Tomar com leite ou iogurte",
-      status: "pendente"
-    },
-    {
-      id: 105,
       tipo: "medicacao",
       nome: "Losartana",
       dosagem: "50 mg",
-      data: "2025-09-12",
-      dataFormatada: "12/09/2025",
+      data: "2025-08-22",
+      dataFormatada: "22/08/2025",
       hora: "19:00",
       observacoes: "Tomar sempre no mesmo horário",
-      status: "pendente"
-    },
-    {
-      id: 106,
-      tipo: "medicacao",
-      nome: "Complexo B",
-      dosagem: "1 comprimido",
-      data: "2025-09-18",
-      dataFormatada: "18/09/2025",
-      hora: "08:30",
-      observacoes: "Tomar em jejum",
       status: "pendente"
     }
   ];
