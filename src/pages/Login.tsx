@@ -72,7 +72,7 @@ const Login = () => {
           description: `Bem-vindo(a), ${user.nome}!`,
         });
         
-        navigate("/");
+        navigate("/dashboard");
       } else {
         toast({
           title: "Erro no login",
@@ -164,7 +164,7 @@ const Login = () => {
                   type="button"
                   variant="link"
                   className="p-0 h-auto text-sm text-primary hover:text-primary-hover"
-                  onClick={() => navigate("/esqueci-senha")}
+                  onClick={() => navigate("/forgot-password")}
                 >
                   Esqueci a senha
                 </Button>
@@ -205,17 +205,19 @@ const Login = () => {
               </div>
             </div>
 
-            {/* Link para voltar */}
-            <div className="text-center mt-6">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => navigate("/")}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar ao app
-              </Button>
+            {/* Link para Criar Conta */}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">
+                Não tem uma conta?{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto text-sm text-primary hover:text-primary-hover"
+                  onClick={() => navigate("/signup")}
+                >
+                  Criar conta
+                </Button>
+              </p>
             </div>
           </CardContent>
         </Card>

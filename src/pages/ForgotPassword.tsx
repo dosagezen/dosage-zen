@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type Step = "email" | "codigo" | "nova-senha" | "sucesso";
 
-const EsqueciSenha = () => {
+const ForgotPassword = () => {
   const [currentStep, setCurrentStep] = useState<Step>("email");
   const [formData, setFormData] = useState({
     email: "",
@@ -83,8 +83,8 @@ const EsqueciSenha = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
-        title: "E-mail enviado",
-        description: "Código de recuperação enviado para seu e-mail.",
+        title: "E-mail enviado (mock)",
+        description: "Se existir uma conta, enviamos um link de recuperação.",
       });
       
       setCurrentStep("codigo");
@@ -115,7 +115,7 @@ const EsqueciSenha = () => {
         setCurrentStep("nova-senha");
       } else {
         toast({
-          title: "Código inválido",
+          title: "Código inválido (mock)",
           description: "Código incorreto. Use 123456 para demonstração.",
           variant: "destructive"
         });
@@ -197,7 +197,7 @@ const EsqueciSenha = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Enviar Código
+                  Enviar Link de Recuperação
                 </div>
               )}
             </Button>
@@ -300,6 +300,7 @@ const EsqueciSenha = () => {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                     disabled={isLoading}
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
@@ -329,6 +330,7 @@ const EsqueciSenha = () => {
                     className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     disabled={isLoading}
+                    aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
@@ -350,7 +352,7 @@ const EsqueciSenha = () => {
                   Alterando...
                 </div>
               ) : (
-                "Alterar Senha"
+                "Salvar Nova Senha"
               )}
             </Button>
           </form>
@@ -364,9 +366,9 @@ const EsqueciSenha = () => {
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-success">Senha alterada!</h3>
+              <h3 className="text-lg font-semibold text-success">Senha alterada (mock)!</h3>
               <p className="text-sm text-muted-foreground">
-                Sua senha foi alterada com sucesso. Agora você pode fazer login com a nova senha.
+                Sua senha foi alterada com sucesso. Vá para o login.
               </p>
             </div>
 
@@ -374,7 +376,7 @@ const EsqueciSenha = () => {
               onClick={() => navigate("/login")}
               className="w-full bg-primary hover:bg-primary-hover"
             >
-              Fazer Login
+              Ir para Login
             </Button>
           </div>
         );
@@ -432,4 +434,4 @@ const EsqueciSenha = () => {
   );
 };
 
-export default EsqueciSenha;
+export default ForgotPassword;
