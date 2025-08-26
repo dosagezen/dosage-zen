@@ -26,7 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 
 const items = [
-  { title: "Início", url: "/", icon: Home },
+  { title: "Início", url: "/dashboard", icon: Home },
   { title: "Conquistas", url: "/conquistas", icon: TrendingUp },
   { title: "Medicações", url: "/medicacoes", icon: Pill },
   { title: "Agenda", url: "/agenda", icon: Calendar },

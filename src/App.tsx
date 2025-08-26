@@ -46,7 +46,7 @@ const AppLayout = () => {
           </header>
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Login />} />
+              <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/conquistas" element={<Conquistas />} />
               <Route path="/medicacoes" element={<Medicacoes />} />
