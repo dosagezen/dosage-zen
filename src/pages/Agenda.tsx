@@ -30,6 +30,12 @@ const Agenda = () => {
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
   
+  // Garantir scroll para o topo quando a página carregar
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
+  
   // Estados específicos para cada categoria
   const [consultaData, setConsultaData] = useState({
     date: undefined as Date | undefined,

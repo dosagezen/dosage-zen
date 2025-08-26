@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useNavigate, useSearchParams, NavLink } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
 import CompromissosModal from "@/components/CompromissosModal";
@@ -226,11 +226,17 @@ const Dashboard = () => {
                 Registrar Medicação
               </Button>
             </AddMedicationDialog>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" asChild aria-label="Ir para agenda">
-              <NavLink to="/agenda">
-                <Calendar className="w-6 h-6" />
-                Agendar Compromisso
-              </NavLink>
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20" 
+              onClick={() => {
+                navigate('/agenda');
+                window.scrollTo(0, 0);
+              }}
+              aria-label="Ir para agenda"
+            >
+              <Calendar className="w-6 h-6" />
+              Agendar Compromisso
             </Button>
             <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')} aria-label="Compartilhar dados de saúde">
               <Users className="w-6 h-6" />
