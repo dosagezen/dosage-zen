@@ -72,7 +72,7 @@ const Login = () => {
           description: `Bem-vindo(a), ${user.nome}!`,
         });
         
-        navigate("/dashboard");
+        navigate("/app");
       } else {
         toast({
           title: "Erro no login",
