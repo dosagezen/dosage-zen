@@ -19,9 +19,9 @@ interface ConsultaCompleta {
 
 interface SwipeableConsultaCardProps {
   consulta: ConsultaCompleta;
-  onComplete: (id: number, type: 'consulta') => void;
-  onRemove: (id: number, type: 'consulta') => void;
-  onEdit?: (id: number) => void;
+  onComplete: (id: number) => void;
+  onRemove: (id: number) => void;
+  onEdit?: (consulta: ConsultaCompleta) => void;
 }
 
 const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
@@ -62,11 +62,9 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
 
     if (Math.abs(delta) > threshold) {
       if (delta > 0) {
-        // Swipe direita - concluir
-        onComplete(consulta.id, 'consulta')
+        onComplete(consulta.id)
       } else {
-        // Swipe esquerda - remover
-        onRemove(consulta.id, 'consulta')
+        onRemove(consulta.id)
       }
     }
 
@@ -111,15 +109,22 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     )
   }
 
+  const handleCardClick = () => {
+    if (isMobile && onEdit && !isDragging) {
+      onEdit(consulta)
+    }
+  }
+
   return (
     <div className="relative">
       {getBackgroundOverlay()}
       <Card 
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10"
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10 ${isMobile && onEdit ? "cursor-pointer" : ""}`}
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
@@ -158,33 +163,33 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
                 </Badge>
               </div>
               
-              {/* Botões para Desktop */}
+              {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
               {!isMobile && (
                 <div className="flex gap-2 justify-start sm:justify-end mt-2">
-                  {onEdit && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onEdit(consulta.id)}
-                      className="h-8 text-xs"
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar
-                    </Button>
-                  )}
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onRemove(consulta.id, 'consulta')}
+                    onClick={() => onRemove(consulta.id)}
                     className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
                     Excluir
                   </Button>
+                  {onEdit && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onEdit(consulta)}
+                      className="h-8 text-xs"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Alterar
+                    </Button>
+                  )}
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => onComplete(consulta.id, 'consulta')}
+                    onClick={() => onComplete(consulta.id)}
                     className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
                   >
                     <Check className="w-3 h-3 mr-1" />
@@ -199,7 +204,10 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onEdit(consulta.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit(consulta)
+                    }}
                     className="h-8 text-xs"
                   >
                     <Edit className="w-3 h-3 mr-1" />

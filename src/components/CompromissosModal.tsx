@@ -10,6 +10,7 @@ import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
 import SwipeableAtividadeCard from './SwipeableAtividadeCard'
 import AddMedicationDialog from './AddMedicationDialog'
+import EditarCompromissoDialog from './EditarCompromissoDialog'
 
 interface HorarioStatus {
   hora: string;
@@ -41,6 +42,7 @@ interface ConsultaCompleta {
   removed_from_today?: boolean;
   removal_reason?: 'completed' | 'excluded';
   completed_at?: string;
+  observacoes?: string;
 }
 
 interface ExameCompleto {
@@ -52,6 +54,9 @@ interface ExameCompleto {
   removed_from_today?: boolean;
   removal_reason?: 'completed' | 'excluded';
   completed_at?: string;
+  tipoExame?: string;
+  preparos?: string;
+  observacoes?: string;
 }
 
 interface AtividadeCompleta {
@@ -66,6 +71,8 @@ interface AtividadeCompleta {
   completed_at?: string;
   dias?: string[];
   repeticao?: string;
+  observacoes?: string;
+  nome?: string;
 }
 
 interface UndoAction {
@@ -181,6 +188,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Estados para o modal de edição de medicação
   const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  
+  // Estados para o modal de edição de compromisso
+  const [editingCompromisso, setEditingCompromisso] = useState<ConsultaCompleta | ExameCompleto | AtividadeCompleta | null>(null)
+  const [isEditCompromissoDialogOpen, setIsEditCompromissoDialogOpen] = useState(false)
 
   // Função para calcular próximo horário pendente
   const calculateNextDose = useCallback((horarios: HorarioStatus[]): string => {
@@ -894,14 +905,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                 Consultas ({consultasPrincipais.length})
               </h3>
               <div className="space-y-3">
-                {consultasPrincipais.map((consulta) => (
-                  <SwipeableConsultaCard
-                    key={consulta.id}
-                    consulta={consulta}
-                    onComplete={handleComplete}
-                    onRemove={handleRemove}
-                  />
-                ))}
+                  {consultasPrincipais.map((consulta) => (
+                   <SwipeableConsultaCard
+                     key={consulta.id}
+                     consulta={consulta}
+                     onComplete={(id) => handleComplete(id, 'consulta')}
+                     onRemove={(id) => handleRemove(id, 'consulta')}
+                     onEdit={(consulta) => {
+                       setEditingCompromisso(consulta)
+                       setIsEditCompromissoDialogOpen(true)
+                     }}
+                   />
+                 ))}
               </div>
             </div>
           ) : (
@@ -924,14 +939,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                 Exames ({examesPrincipais.length})
               </h3>
               <div className="space-y-3">
-                {examesPrincipais.map((exame) => (
-                  <SwipeableExameCard
-                    key={exame.id}
-                    exame={exame}
-                    onComplete={handleComplete}
-                    onRemove={handleRemove}
-                  />
-                ))}
+                  {examesPrincipais.map((exame) => (
+                   <SwipeableExameCard
+                     key={exame.id}
+                     exame={exame}
+                     onComplete={(id) => handleComplete(id, 'exame')}
+                     onRemove={(id) => handleRemove(id, 'exame')}
+                     onEdit={(exame) => {
+                       setEditingCompromisso(exame)
+                       setIsEditCompromissoDialogOpen(true)
+                     }}
+                   />
+                 ))}
               </div>
             </div>
           ) : (
@@ -954,14 +973,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                 Atividades ({atividadesPrincipais.length})
               </h3>
               <div className="space-y-3">
-                {atividadesPrincipais.map((atividade) => (
-                  <SwipeableAtividadeCard
-                    key={atividade.id}
-                    atividade={atividade}
-                    onComplete={handleComplete}
-                    onRemove={handleRemove}
-                  />
-                ))}
+                  {atividadesPrincipais.map((atividade) => (
+                   <SwipeableAtividadeCard
+                     key={atividade.id}
+                     atividade={atividade}
+                     onComplete={(id) => handleComplete(id, 'atividade')}
+                     onRemove={(id) => handleRemove(id, 'atividade')}
+                     onEdit={(atividade) => {
+                       setEditingCompromisso(atividade)
+                       setIsEditCompromissoDialogOpen(true)
+                     }}
+                   />
+                 ))}
               </div>
             </div>
           ) : (
@@ -1141,6 +1164,32 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           }}
           medication={editingMedication}
           isEditing={true}
+        />
+        
+        {/* Modal de Edição de Compromisso */}
+        <EditarCompromissoDialog
+          isOpen={isEditCompromissoDialogOpen}
+          onClose={() => {
+            setIsEditCompromissoDialogOpen(false)
+            setEditingCompromisso(null)
+          }}
+          compromisso={editingCompromisso}
+          onSave={(updatedCompromisso) => {
+            // Atualizar o compromisso nos estados correspondentes
+            if (updatedCompromisso.tipo === 'consulta') {
+              setConsultasList(prev => prev.map(c => 
+                c.id === updatedCompromisso.id ? updatedCompromisso as ConsultaCompleta : c
+              ))
+            } else if (updatedCompromisso.tipo === 'exame') {
+              setExamesList(prev => prev.map(e => 
+                e.id === updatedCompromisso.id ? updatedCompromisso as ExameCompleto : e
+              ))
+            } else if (updatedCompromisso.tipo === 'atividade') {
+              setAtividadesList(prev => prev.map(a => 
+                a.id === updatedCompromisso.id ? updatedCompromisso as AtividadeCompleta : a
+              ))
+            }
+          }}
         />
       </DialogContent>
     </Dialog>
