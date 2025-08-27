@@ -51,6 +51,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     currentX: 0,
     currentY: 0,
     deltaX: 0,
+    deltaY: 0,
     isHorizontalSwipe: false,
   })
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
@@ -68,6 +69,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       currentX: touch.clientX,
       currentY: touch.clientY,
       deltaX: 0,
+      deltaY: 0,
       isHorizontalSwipe: false,
     })
   }
@@ -114,6 +116,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         currentX: touch.clientX,
         currentY: touch.clientY,
         deltaX: normalizedDelta,
+        deltaY: deltaY,
       }))
 
       // Mostrar hint baseado na direção
@@ -146,6 +149,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           onRemove(medicacao.id)
         }
       }
+    } else if (!dragState.isHorizontalSwipe && Math.abs(dragState.deltaX) < 10 && Math.abs(dragState.deltaY) < 10) {
+      // Se não foi swipe e movimento foi mínimo, tratar como tap/click
+      handleCardClick()
     }
 
     // Reset state
@@ -156,6 +162,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       currentX: 0,
       currentY: 0,
       deltaX: 0,
+      deltaY: 0,
       isHorizontalSwipe: false,
     })
     setShowActionHint(null)
@@ -194,7 +201,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
-  const handleCardClick = () => {
+  const handleCardClick = (e?: React.MouseEvent) => {
+    // Prevenir o evento padrão se for um clique de mouse para evitar conflitos
+    if (e) {
+      e.preventDefault()
+    }
+    
     if (isMobile) {
       if (origin === 'compromissos' && onEdit) {
         // Chamar o onEdit do CompromissosModal para gerenciar o estado
@@ -220,7 +232,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleCardClick}
+        onClick={!isMobile ? handleCardClick : undefined}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
