@@ -115,20 +115,11 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]">
-            {isMobile ? (
-              <Plus className="w-4 h-4" />
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Medicação
-              </>
-            )}
-          </Button>
-        )}
-      </DialogTrigger>
+      {children && (
+        <DialogTrigger asChild>
+          {children}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-primary">
