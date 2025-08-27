@@ -463,7 +463,7 @@ const Signup = () => {
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-lg">⚠️</span>
                       <p className="text-sm text-muted-foreground">
-                        <strong>Dados de cartão são MOCK</strong> — Seus dados não serão armazenados
+                        Seus dados não serão armazenados
                       </p>
                     </div>
                   </div>
