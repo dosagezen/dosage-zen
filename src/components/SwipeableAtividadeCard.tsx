@@ -208,24 +208,6 @@ const SwipeableAtividadeCard: React.FC<SwipeableAtividadeCardProps> = ({
                   </Button>
                 </div>
               )}
-              
-              {/* Botão Edit para Mobile */}
-              {isMobile && onEdit && (
-                <div className="flex justify-start sm:justify-end mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEdit(atividade)
-                    }}
-                    className="h-8 text-xs"
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Editar
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </CardContent>
