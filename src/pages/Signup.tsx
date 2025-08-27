@@ -659,18 +659,6 @@ const Signup = () => {
               </p>
             </div>
 
-            {/* Link para voltar */}
-            <div className="text-center mt-4">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => navigate("/")}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar ao app
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
