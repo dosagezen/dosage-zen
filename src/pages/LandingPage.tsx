@@ -85,7 +85,7 @@ const LandingPage = () => {
               
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 Sua saúde<br />
-                <span className="bg-gradient-to-r from-vibrant-blue via-vibrant-purple to-vibrant-pink bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-white via-vibrant-yellow to-white bg-clip-text text-transparent font-extrabold">
                   revolucionada
                 </span>
               </h1>
