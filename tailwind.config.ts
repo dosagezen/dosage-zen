@@ -68,6 +68,13 @@ export default {
 					DEFAULT: 'hsl(var(--atividade))',
 					foreground: 'hsl(var(--atividade-foreground))'
 				},
+				vibrant: {
+					blue: 'hsl(var(--vibrant-blue))',
+					purple: 'hsl(var(--vibrant-purple))',
+					pink: 'hsl(var(--vibrant-pink))',
+					green: 'hsl(var(--vibrant-green))',
+					yellow: 'hsl(var(--vibrant-yellow))'
+				},
 				filter: {
 					neutral: 'hsl(var(--filter-neutral))',
 					'neutral-foreground': 'hsl(var(--filter-neutral-foreground))',

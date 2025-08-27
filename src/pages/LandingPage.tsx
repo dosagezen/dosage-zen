@@ -16,8 +16,11 @@ import {
   Users,
   Clock,
   Star,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  Zap
 } from "lucide-react";
+import heroImage from "@/assets/hero-health-bg.jpg";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -58,77 +61,140 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative px-4 py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="w-48 h-96 md:w-64 md:h-[32rem] bg-primary rounded-[2.5rem] p-4 shadow-2xl transform rotate-6 hover:rotate-3 transition-transform duration-500">
-                <div className="w-full h-full bg-gradient-to-br from-background to-accent/10 rounded-[2rem] p-6 overflow-hidden">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="w-20 h-3 bg-primary rounded-full"></div>
-                      <div className="w-8 h-8 bg-success rounded-full flex items-center justify-center">
-                        <Heart className="w-4 h-4 text-white" />
+      <section 
+        className="relative px-4 py-20 md:py-32 min-h-[100vh] flex items-center bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(52, 78, 65, 0.7), rgba(58, 90, 64, 0.8)), url(${heroImage})`
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-vibrant-blue/20 via-vibrant-purple/10 to-vibrant-pink/20"></div>
+        
+        <div className="relative z-10 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Content Side */}
+            <div className="text-center lg:text-left">
+              <div className="flex items-center gap-2 mb-6 justify-center lg:justify-start">
+                <div className="flex items-center gap-1">
+                  <Sparkles className="w-5 h-5 text-vibrant-yellow" />
+                  <span className="text-sm font-medium text-white/90 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                    Nova geração de cuidados
+                  </span>
+                  <Sparkles className="w-5 h-5 text-vibrant-yellow" />
+                </div>
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                Sua saúde<br />
+                <span className="bg-gradient-to-r from-vibrant-blue via-vibrant-purple to-vibrant-pink bg-clip-text text-transparent">
+                  revolucionada
+                </span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-white/90 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                Tecnologia inteligente que transforma como você cuida da sua saúde. 
+                <span className="text-vibrant-yellow font-semibold">Simples, eficaz e sempre com você.</span>
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Button 
+                  onClick={handleSignup}
+                  size="lg"
+                  className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple hover:from-vibrant-purple hover:to-vibrant-pink text-white text-xl px-10 py-7 h-auto font-bold shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105"
+                >
+                  <Zap className="mr-2 w-6 h-6" />
+                  Começar Agora
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg px-8 py-7 h-auto font-semibold transition-all duration-300"
+                  onClick={() => scrollToSection('preco')}
+                >
+                  Ver Planos
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-6 mt-8 justify-center lg:justify-start">
+                <div className="flex items-center gap-2 text-white/80">
+                  <Shield className="w-5 h-5 text-vibrant-green" />
+                  <span className="text-sm font-medium">100% Seguro</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80">
+                  <CheckCircle className="w-5 h-5 text-vibrant-green" />
+                  <span className="text-sm font-medium">Sem Fidelidade</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Side - Enhanced Mobile Mockup */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative">
+                {/* Floating Elements */}
+                <div className="absolute -top-4 -left-4 w-16 h-16 bg-vibrant-yellow/20 rounded-full blur-xl animate-pulse"></div>
+                <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-vibrant-pink/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+                
+                {/* Phone Mockup */}
+                <div className="relative w-64 h-[32rem] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-500">
+                  <div className="w-full h-full bg-gradient-to-br from-background to-accent/10 rounded-[2rem] p-6 overflow-hidden relative">
+                    {/* Status Bar */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="w-20 h-3 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full"></div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
+                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
+                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
                       </div>
                     </div>
-                    <div className="space-y-3">
-                      <div className="bg-card p-3 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-consulta rounded-full"></div>
+                    
+                    {/* App Content */}
+                    <div className="space-y-4">
+                      <div className="bg-gradient-to-r from-vibrant-blue/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-blue/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full flex items-center justify-center">
+                            <Heart className="w-5 h-5 text-white" />
+                          </div>
                           <div className="flex-1">
-                            <div className="w-20 h-2 bg-muted rounded"></div>
-                            <div className="w-16 h-1 bg-muted rounded mt-1"></div>
+                            <div className="w-24 h-3 bg-vibrant-blue/30 rounded mb-1"></div>
+                            <div className="w-16 h-2 bg-muted/50 rounded"></div>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-card p-3 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-exame rounded-full"></div>
+                      
+                      <div className="bg-gradient-to-r from-vibrant-green/10 to-vibrant-yellow/10 p-4 rounded-xl border border-vibrant-green/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-green to-vibrant-yellow rounded-full flex items-center justify-center">
+                            <Bell className="w-5 h-5 text-white" />
+                          </div>
                           <div className="flex-1">
-                            <div className="w-24 h-2 bg-muted rounded"></div>
-                            <div className="w-12 h-1 bg-muted rounded mt-1"></div>
+                            <div className="w-20 h-3 bg-vibrant-green/30 rounded mb-1"></div>
+                            <div className="w-14 h-2 bg-muted/50 rounded"></div>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-card p-3 rounded-lg border">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-atividade rounded-full"></div>
+                      
+                      <div className="bg-gradient-to-r from-vibrant-pink/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-pink/20">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-pink to-vibrant-purple rounded-full flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-white" />
+                          </div>
                           <div className="flex-1">
-                            <div className="w-18 h-2 bg-muted rounded"></div>
-                            <div className="w-20 h-1 bg-muted rounded mt-1"></div>
+                            <div className="w-28 h-3 bg-vibrant-pink/30 rounded mb-1"></div>
+                            <div className="w-18 h-2 bg-muted/50 rounded"></div>
                           </div>
                         </div>
+                      </div>
+                    </div>
+                    
+                    {/* Bottom Action */}
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <div className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple p-3 rounded-lg text-center">
+                        <span className="text-white font-semibold text-sm">Próximo medicamento em 2h</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-            Sua saúde organizada<br />
-            <span className="text-primary">em um só lugar</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed">
-            Controle medicações, consultas, exames e atividades em poucos cliques. 
-            Nunca mais esqueça um compromisso importante da sua saúde.
-          </p>
-          
-          <div className="space-y-4">
-            <Button 
-              onClick={handleSignup}
-              size="lg"
-              className="bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] text-lg px-8 py-6 h-auto font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Assinar Agora
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Shield className="w-4 h-4" />
-              <span>Cancelamento imediato, sem contrato de fidelidade</span>
             </div>
           </div>
         </div>
@@ -147,10 +213,10 @@ const LandingPage = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300">
+            <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-l-4 border-vibrant-blue">
               <CardContent className="space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                  <Bell className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-gradient-to-br from-vibrant-blue to-vibrant-purple rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <Bell className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Nunca mais esqueça uma medicação
@@ -161,10 +227,10 @@ const LandingPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300">
+            <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-l-4 border-vibrant-green">
               <CardContent className="space-y-4">
-                <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-                  <Smartphone className="w-8 h-8 text-success" />
+                <div className="w-16 h-16 bg-gradient-to-br from-vibrant-green to-vibrant-yellow rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <Smartphone className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Notificações inteligentes
@@ -175,10 +241,10 @@ const LandingPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300">
+            <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-l-4 border-vibrant-purple">
               <CardContent className="space-y-4">
-                <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto">
-                  <Calendar className="w-8 h-8 text-primary" />
+                <div className="w-16 h-16 bg-gradient-to-br from-vibrant-purple to-vibrant-pink rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <Calendar className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Agenda unificada de saúde
@@ -189,10 +255,10 @@ const LandingPage = () => {
               </CardContent>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-lg transition-shadow duration-300">
+            <Card className="text-center p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-l-4 border-vibrant-pink">
               <CardContent className="space-y-4">
-                <div className="w-16 h-16 bg-[hsl(var(--cta))]/20 rounded-full flex items-center justify-center mx-auto">
-                  <Target className="w-8 h-8 text-[hsl(var(--cta-foreground))]" />
+                <div className="w-16 h-16 bg-gradient-to-br from-vibrant-pink to-vibrant-blue rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <Target className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">
                   Progresso visível
