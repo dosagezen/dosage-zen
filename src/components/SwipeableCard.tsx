@@ -61,8 +61,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
     
-    console.log('Touch start detected', { isMobile, disabled })
-    
     const touch = e.touches[0]
     setDragState({
       isDragging: true,
@@ -137,12 +135,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isMobile || disabled || !dragState.isDragging) return
     
-    console.log('Touch end detected', { 
-      deltaX: dragState.deltaX, 
-      deltaY: dragState.deltaY, 
-      isHorizontalSwipe: dragState.isHorizontalSwipe 
-    })
-    
     // Só executar ação se foi um swipe horizontal significativo
     if (dragState.isHorizontalSwipe) {
       const cardWidth = cardRef.current?.offsetWidth || 0
@@ -159,9 +151,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       // Se não foi swipe horizontal e movimento foi mínimo, tratar como tap
       const totalMovement = Math.abs(dragState.deltaX) + Math.abs(dragState.deltaY)
       if (totalMovement < 20) {
-        console.log('Detected tap, calling handleCardClick')
-        e.preventDefault()
-        e.stopPropagation()
         handleCardClick()
       }
     }
@@ -214,22 +203,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = (e?: React.MouseEvent | React.TouchEvent) => {
-    console.log('handleCardClick called', { isMobile, origin })
-    
-    // Prevenir o evento padrão se for um clique de mouse para evitar conflitos
     if (e) {
       e.preventDefault()
       e.stopPropagation()
     }
     
     if (origin === 'compromissos' && onEdit) {
-      console.log('Calling onEdit for compromissos')
       onEdit(medicacao, origin)
       setTimeout(() => {
         navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
       }, 100)
     } else {
-      console.log('Navigating to medicacoes with edit param')
       navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
     }
   }
@@ -239,17 +223,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y ${isMobile ? 'cursor-pointer' : ''}`}
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y cursor-pointer`}
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleCardClick}
-        onPointerDown={(e) => {
-          if (isMobile && e.pointerType === 'touch') {
-            console.log('Pointer down detected on mobile')
-          }
-        }}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
@@ -356,26 +335,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       Concluir
                     </Button>
                   )}
-                </div>
-              )}
-              
-              {/* Botão para Mobile - visível apenas em mobile */}
-              {isMobile && (
-                <div className="flex justify-end mt-2">
-                  <Button 
-                    variant="outline"
-                    size="sm"
-                    className="text-xs flex-shrink-0 h-8"
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      console.log('Mobile edit button clicked');
-                      handleCardClick(e); 
-                    }}
-                    aria-label={`Editar medicação ${medicacao.nome}`}
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Editar
-                  </Button>
                 </div>
               )}
             </div>
