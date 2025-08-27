@@ -9,6 +9,7 @@ import SwipeableCard from './SwipeableCard'
 import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
 import SwipeableAtividadeCard from './SwipeableAtividadeCard'
+import AddMedicationDialog from './AddMedicationDialog'
 
 interface HorarioStatus {
   hora: string;
@@ -176,6 +177,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRemovedExpanded, setIsRemovedExpanded] = useState(false)
+  
+  // Estados para o modal de edição de medicação
+  const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   // Função para calcular próximo horário pendente
   const calculateNextDose = useCallback((horarios: HorarioStatus[]): string => {
@@ -861,13 +866,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                     onComplete={(id) => handleComplete(id, 'medicacao')}
                     onRemove={(id) => handleRemove(id, 'medicacao')}
                     onEdit={(med, origin) => {
-                      // Fechar o modal de compromissos primeiro
-                      onClose()
-                      // Aguardar um pouco para garantir que o modal fechou antes de navegar
-                      setTimeout(() => {
-                        // Navegar para medicações com parâmetros de edição
-                        window.location.href = `/medicacoes?edit=${med.id}&origin=compromissos`
-                      }, 100)
+                      setEditingMedication(med)
+                      setIsEditDialogOpen(true)
                     }}
                     origin="compromissos"
                   />
@@ -1130,11 +1130,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           )}
         </div>
 
-        <div className="flex justify-end pt-4 border-t border-border/50">
-          <Button variant="outline" onClick={onClose}>
-            Fechar
-          </Button>
-        </div>
+        {/* Modal de Edição de Medicação */}
+        <AddMedicationDialog 
+          open={isEditDialogOpen}
+          onOpenChange={(open) => {
+            setIsEditDialogOpen(open)
+            if (!open) {
+              setEditingMedication(null)
+            }
+          }}
+          medication={editingMedication}
+          isEditing={true}
+        />
       </DialogContent>
     </Dialog>
   )
