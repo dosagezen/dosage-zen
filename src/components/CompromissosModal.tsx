@@ -861,10 +861,13 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                     onComplete={(id) => handleComplete(id, 'medicacao')}
                     onRemove={(id) => handleRemove(id, 'medicacao')}
                     onEdit={(med, origin) => {
-                      // Quando clicar para editar no CompromissosModal,
-                      // salvar estado de origem para voltar aqui quando fechar
-                      window.history.pushState({ origin: 'compromissos', returnModal: true }, '', '/medicacoes')
-                      onClose() // Fechar o CompromissosModal primeiro
+                      // Fechar o modal de compromissos primeiro
+                      onClose()
+                      // Aguardar um pouco para garantir que o modal fechou antes de navegar
+                      setTimeout(() => {
+                        // Navegar para medicações com parâmetros de edição
+                        window.location.href = `/medicacoes?edit=${med.id}&origin=compromissos`
+                      }, 100)
                     }}
                     origin="compromissos"
                   />
