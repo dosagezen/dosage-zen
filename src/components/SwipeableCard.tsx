@@ -204,14 +204,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleCardClick = () => {
     if (isMobile) {
-      if (origin === 'compromissos' && onEdit) {
-        onEdit(medicacao, origin)
-        setTimeout(() => {
-          navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
-        }, 100)
-      } else {
-        navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
-      }
+      // Usar exatamente a mesma lógica do botão "Alterar" do desktop
+      onEdit?.(medicacao, origin)
     }
   }
 
