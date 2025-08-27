@@ -26,14 +26,14 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 
 const items = [
-  { title: "Início", url: "/dashboard", icon: Home },
-  { title: "Conquistas", url: "/conquistas", icon: TrendingUp },
-  { title: "Medicações", url: "/medicacoes", icon: Pill },
-  { title: "Agenda", url: "/agenda", icon: Calendar },
-  { title: "Farmácias", url: "/farmacias", icon: MapPin },
-  { title: "Compartilhar", url: "/compartilhar", icon: Users },
-  { title: "Relatórios", url: "/relatorios", icon: FileText },
-  { title: "Configurações", url: "/configuracoes", icon: Settings },
+  { title: "Início", url: "/app", icon: Home },
+  { title: "Conquistas", url: "/app/conquistas", icon: TrendingUp },
+  { title: "Medicações", url: "/app/medicacoes", icon: Pill },
+  { title: "Agenda", url: "/app/agenda", icon: Calendar },
+  { title: "Farmácias", url: "/app/farmacias", icon: MapPin },
+  { title: "Compartilhar", url: "/app/compartilhar", icon: Users },
+  { title: "Relatórios", url: "/app/relatorios", icon: FileText },
+  { title: "Configurações", url: "/app/configuracoes", icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -47,7 +47,7 @@ export function AppSidebar() {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
   const isActive = (path: string) => currentPath === path
-  const isInactive = (path: string) => ["/farmacias", "/compartilhar", "/relatorios"].includes(path)
+  const isInactive = (path: string) => ["/app/farmacias", "/app/compartilhar", "/app/relatorios"].includes(path)
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
       ? "bg-accent/30 text-primary font-medium border-r-2 border-primary" 

@@ -31,6 +31,11 @@
     --success: 118 39% 41%; /* #588157 - Verde Médio */
     --success-foreground: 0 0% 98%;
 
+    /* Cor de contraste para CTAs */
+    --cta: 37 91% 55%; /* #F2C94C - Amarelo CTA */
+    --cta-foreground: 146 42% 22%;
+    --cta-hover: 37 91% 50%;
+
     /* Cores específicas para categorias de compromissos */
     --consulta: 146 42% 22%; /* #344E41 - Verde Escuro (mais escuro) */
     --consulta-foreground: 0 0% 98%;

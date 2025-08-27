@@ -51,6 +51,11 @@ export default {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))'
 				},
+				cta: {
+					DEFAULT: 'hsl(var(--cta))',
+					foreground: 'hsl(var(--cta-foreground))',
+					hover: 'hsl(var(--cta-hover))'
+				},
 				consulta: {
 					DEFAULT: 'hsl(var(--consulta))',
 					foreground: 'hsl(var(--consulta-foreground))'

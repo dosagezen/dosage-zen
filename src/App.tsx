@@ -13,22 +13,11 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
 const AppLayout = () => {
-  const location = useLocation();
-  const isAuthRoute = ["/login", "/signup", "/forgot-password"].includes(location.pathname);
-
-  if (isAuthRoute) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-      </Routes>
-    );
-  }
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -47,7 +36,6 @@ const AppLayout = () => {
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/conquistas" element={<Conquistas />} />
               <Route path="/medicacoes" element={<Medicacoes />} />
               <Route path="/agenda" element={<Agenda />} />
@@ -72,7 +60,13 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <AppLayout />
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/app/*" element={<AppLayout />} />
+      </Routes>
     </BrowserRouter>
   </QueryClientProvider>
 );

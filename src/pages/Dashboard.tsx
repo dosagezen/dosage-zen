@@ -230,7 +230,7 @@ const Dashboard = () => {
               variant="outline" 
               className="h-16 flex-col gap-2 hover:bg-accent/20" 
               onClick={() => {
-                navigate('/agenda');
+                navigate('/app/agenda');
                 window.scrollTo(0, 0);
               }}
               aria-label="Ir para agenda"
