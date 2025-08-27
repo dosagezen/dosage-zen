@@ -61,6 +61,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
     
+    console.log('Touch start detected', { isMobile, disabled })
+    
     const touch = e.touches[0]
     setDragState({
       isDragging: true,
@@ -132,26 +134,36 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     }
   }
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isMobile || disabled || !dragState.isDragging) return
     
-    // Só executar ação se foi um swipe horizontal
+    console.log('Touch end detected', { 
+      deltaX: dragState.deltaX, 
+      deltaY: dragState.deltaY, 
+      isHorizontalSwipe: dragState.isHorizontalSwipe 
+    })
+    
+    // Só executar ação se foi um swipe horizontal significativo
     if (dragState.isHorizontalSwipe) {
       const cardWidth = cardRef.current?.offsetWidth || 0
       const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
 
       if (shouldTriggerAction) {
         if (dragState.deltaX > 0) {
-          // Swipe direita - concluir
           onComplete(medicacao.id)
         } else {
-          // Swipe esquerda - remover
           onRemove(medicacao.id)
         }
       }
-    } else if (!dragState.isHorizontalSwipe && Math.abs(dragState.deltaX) < 10 && Math.abs(dragState.deltaY) < 10) {
-      // Se não foi swipe e movimento foi mínimo, tratar como tap/click
-      handleCardClick()
+    } else {
+      // Se não foi swipe horizontal e movimento foi mínimo, tratar como tap
+      const totalMovement = Math.abs(dragState.deltaX) + Math.abs(dragState.deltaY)
+      if (totalMovement < 20) {
+        console.log('Detected tap, calling handleCardClick')
+        e.preventDefault()
+        e.stopPropagation()
+        handleCardClick()
+      }
     }
 
     // Reset state
@@ -201,24 +213,24 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
-  const handleCardClick = (e?: React.MouseEvent) => {
+  const handleCardClick = (e?: React.MouseEvent | React.TouchEvent) => {
+    console.log('handleCardClick called', { isMobile, origin })
+    
     // Prevenir o evento padrão se for um clique de mouse para evitar conflitos
     if (e) {
       e.preventDefault()
+      e.stopPropagation()
     }
     
-    if (isMobile) {
-      if (origin === 'compromissos' && onEdit) {
-        // Chamar o onEdit do CompromissosModal para gerenciar o estado
-        onEdit(medicacao, origin)
-        // Após fechar o modal, navegar para medicações
-        setTimeout(() => {
-          navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
-        }, 100)
-      } else {
-        // Para origem medicações, apenas abrir o modal na mesma página
-        navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
-      }
+    if (origin === 'compromissos' && onEdit) {
+      console.log('Calling onEdit for compromissos')
+      onEdit(medicacao, origin)
+      setTimeout(() => {
+        navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
+      }, 100)
+    } else {
+      console.log('Navigating to medicacoes with edit param')
+      navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
     }
   }
 
