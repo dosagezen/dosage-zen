@@ -244,7 +244,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={!isMobile ? handleCardClick : undefined}
+        onClick={handleCardClick}
+        onPointerDown={(e) => {
+          if (isMobile && e.pointerType === 'touch') {
+            console.log('Pointer down detected on mobile')
+          }
+        }}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
@@ -354,7 +359,25 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 </div>
               )}
               
-              {/* No mobile, o card inteiro é clicável para editar */}
+              {/* Botão para Mobile - visível apenas em mobile */}
+              {isMobile && (
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="text-xs flex-shrink-0 h-8"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      console.log('Mobile edit button clicked');
+                      handleCardClick(e); 
+                    }}
+                    aria-label={`Editar medicação ${medicacao.nome}`}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    Editar
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
