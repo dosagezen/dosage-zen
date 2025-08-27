@@ -289,40 +289,40 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 </div>
               </div>
               
-              {/* Botões para Desktop */}
+              {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
               {!isMobile && (
-                <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto justify-start sm:justify-end sm:ml-4">
+                <div className="flex gap-2 justify-start sm:justify-end mt-2">
                   {hasPendingDoses && (
-                    <Button
-                      variant="outline"
+                    <Button 
+                      variant="outline" 
                       size="sm"
-                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] hover:text-[#FF3B30]"
                       onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
+                      className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                       aria-label={`Excluir medicação ${medicacao.nome}`}
                     >
-                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <Trash2 className="w-3 h-3 mr-1" />
                       Excluir
                     </Button>
                   )}
                   <Button 
-                    variant="outline"
+                    variant="outline" 
                     size="sm"
-                    className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9"
                     onClick={(e) => { e.stopPropagation(); onEdit?.(medicacao, origin); }}
+                    className="h-8 text-xs"
                     aria-label={`Alterar medicação ${medicacao.nome}`}
                   >
-                    <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <Edit className="w-3 h-3 mr-1" />
                     Alterar
                   </Button>
                   {hasPendingDoses && (
-                    <Button
-                      variant="outline"
+                    <Button 
+                      variant="default" 
                       size="sm"
-                      className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#588157]/10 hover:border-[#588157] hover:text-[#588157]"
                       onClick={(e) => { e.stopPropagation(); onComplete(medicacao.id); }}
+                      className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
                       aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
                     >
-                      <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      <Check className="w-3 h-3 mr-1" />
                       Concluir
                     </Button>
                   )}
