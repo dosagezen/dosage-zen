@@ -220,18 +220,13 @@ export const UserProfileManager = () => {
                       <h3 className="font-semibold text-foreground truncate mb-1">
                         {user.nome}
                       </h3>
-                      <Badge 
-                        className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
-                      >
-                        <RoleIcon className="w-3 h-3 mr-1" />
-                        {roleLabels[user.papel]}
-                      </Badge>
-                    </div>
-                    
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p className="truncate">{user.email}</p>
-                      <div className="flex items-center gap-4">
-                        <span className="truncate">{user.celular}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
+                        >
+                          <RoleIcon className="w-3 h-3 mr-1" />
+                          {roleLabels[user.papel]}
+                        </Badge>
                         <Badge 
                           variant={user.status === "ativo" ? "default" : "secondary"}
                           className="text-xs"
@@ -239,6 +234,11 @@ export const UserProfileManager = () => {
                           {user.status === "ativo" ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
+                    </div>
+                    
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <p className="truncate">{user.email}</p>
+                      <p className="truncate">{user.celular}</p>
                     </div>
                   </div>
 
