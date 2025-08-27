@@ -95,7 +95,7 @@ const LandingPage = () => {
                 <span className="text-vibrant-yellow font-semibold">Simples, eficaz e sempre com você.</span>
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="flex justify-center lg:justify-start">
                 <Button 
                   onClick={handleSignup}
                   size="lg"
@@ -103,15 +103,6 @@ const LandingPage = () => {
                 >
                   <Zap className="mr-2 w-6 h-6" />
                   Começar Agora
-                </Button>
-                
-                <Button 
-                  variant="outline"
-                  size="lg"
-                  className="border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg px-8 py-7 h-auto font-semibold transition-all duration-300"
-                  onClick={() => scrollToSection('preco')}
-                >
-                  Ver Planos
                 </Button>
               </div>
               
