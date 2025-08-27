@@ -639,17 +639,6 @@ const Signup = () => {
                   )}
                 </Button>
 
-                {showPagamento && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handlePularPagamento}
-                    disabled={isLoading}
-                  >
-                    Pular Pagamento (Plano Gratuito)
-                  </Button>
-                )}
               </div>
             </form>
 
