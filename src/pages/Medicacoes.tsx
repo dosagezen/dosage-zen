@@ -240,18 +240,15 @@ const Medicacoes = () => {
     const editId = searchParams.get('edit')
     const origin = searchParams.get('origin')
     
-    if (editId) {
+    if (editId && !isEditDialogOpen) {
       const medicacaoToEdit = medicacoesList.find(m => m.id === parseInt(editId))
       if (medicacaoToEdit) {
         setEditingMedication(medicacaoToEdit)
         setIsEditDialogOpen(true)
         setModalOrigin(origin || 'medicacoes')
-        
-        // Limpar parâmetros da URL
-        setSearchParams(new URLSearchParams())
       }
     }
-  }, [searchParams, medicacoesList, setSearchParams])
+  }, [searchParams, medicacoesList, isEditDialogOpen])
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {
@@ -1026,6 +1023,12 @@ const Medicacoes = () => {
             setIsEditDialogOpen(false)
             setEditingMedication(null)
             
+            // Limpar parâmetros da URL quando fechar o modal
+            const currentParams = new URLSearchParams(window.location.search)
+            if (currentParams.has('edit')) {
+              setSearchParams(new URLSearchParams())
+            }
+            
             // Controle de retorno baseado na origem
             if (modalOrigin === 'compromissos' && isMobile) {
               // Para mobile vindo do CompromissosModal, voltar para Dashboard e reabrir modal
@@ -1034,8 +1037,9 @@ const Medicacoes = () => {
             // Para outros casos (desktop ou origem medicações), permanece na página atual
             
             setModalOrigin(null)
+          } else {
+            setIsEditDialogOpen(open)
           }
-          setIsEditDialogOpen(open)
         }}
         medication={editingMedication}
         isEditing={true}
