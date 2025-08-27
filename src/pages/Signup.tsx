@@ -354,19 +354,6 @@ const Signup = () => {
 
               {/* Seção: Endereço (Opcional) */}
               <div className="space-y-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowEndereco(!showEndereco)}
-                  className="flex items-center justify-between w-full h-auto p-0 hover:bg-transparent"
-                  aria-expanded={showEndereco}
-                  aria-controls="endereco-section"
-                >
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold text-primary">Endereço (Opcional)</h3>
-                  </div>
-                  {showEndereco ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                </Button>
 
                 {showEndereco && (
                   <div id="endereco-section" className="grid grid-cols-1 md:grid-cols-3 gap-4">
