@@ -979,10 +979,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                      atividade={atividade}
                      onComplete={(id) => handleComplete(id, 'atividade')}
                      onRemove={(id) => handleRemove(id, 'atividade')}
-                     onEdit={(atividade) => {
-                       setEditingCompromisso(atividade)
-                       setIsEditCompromissoDialogOpen(true)
-                     }}
+                      onEdit={(atividade: AtividadeCompleta) => {
+                        setEditingCompromisso(atividade)
+                        setIsEditCompromissoDialogOpen(true)
+                      }}
                    />
                  ))}
               </div>

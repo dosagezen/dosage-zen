@@ -18,9 +18,9 @@ interface ExameCompleto {
 
 interface SwipeableExameCardProps {
   exame: ExameCompleto;
-  onComplete: (id: number, type: 'exame') => void;
-  onRemove: (id: number, type: 'exame') => void;
-  onEdit?: (id: number) => void;
+  onComplete: (itemId: number) => void;
+  onRemove: (itemId: number) => void;
+  onEdit?: (exame: ExameCompleto) => void;
 }
 
 const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
@@ -61,11 +61,9 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
 
     if (Math.abs(delta) > threshold) {
       if (delta > 0) {
-        // Swipe direita - concluir
-        onComplete(exame.id, 'exame')
+        onComplete(exame.id)
       } else {
-        // Swipe esquerda - remover
-        onRemove(exame.id, 'exame')
+        onRemove(exame.id)
       }
     }
 
@@ -110,15 +108,22 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
     )
   }
 
+  const handleCardClick = () => {
+    if (isMobile && onEdit && !isDragging) {
+      onEdit(exame)
+    }
+  }
+
   return (
     <div className="relative">
       {getBackgroundOverlay()}
       <Card 
-        className="w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10"
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10 ${isMobile && onEdit ? "cursor-pointer" : ""}`}
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
@@ -130,7 +135,7 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
                 <h3 className="text-base sm:text-lg font-semibold text-primary">
                   {exame.tipo}
                 </h3>
-                <div className="flex items-center gap-1 text-sm sm:text-base text-muted-foreground mt-1">
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
                   <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span>{exame.local}</span>
                 </div>
@@ -153,33 +158,33 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
                 </Badge>
               </div>
               
-              {/* Botões para Desktop */}
+              {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
               {!isMobile && (
                 <div className="flex gap-2 justify-start sm:justify-end mt-2">
-                  {onEdit && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onEdit(exame.id)}
-                      className="h-8 text-xs"
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar
-                    </Button>
-                  )}
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onRemove(exame.id, 'exame')}
+                    onClick={() => onRemove(exame.id)}
                     className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
                     Excluir
                   </Button>
+                  {onEdit && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => onEdit(exame)}
+                      className="h-8 text-xs"
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Alterar
+                    </Button>
+                  )}
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => onComplete(exame.id, 'exame')}
+                    onClick={() => onComplete(exame.id)}
                     className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
                   >
                     <Check className="w-3 h-3 mr-1" />
@@ -194,7 +199,10 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onEdit(exame.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEdit(exame)
+                    }}
                     className="h-8 text-xs"
                   >
                     <Edit className="w-3 h-3 mr-1" />
