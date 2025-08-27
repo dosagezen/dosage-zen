@@ -227,12 +227,14 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione (Ex.: 6 em 6 horas)" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="6h">6 em 6 horas</SelectItem>
-                  <SelectItem value="8h">8 em 8 horas</SelectItem>
-                  <SelectItem value="12h">12 em 12 horas</SelectItem>
-                  <SelectItem value="24h">1 vez ao dia</SelectItem>
-                </SelectContent>
+              <SelectContent>
+                <SelectItem value="4h">4 em 4 horas</SelectItem>
+                <SelectItem value="6h">6 em 6 horas</SelectItem>
+                <SelectItem value="8h">8 em 8 horas</SelectItem>
+                <SelectItem value="12h">12 em 12 horas</SelectItem>
+                <SelectItem value="24h">1 vez ao dia</SelectItem>
+                <SelectItem value="12h_bis">2 vezes ao dia</SelectItem>
+              </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
