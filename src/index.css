@@ -89,6 +89,12 @@
   --vibrant-pink: 340 82% 52%; /* Pink */
   --vibrant-green: 142 69% 58%; /* Fresh green */
   --vibrant-yellow: 48 89% 60%; /* Bright yellow */
+  
+  /* Status colors - soft and pastel */
+  --status-active: 120 60% 90%; /* Soft green background */
+  --status-active-foreground: 120 60% 25%; /* Dark green text */
+  --status-inactive: 0 60% 92%; /* Soft red background */
+  --status-inactive-foreground: 0 60% 35%; /* Dark red text */
   }
 
   .dark {

@@ -75,6 +75,12 @@ export default {
 					green: 'hsl(var(--vibrant-green))',
 					yellow: 'hsl(var(--vibrant-yellow))'
 				},
+				status: {
+					active: 'hsl(var(--status-active))',
+					'active-foreground': 'hsl(var(--status-active-foreground))',
+					inactive: 'hsl(var(--status-inactive))',
+					'inactive-foreground': 'hsl(var(--status-inactive-foreground))'
+				},
 				filter: {
 					neutral: 'hsl(var(--filter-neutral))',
 					'neutral-foreground': 'hsl(var(--filter-neutral-foreground))',

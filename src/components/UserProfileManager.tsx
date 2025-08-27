@@ -228,8 +228,10 @@ export const UserProfileManager = () => {
                           {roleLabels[user.papel]}
                         </Badge>
                         <Badge 
-                          variant={user.status === "ativo" ? "default" : "secondary"}
-                          className="text-xs"
+                          className={`text-xs ${user.status === "ativo" 
+                            ? "bg-status-active text-status-active-foreground" 
+                            : "bg-status-inactive text-status-inactive-foreground"
+                          }`}
                         >
                           {user.status === "ativo" ? "Ativo" : "Inativo"}
                         </Badge>
