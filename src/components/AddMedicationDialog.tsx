@@ -223,10 +223,10 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="frequencia">Frequência</Label>
-              <Select value={formData.frequencia} onValueChange={(value) => setFormData(prev => ({ ...prev, frequencia: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione (Ex.: 6 em 6 horas)" />
-                </SelectTrigger>
+            <Select value={formData.frequencia} onValueChange={(value) => setFormData(prev => ({ ...prev, frequencia: value }))}>
+              <SelectTrigger className="text-left">
+                <SelectValue placeholder="Selecione (Ex.: 6 em 6 horas)" className="text-left" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="4h">4 em 4 horas</SelectItem>
                 <SelectItem value="6h">6 em 6 horas</SelectItem>
