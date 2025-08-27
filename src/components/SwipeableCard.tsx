@@ -202,19 +202,16 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
-  const handleCardClick = (e?: React.MouseEvent | React.TouchEvent) => {
-    if (e) {
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    
-    if (origin === 'compromissos' && onEdit) {
-      onEdit(medicacao, origin)
-      setTimeout(() => {
-        navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
-      }, 100)
-    } else {
-      navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
+  const handleCardClick = () => {
+    if (isMobile) {
+      if (origin === 'compromissos' && onEdit) {
+        onEdit(medicacao, origin)
+        setTimeout(() => {
+          navigate(`/medicacoes?edit=${medicacao.id}&origin=compromissos`)
+        }, 100)
+      } else {
+        navigate(`/medicacoes?edit=${medicacao.id}&origin=medicacoes`)
+      }
     }
   }
 
@@ -223,7 +220,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y cursor-pointer`}
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y ${isMobile ? 'cursor-pointer' : ''}`}
         style={getTransformStyle()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
