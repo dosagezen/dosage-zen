@@ -599,22 +599,6 @@ const Signup = () => {
                   </div>
 
                   {/* Checkbox Salvar Cartão */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="salvarCartao"
-                      checked={formData.salvarCartao}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, salvarCartao: checked as boolean }))
-                      }
-                      disabled={isLoading}
-                    />
-                    <Label
-                      htmlFor="salvarCartao"
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      Salvar cartão (mock - apenas visual)
-                    </Label>
-                  </div>
                 </div>
               )}
 
