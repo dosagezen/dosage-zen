@@ -456,7 +456,7 @@ const Signup = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-4">
                     <CreditCard className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold text-primary">Pagamento (Mock)</h3>
+                    <h3 className="text-lg font-semibold text-primary">Pagamento</h3>
                   </div>
 
                   <div className="bg-muted/30 p-4 rounded-lg border border-muted">
