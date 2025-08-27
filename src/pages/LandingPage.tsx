@@ -4,42 +4,69 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Calendar, Bell, Target, CheckCircle, ChevronDown, Heart, Shield, Users, Clock, Star, ArrowRight, Sparkles, Zap } from "lucide-react";
+import { 
+  Smartphone, 
+  Calendar, 
+  Bell, 
+  Target, 
+  CheckCircle, 
+  ChevronDown,
+  Heart,
+  Shield,
+  Users,
+  Clock,
+  Star,
+  ArrowRight,
+  Sparkles,
+  Zap
+} from "lucide-react";
 import heroImage from "@/assets/hero-health-bg.jpg";
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
+
   const handleSignup = () => {
     navigate('/signup');
   };
+
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
-    element?.scrollIntoView({
-      behavior: 'smooth'
-    });
+    element?.scrollIntoView({ behavior: 'smooth' });
   };
-  const faqs = [{
-    id: "cancelamento",
-    question: "Posso cancelar quando quiser?",
-    answer: "Sim! Não há contrato de fidelidade. Você pode cancelar sua assinatura a qualquer momento através do app."
-  }, {
-    id: "dispositivos",
-    question: "Funciona em qualquer celular?",
-    answer: "Sim, nosso app funciona em smartphones Android e iOS, além de ser acessível pelo navegador web."
-  }, {
-    id: "seguranca",
-    question: "Meus dados estão seguros?",
-    answer: "Absolutamente! Utilizamos criptografia de ponta e seguimos rigorosamente as normas da LGPD para proteger seus dados de saúde."
-  }, {
-    id: "compartilhamento",
-    question: "Posso compartilhar com cuidadores?",
-    answer: "Sim! Você pode dar acesso a familiares e cuidadores para que acompanhem seus medicamentos e consultas."
-  }];
-  return <div className="min-h-screen bg-background">
+
+  const faqs = [
+    {
+      id: "cancelamento",
+      question: "Posso cancelar quando quiser?",
+      answer: "Sim! Não há contrato de fidelidade. Você pode cancelar sua assinatura a qualquer momento através do app."
+    },
+    {
+      id: "dispositivos",
+      question: "Funciona em qualquer celular?",
+      answer: "Sim, nosso app funciona em smartphones Android e iOS, além de ser acessível pelo navegador web."
+    },
+    {
+      id: "seguranca",
+      question: "Meus dados estão seguros?",
+      answer: "Absolutamente! Utilizamos criptografia de ponta e seguimos rigorosamente as normas da LGPD para proteger seus dados de saúde."
+    },
+    {
+      id: "compartilhamento",
+      question: "Posso compartilhar com cuidadores?",
+      answer: "Sim! Você pode dar acesso a familiares e cuidadores para que acompanhem seus medicamentos e consultas."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative px-4 py-20 md:py-32 min-h-[100vh] flex items-center bg-cover bg-center bg-no-repeat" style={{
-      backgroundImage: `linear-gradient(rgba(52, 78, 65, 0.7), rgba(58, 90, 64, 0.8)), url(${heroImage})`
-    }}>
+      <section 
+        className="relative px-4 py-20 md:py-32 min-h-[100vh] flex items-center bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(52, 78, 65, 0.7), rgba(58, 90, 64, 0.8)), url(${heroImage})`
+        }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-vibrant-blue/20 via-vibrant-purple/10 to-vibrant-pink/20"></div>
         
         <div className="relative z-10 max-w-6xl mx-auto">
@@ -56,9 +83,9 @@ const LandingPage = () => {
                 </div>
               </div>
               
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight drop-shadow-2xl">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                 Sua saúde<br />
-                <span className="bg-gradient-to-r from-vibrant-blue via-vibrant-purple to-vibrant-pink bg-clip-text text-transparent drop-shadow-lg">
+                <span className="bg-gradient-to-r from-white via-vibrant-yellow to-white bg-clip-text text-transparent font-extrabold">
                   revolucionada
                 </span>
               </h1>
@@ -69,12 +96,23 @@ const LandingPage = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button onClick={handleSignup} size="lg" className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple hover:from-vibrant-purple hover:to-vibrant-pink text-white text-xl px-10 py-7 h-auto font-bold shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105">
+                <Button 
+                  onClick={handleSignup}
+                  size="lg"
+                  className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple hover:from-vibrant-purple hover:to-vibrant-pink text-white text-xl px-10 py-7 h-auto font-bold shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105"
+                >
                   <Zap className="mr-2 w-6 h-6" />
                   Começar Agora
                 </Button>
                 
-                
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg px-8 py-7 h-auto font-semibold transition-all duration-300"
+                  onClick={() => scrollToSection('preco')}
+                >
+                  Ver Planos
+                </Button>
               </div>
               
               <div className="flex items-center gap-6 mt-8 justify-center lg:justify-start">
@@ -98,63 +136,11 @@ const LandingPage = () => {
                 
                 {/* Phone Mockup */}
                 <div className="relative w-64 h-[32rem] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-500">
-                  <div className="w-full h-full bg-gradient-to-br from-background to-accent/10 rounded-[2rem] p-6 overflow-hidden relative">
-                    {/* Status Bar */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-20 h-3 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full"></div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                      </div>
-                    </div>
-                    
-                    {/* App Content */}
-                    <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-vibrant-blue/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-blue/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full flex items-center justify-center">
-                            <Heart className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-24 h-3 bg-vibrant-blue/30 rounded mb-1"></div>
-                            <div className="w-16 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-r from-vibrant-green/10 to-vibrant-yellow/10 p-4 rounded-xl border border-vibrant-green/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-green to-vibrant-yellow rounded-full flex items-center justify-center">
-                            <Bell className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-20 h-3 bg-vibrant-green/30 rounded mb-1"></div>
-                            <div className="w-14 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-r from-vibrant-pink/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-pink/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-pink to-vibrant-purple rounded-full flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-28 h-3 bg-vibrant-pink/30 rounded mb-1"></div>
-                            <div className="w-18 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Bottom Action */}
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <div className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple p-3 rounded-lg text-center">
-                        <span className="text-white font-semibold text-sm">Próximo medicamento em 2h</span>
-                      </div>
-                    </div>
-                  </div>
+                  <img 
+                    src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" 
+                    alt="Dosage Zen App Dashboard" 
+                    className="w-full h-full object-cover rounded-[2rem]"
+                  />
                 </div>
               </div>
             </div>
@@ -352,7 +338,10 @@ const LandingPage = () => {
               </div>
               
               <div className="pt-4">
-                <Button onClick={handleSignup} className="w-full bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] font-semibold text-lg h-12">
+                <Button 
+                  onClick={handleSignup}
+                  className="w-full bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] font-semibold text-lg h-12"
+                >
                   Assinar Agora
                 </Button>
                 <p className="text-sm text-muted-foreground mt-3">
@@ -380,7 +369,9 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
+                  ))}
                 </div>
                 <blockquote className="text-foreground italic">
                   "O app mudou minha rotina! Nunca mais esqueci um remédio e minha pressão está controlada."
@@ -394,7 +385,9 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
+                  ))}
                 </div>
                 <blockquote className="text-foreground italic">
                   "Consigo acompanhar as medicações do meu pai facilmente. A família toda tem acesso."
@@ -408,7 +401,9 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
+                  ))}
                 </div>
                 <blockquote className="text-foreground italic">
                   "Interface simples e intuitiva. Até minha avó de 80 anos consegue usar sozinha."
@@ -435,19 +430,28 @@ const LandingPage = () => {
           </div>
           
           <div className="space-y-4">
-            {faqs.map(faq => <Card key={faq.id} className="overflow-hidden">
-                <Collapsible open={openFaq === faq.id} onOpenChange={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}>
+            {faqs.map((faq) => (
+              <Card key={faq.id} className="overflow-hidden">
+                <Collapsible 
+                  open={openFaq === faq.id}
+                  onOpenChange={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
+                >
                   <CollapsibleTrigger className="w-full p-6 text-left hover:bg-accent/5 transition-colors">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-foreground">{faq.question}</h3>
-                      <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${openFaq === faq.id ? 'rotate-180' : ''}`} />
+                      <ChevronDown 
+                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
+                          openFaq === faq.id ? 'rotate-180' : ''
+                        }`} 
+                      />
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-6 pb-6">
                     <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
                   </CollapsibleContent>
                 </Collapsible>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -463,7 +467,11 @@ const LandingPage = () => {
           </p>
           
           <div className="space-y-4">
-            <Button onClick={handleSignup} size="lg" className="bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] text-lg px-8 py-6 h-auto font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
+            <Button 
+              onClick={handleSignup}
+              size="lg"
+              className="bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] text-lg px-8 py-6 h-auto font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+            >
               Assinar Agora
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
@@ -489,13 +497,22 @@ const LandingPage = () => {
             <div>
               <h4 className="font-semibold mb-4">Links Úteis</h4>
               <div className="space-y-2 text-sm">
-                <button onClick={() => scrollToSection('valor')} className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={() => scrollToSection('valor')}
+                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
+                >
                   Funcionalidades
                 </button>
-                <button onClick={() => scrollToSection('preco')} className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={() => scrollToSection('preco')}
+                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
+                >
                   Preços
                 </button>
-                <button onClick={() => scrollToSection('faq')} className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
+                <button 
+                  onClick={() => scrollToSection('faq')}
+                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
+                >
                   FAQ
                 </button>
               </div>
@@ -527,6 +544,8 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default LandingPage;
