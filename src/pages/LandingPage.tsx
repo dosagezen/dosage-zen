@@ -136,63 +136,11 @@ const LandingPage = () => {
                 
                 {/* Phone Mockup */}
                 <div className="relative w-64 h-[32rem] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-500">
-                  <div className="w-full h-full bg-gradient-to-br from-background to-accent/10 rounded-[2rem] p-6 overflow-hidden relative">
-                    {/* Status Bar */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-20 h-3 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full"></div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                        <div className="w-4 h-2 bg-vibrant-green rounded-sm"></div>
-                      </div>
-                    </div>
-                    
-                    {/* App Content */}
-                    <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-vibrant-blue/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-blue/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-blue to-vibrant-purple rounded-full flex items-center justify-center">
-                            <Heart className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-24 h-3 bg-vibrant-blue/30 rounded mb-1"></div>
-                            <div className="w-16 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-r from-vibrant-green/10 to-vibrant-yellow/10 p-4 rounded-xl border border-vibrant-green/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-green to-vibrant-yellow rounded-full flex items-center justify-center">
-                            <Bell className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-20 h-3 bg-vibrant-green/30 rounded mb-1"></div>
-                            <div className="w-14 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-r from-vibrant-pink/10 to-vibrant-purple/10 p-4 rounded-xl border border-vibrant-pink/20">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-vibrant-pink to-vibrant-purple rounded-full flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="w-28 h-3 bg-vibrant-pink/30 rounded mb-1"></div>
-                            <div className="w-18 h-2 bg-muted/50 rounded"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Bottom Action */}
-                    <div className="absolute bottom-6 left-6 right-6">
-                      <div className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple p-3 rounded-lg text-center">
-                        <span className="text-white font-semibold text-sm">Próximo medicamento em 2h</span>
-                      </div>
-                    </div>
-                  </div>
+                  <img 
+                    src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" 
+                    alt="Dosage Zen App Dashboard" 
+                    className="w-full h-full object-cover rounded-[2rem]"
+                  />
                 </div>
               </div>
             </div>
