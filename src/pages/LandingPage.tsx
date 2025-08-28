@@ -4,69 +4,42 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Smartphone, 
-  Calendar, 
-  Bell, 
-  Target, 
-  CheckCircle, 
-  ChevronDown,
-  Heart,
-  Shield,
-  Users,
-  Clock,
-  Star,
-  ArrowRight,
-  Sparkles,
-  Zap
-} from "lucide-react";
+import { Smartphone, Calendar, Bell, Target, CheckCircle, ChevronDown, Heart, Shield, Users, Clock, Star, ArrowRight, Sparkles, Zap } from "lucide-react";
 import heroImage from "@/assets/hero-health-bg.jpg";
-
 const LandingPage = () => {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
-
   const handleSignup = () => {
     navigate('/signup');
   };
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: 'smooth' });
+    element?.scrollIntoView({
+      behavior: 'smooth'
+    });
   };
-
-  const faqs = [
-    {
-      id: "cancelamento",
-      question: "Posso cancelar quando quiser?",
-      answer: "Sim! Não há contrato de fidelidade. Você pode cancelar sua assinatura a qualquer momento através do app."
-    },
-    {
-      id: "dispositivos",
-      question: "Funciona em qualquer celular?",
-      answer: "Sim, nosso app funciona em smartphones Android e iOS, além de ser acessível pelo navegador web."
-    },
-    {
-      id: "seguranca",
-      question: "Meus dados estão seguros?",
-      answer: "Absolutamente! Utilizamos criptografia de ponta e seguimos rigorosamente as normas da LGPD para proteger seus dados de saúde."
-    },
-    {
-      id: "compartilhamento",
-      question: "Posso compartilhar com cuidadores?",
-      answer: "Sim! Você pode dar acesso a familiares e cuidadores para que acompanhem seus medicamentos e consultas."
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-background">
+  const faqs = [{
+    id: "cancelamento",
+    question: "Posso cancelar quando quiser?",
+    answer: "Sim! Não há contrato de fidelidade. Você pode cancelar sua assinatura a qualquer momento através do app."
+  }, {
+    id: "dispositivos",
+    question: "Funciona em qualquer celular?",
+    answer: "Sim, nosso app funciona em smartphones Android e iOS, além de ser acessível pelo navegador web."
+  }, {
+    id: "seguranca",
+    question: "Meus dados estão seguros?",
+    answer: "Absolutamente! Utilizamos criptografia de ponta e seguimos rigorosamente as normas da LGPD para proteger seus dados de saúde."
+  }, {
+    id: "compartilhamento",
+    question: "Posso compartilhar com cuidadores?",
+    answer: "Sim! Você pode dar acesso a familiares e cuidadores para que acompanhem seus medicamentos e consultas."
+  }];
+  return <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section 
-        className="relative px-4 py-20 md:py-32 min-h-[100vh] flex items-center bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `linear-gradient(rgba(52, 78, 65, 0.7), rgba(58, 90, 64, 0.8)), url(${heroImage})`
-        }}
-      >
+      <section className="relative px-4 py-20 md:py-32 min-h-[100vh] flex items-center bg-cover bg-center bg-no-repeat" style={{
+      backgroundImage: `linear-gradient(rgba(52, 78, 65, 0.7), rgba(58, 90, 64, 0.8)), url(${heroImage})`
+    }}>
         <div className="absolute inset-0 bg-gradient-to-br from-vibrant-blue/20 via-vibrant-purple/10 to-vibrant-pink/20"></div>
         
         <div className="relative z-10 max-w-6xl mx-auto">
@@ -96,11 +69,7 @@ const LandingPage = () => {
               </p>
               
               <div className="flex justify-center lg:justify-start">
-                <Button 
-                  onClick={handleSignup}
-                  size="lg"
-                  className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple hover:from-vibrant-purple hover:to-vibrant-pink text-white text-xl px-10 py-7 h-auto font-bold shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105"
-                >
+                <Button onClick={handleSignup} size="lg" className="bg-gradient-to-r from-vibrant-blue to-vibrant-purple hover:from-vibrant-purple hover:to-vibrant-pink text-white text-xl px-10 py-7 h-auto font-bold shadow-2xl hover:shadow-3xl transition-all duration-500 transform hover:scale-105">
                   <Zap className="mr-2 w-6 h-6" />
                   Começar Agora
                 </Button>
@@ -127,11 +96,7 @@ const LandingPage = () => {
                 
                 {/* Phone Mockup */}
                 <div className="relative w-64 h-[32rem] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-500">
-                  <img 
-                    src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" 
-                    alt="Dosage Zen App Dashboard" 
-                    className="w-full h-full object-cover rounded-[2rem]"
-                  />
+                  <img src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" alt="Dosage Zen App Dashboard" className="w-full h-full object-cover rounded-[2rem]" />
                 </div>
               </div>
             </div>
@@ -329,10 +294,7 @@ const LandingPage = () => {
               </div>
               
               <div className="pt-4">
-                <Button 
-                  onClick={handleSignup}
-                  className="w-full bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] font-semibold text-lg h-12"
-                >
+                <Button onClick={handleSignup} className="w-full bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] font-semibold text-lg h-12">
                   Assinar Agora
                 </Button>
                 <p className="text-sm text-muted-foreground mt-3">
@@ -360,9 +322,7 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
                 </div>
                 <blockquote className="text-foreground italic">
                   "O app mudou minha rotina! Nunca mais esqueci um remédio e minha pressão está controlada."
@@ -376,9 +336,7 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
                 </div>
                 <blockquote className="text-foreground italic">
                   "Consigo acompanhar as medicações do meu pai facilmente. A família toda tem acesso."
@@ -392,9 +350,7 @@ const LandingPage = () => {
             <Card className="p-6 shadow-lg">
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[hsl(var(--cta))] text-[hsl(var(--cta))]" />)}
                 </div>
                 <blockquote className="text-foreground italic">
                   "Interface simples e intuitiva. Até minha avó de 80 anos consegue usar sozinha."
@@ -421,28 +377,19 @@ const LandingPage = () => {
           </div>
           
           <div className="space-y-4">
-            {faqs.map((faq) => (
-              <Card key={faq.id} className="overflow-hidden">
-                <Collapsible 
-                  open={openFaq === faq.id}
-                  onOpenChange={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
-                >
+            {faqs.map(faq => <Card key={faq.id} className="overflow-hidden">
+                <Collapsible open={openFaq === faq.id} onOpenChange={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}>
                   <CollapsibleTrigger className="w-full p-6 text-left hover:bg-accent/5 transition-colors">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-foreground">{faq.question}</h3>
-                      <ChevronDown 
-                        className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${
-                          openFaq === faq.id ? 'rotate-180' : ''
-                        }`} 
-                      />
+                      <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${openFaq === faq.id ? 'rotate-180' : ''}`} />
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-6 pb-6">
                     <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
                   </CollapsibleContent>
                 </Collapsible>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -458,11 +405,7 @@ const LandingPage = () => {
           </p>
           
           <div className="space-y-4">
-            <Button 
-              onClick={handleSignup}
-              size="lg"
-              className="bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] text-lg px-8 py-6 h-auto font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
-            >
+            <Button onClick={handleSignup} size="lg" className="bg-[hsl(var(--cta))] hover:bg-[hsl(var(--cta-hover))] text-[hsl(var(--cta-foreground))] text-lg px-8 py-6 h-auto font-semibold shadow-xl hover:shadow-2xl transition-all duration-300">
               Assinar Agora
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
@@ -495,9 +438,7 @@ const LandingPage = () => {
                 <a href="#" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
                   Termos de Uso
                 </a>
-                <a href="#" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
-                  Contato
-                </a>
+                
               </div>
             </div>
           </div>
@@ -512,8 +453,6 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default LandingPage;
