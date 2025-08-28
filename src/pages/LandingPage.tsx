@@ -485,29 +485,6 @@ const LandingPage = () => {
               </p>
             </div>
             
-            <div>
-              <h4 className="font-semibold mb-4">Links Úteis</h4>
-              <div className="space-y-2 text-sm">
-                <button 
-                  onClick={() => scrollToSection('valor')}
-                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
-                >
-                  Funcionalidades
-                </button>
-                <button 
-                  onClick={() => scrollToSection('preco')}
-                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
-                >
-                  Preços
-                </button>
-                <button 
-                  onClick={() => scrollToSection('faq')}
-                  className="block hover:underline opacity-75 hover:opacity-100 transition-opacity"
-                >
-                  FAQ
-                </button>
-              </div>
-            </div>
             
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
