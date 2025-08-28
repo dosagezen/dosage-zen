@@ -108,12 +108,8 @@ const LandingPage = () => {
       <section id="valor" className="py-16 md:py-24 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Por que escolher nosso app?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Tecnologia inteligente que cuida da sua saúde 24/7
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Por que o DosageZen?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Inteligência que cuida da sua saúde 24/7</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -257,7 +253,7 @@ const LandingPage = () => {
       </section>
 
       {/* Plano e Preço */}
-      <section id="preco" className="py-16 md:py-24 px-4 relative overflow-hidden bg-gradient-pricing">
+      <section id="preco" className="py-16 md:py-24 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
             Plano único, preço justo
@@ -290,10 +286,6 @@ const LandingPage = () => {
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
                   <span>Suporte prioritário</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-success" />
-                  <span>Garantia de 7 dias</span>
                 </div>
               </div>
               
