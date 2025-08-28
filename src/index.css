@@ -67,6 +67,7 @@
     --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--success)));
     --gradient-gray-modern: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-pricing: radial-gradient(ellipse at center, hsl(var(--vibrant-blue) / 0.1) 0%, hsl(var(--vibrant-purple) / 0.05) 40%, hsl(var(--primary) / 0.1) 100%);
 
     /* Sombras */
     --shadow-soft: 0 4px 20px hsl(var(--primary) / 0.1);
@@ -143,6 +144,13 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Gradiente radial personalizado para a seção de preços */
+@layer utilities {
+  .bg-gradient-pricing {
+    background: var(--gradient-pricing);
   }
 }
 
