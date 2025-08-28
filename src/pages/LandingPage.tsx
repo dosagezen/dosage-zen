@@ -257,7 +257,7 @@ const LandingPage = () => {
       </section>
 
       {/* Plano e Preço */}
-      <section id="preco" className="py-16 md:py-24 px-4">
+      <section id="preco" className="py-16 md:py-24 px-4 relative overflow-hidden bg-gradient-radial from-vibrant-blue/10 via-vibrant-purple/5 to-primary/10 before:absolute before:inset-0 before:bg-gradient-radial before:from-vibrant-pink/5 before:via-transparent before:to-vibrant-yellow/5 before:animate-pulse before:duration-[3s]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
             Plano único, preço justo
