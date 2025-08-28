@@ -291,6 +291,10 @@ const LandingPage = () => {
                   <CheckCircle className="w-5 h-5 text-success" />
                   <span>Suporte prioritário</span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <span>Garantia de 7 dias</span>
+                </div>
               </div>
               
               <div className="pt-4">
