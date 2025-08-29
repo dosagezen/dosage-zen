@@ -244,9 +244,9 @@ const LandingPage = () => {
                     <p className="text-sm text-muted-foreground">Agenda organizada</p>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <Badge variant="outline" className="text-xs">Consulta - Cardiologista</Badge>
-                  <Badge variant="outline" className="text-xs">Exame - Hemograma</Badge>
+                <div className="flex flex-col space-y-2">
+                  <Badge variant="outline" className="text-xs w-fit">Consulta - Cardiologista</Badge>
+                  <Badge variant="outline" className="text-xs w-fit">Exame - Hemograma</Badge>
                 </div>
               </div>
             </div>
