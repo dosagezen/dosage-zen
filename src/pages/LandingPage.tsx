@@ -189,7 +189,7 @@ const LandingPage = () => {
               <div className="bg-card p-6 rounded-lg border shadow-md">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-white" />
+                    <Target className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">Dashboard</h4>
