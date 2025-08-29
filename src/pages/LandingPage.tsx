@@ -196,12 +196,14 @@ const LandingPage = () => {
                     <p className="text-sm text-muted-foreground">Visão geral da sua saúde</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-2 bg-primary/20 rounded-full overflow-hidden">
-                    <div className="h-full w-3/4 bg-primary rounded-full"></div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Medicações hoje</span>
+                    <span className="text-sm font-semibold text-primary">75%</span>
                   </div>
-                  <div className="h-2 bg-success/20 rounded-full overflow-hidden">
-                    <div className="h-full w-1/2 bg-success rounded-full"></div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Consultas este mês</span>
+                    <span className="text-sm font-semibold text-success">3</span>
                   </div>
                 </div>
               </div>
