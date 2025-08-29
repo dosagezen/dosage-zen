@@ -202,7 +202,7 @@ const LandingPage = () => {
                     <span className="text-sm font-semibold text-primary">75%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Consultas este mês</span>
+                    <span className="text-sm text-foreground">Consultas este mês</span>
                     <span className="text-sm font-semibold text-success">3</span>
                   </div>
                 </div>
