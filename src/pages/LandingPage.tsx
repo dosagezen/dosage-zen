@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Calendar, Bell, Target, CheckCircle, ChevronDown, Heart, Shield, Users, Clock, Star, ArrowRight, Sparkles, Zap } from "lucide-react";
+import { Smartphone, Calendar, Bell, Target, CheckCircle, ChevronDown, Heart, Shield, Users, Clock, Star, ArrowRight, Sparkles, Zap, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/hero-health-bg.jpg";
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -179,7 +179,9 @@ const LandingPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Veja como é simples acompanhar sua saúde
             </h2>
-            <p className="text-lg text-muted-foreground">Interface intuitiva pensada em você</p>
+            <p className="text-lg text-muted-foreground">
+              Interface intuitiva desenvolvida pensando em você
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -187,7 +189,7 @@ const LandingPage = () => {
               <div className="bg-card p-6 rounded-lg border shadow-md">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
-                    <Target className="w-5 h-5 text-white" />
+                    <TrendingUp className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground">Dashboard</h4>
@@ -196,11 +198,11 @@ const LandingPage = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Medicações hoje</span>
+                    <span className="text-sm text-foreground">Medicações hoje</span>
                     <span className="text-sm font-semibold text-primary">75%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Consultas este mês</span>
+                    <span className="text-sm text-foreground">Consultas este mês</span>
                     <span className="text-sm font-semibold text-success">3</span>
                   </div>
                 </div>
@@ -242,9 +244,9 @@ const LandingPage = () => {
                     <p className="text-sm text-muted-foreground">Agenda organizada</p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Badge variant="outline" className="text-xs">Consulta - Cardiologista</Badge>
-                  <Badge variant="outline" className="text-xs">Exame - Hemograma</Badge>
+                <div className="flex flex-col space-y-2">
+                  <Badge variant="outline" className="text-xs w-fit">Consulta - Cardiologista</Badge>
+                  <Badge variant="outline" className="text-xs w-fit">Exame - Hemograma</Badge>
                 </div>
               </div>
             </div>
@@ -310,7 +312,7 @@ const LandingPage = () => {
               O que nossos usuários dizem
             </h2>
             <p className="text-lg text-muted-foreground">
-              Histórias de quem transformou sua rotina de saúde
+              Histórias reais de quem transformou sua rotina de saúde
             </p>
           </div>
           
