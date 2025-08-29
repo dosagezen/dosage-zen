@@ -2,92 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom CSS variables and modern color palette */
+/* App de Medicações Design System - Paleta de Cores Personalizada */
 
-:root {
-  /* Core background and text colors */
-  --background: 250 250 250;
-  --foreground: 15 23 42;
-  
-  /* Vibrant Modern Palette */
-  --vibrant-coral: 11 57% 58%;     /* #FF6B35 */
-  --vibrant-turquoise: 174 61% 62%; /* #4ECDC4 */
-  --vibrant-blue: 204 87% 60%;      /* #45B7D1 */
-  --vibrant-yellow: 46 97% 52%;     /* #F9C80E */
-  --vibrant-purple: 267 83% 58%;    /* #6C5CE7 */
-  --vibrant-pink: 340 82% 68%;      /* #FD79A8 */
-  --vibrant-green: 158 64% 52%;     /* #00B894 */
-  
-  /* Pastel complements */
-  --pastel-coral: 11 57% 88%;
-  --pastel-turquoise: 174 61% 92%;
-  --pastel-blue: 204 87% 90%;
-  --pastel-yellow: 46 97% 82%;
-  --pastel-purple: 267 83% 88%;
-  --pastel-pink: 340 82% 88%;
-  --pastel-green: 158 64% 82%;
+@layer base {
+  :root {
+    /* Paleta Principal - Tons de Cinza Moderno */
+    --background: 220 15% 95%; /* Cinza Claro Moderno */
+    --foreground: 146 42% 22%; /* 344E41 - Verde Escuro Principal */
 
-  /* Card and surface colors with glassmorphism */
-  --card: 255 255 255;
-  --card-foreground: 15 23 42;
-  --popover: 255 255 255;
-  --popover-foreground: 15 23 42;
-  --glass: 255 255 255 / 0.1;
-  --glass-border: 255 255 255 / 0.2;
+    --card: 220 20% 98%; /* Cinza Muito Claro para Cards */
+    --card-foreground: 146 42% 22%;
 
-  /* Primary brand colors - Modern vibrant */
-  --primary: 204 87% 60%;           /* Vibrant Blue */
-  --primary-foreground: 255 255 255;
-  --primary-glow: 204 87% 80%;
-  --primary-hover: 204 87% 50%;
+    --popover: 220 20% 98%; /* Cinza Muito Claro para Popovers */
+    --popover-foreground: 146 42% 22%;
 
-  /* Secondary colors */
-  --secondary: 174 61% 62%;         /* Vibrant Turquoise */
-  --secondary-foreground: 255 255 255;
-  --secondary-hover: 174 61% 52%;
+    --primary: 146 42% 22%; /* #344E41 - Verde Principal */
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 146 42% 28%;
+    --primary-light: 146 42% 35%; /* #3A5A40 */
 
-  /* Accent colors */
-  --accent: 267 83% 58%;            /* Vibrant Purple */
-  --accent-foreground: 255 255 255;
-  --accent-hover: 267 83% 48%;
+    --secondary: 220 20% 88%; /* Cinza Médio Moderno */
+    --secondary-foreground: 146 42% 22%;
 
-  /* Status and category colors */
-  --success: 158 64% 52%;           /* Vibrant Green */
-  --cta: 11 57% 58%;               /* Vibrant Coral */
-  --cta-hover: 11 57% 48%;
-  --cta-foreground: 255 255 255;
-  --category-consulta: 204 87% 60%; /* Vibrant Blue */
-  --category-exame: 158 64% 52%;    /* Vibrant Green */
-  --category-atividade: 11 57% 58%; /* Vibrant Coral */
-  --filter-selected: 267 83% 58%;   /* Vibrant Purple */
-  --filter-hover: 267 83% 88%;
+    --accent: 81 27% 62%; /* #A3B18A - Verde Claro */
+    --accent-foreground: 146 42% 22%;
+    --accent-hover: 81 27% 56%;
 
-  /* Muted colors */
-  --muted: 220 20% 88%;
-  --muted-foreground: 146 20% 45%;
+    --success: 118 39% 41%; /* #588157 - Verde Médio */
+    --success-foreground: 0 0% 98%;
 
-  /* System colors */
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 220 25% 82%;
-  --input: 220 25% 82%;
-  --ring: 146 42% 22%;
+    /* Cor de contraste para CTAs */
+    --cta: 37 91% 55%; /* #F2C94C - Amarelo CTA */
+    --cta-foreground: 146 42% 22%;
+    --cta-hover: 37 91% 50%;
 
-  /* Modern gradient definitions */
-  --gradient-primary: linear-gradient(135deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
-  --gradient-hero: radial-gradient(ellipse at center, hsl(var(--vibrant-blue)) 0%, hsl(var(--vibrant-purple)) 50%, hsl(var(--vibrant-pink)) 100%);
-  --gradient-card: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--pastel-blue)) 100%);
-  --gradient-accent: linear-gradient(135deg, hsl(var(--vibrant-coral)), hsl(var(--vibrant-yellow)));
-  --gradient-mesh: radial-gradient(at 40% 20%, hsl(var(--vibrant-blue)) 0px, transparent 50%), radial-gradient(at 80% 0%, hsl(var(--vibrant-purple)) 0px, transparent 50%), radial-gradient(at 0% 50%, hsl(var(--vibrant-pink)) 0px, transparent 50%);
+    /* Cores específicas para categorias de compromissos */
+    --consulta: 146 42% 22%; /* #344E41 - Verde Escuro (mais escuro) */
+    --consulta-foreground: 0 0% 98%;
+    --exame: 118 39% 41%; /* #588157 - Verde Médio */
+    --exame-foreground: 0 0% 98%;
+    --atividade: 81 27% 62%; /* #A3B18A - Verde Claro (mais claro) */
+    --atividade-foreground: 146 42% 22%;
 
-  /* Modern shadow system */
-  --shadow-elegant: 0 25px 50px -12px hsl(204 87% 60% / 0.25);
-  --shadow-card: 0 8px 25px -8px hsl(204 87% 60% / 0.15);
-  --shadow-primary: 0 20px 40px -12px hsl(267 83% 58% / 0.3);
-  --shadow-glow: 0 0 40px hsl(var(--vibrant-blue) / 0.4);
-  --shadow-glass: 0 8px 32px 0 hsl(0 0% 0% / 0.1);
+    /* Paleta específica do PRD */
+    --filter-neutral: 52 20% 85%; /* #DAD7CD */
+    --filter-neutral-foreground: 146 42% 22%; /* #344E41 */
+    --filter-active: 146 42% 22%; /* #344E41 */
+    --filter-active-foreground: 0 0% 98%;
 
-  /* Sidebar */
+    --muted: 220 20% 88%; /* Cinza Médio para Elementos Muted */
+    --muted-foreground: 146 20% 45%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 25% 82%; /* Cinza para Bordas */
+    --input: 220 25% 82%; /* Cinza para Inputs */
+    --ring: 146 42% 22%;
+
+    --radius: 0.75rem;
+
+    /* Gradientes */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-light)));
+    --gradient-soft: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--success)));
+    --gradient-gray-modern: linear-gradient(180deg, hsl(var(--background)), hsl(var(--secondary)));
+    --gradient-pricing: radial-gradient(ellipse at center, hsl(var(--vibrant-blue) / 0.1) 0%, hsl(var(--vibrant-purple) / 0.05) 40%, hsl(var(--primary) / 0.1) 100%);
+
+    /* Sombras */
+    --shadow-soft: 0 4px 20px hsl(var(--primary) / 0.1);
+    --shadow-card: 0 8px 30px hsl(var(--primary) / 0.12);
+    --shadow-floating: 0 16px 40px hsl(var(--primary) / 0.15);
+
+    /* Sidebar */
   --sidebar-background: hsl(var(--background));
   --sidebar-foreground: hsl(var(--foreground));
   --sidebar-primary: hsl(var(--primary));
@@ -97,110 +84,82 @@
   --sidebar-border: hsl(var(--border));
   --sidebar-ring: hsl(var(--ring));
 
+  /* Vibrant accent colors */
+  --vibrant-blue: 217 91% 60%; /* Bright blue */
+  --vibrant-purple: 262 83% 58%; /* Purple */
+  --vibrant-pink: 340 82% 52%; /* Pink */
+  --vibrant-green: 142 69% 58%; /* Fresh green */
+  --vibrant-yellow: 48 89% 60%; /* Bright yellow */
+  
   /* Status colors - soft and pastel */
-  --status-active: 120 60% 90%;
-  --status-active-foreground: 120 60% 25%;
-  --status-inactive: 0 60% 92%;
-  --status-inactive-foreground: 0 60% 35%;
-}
+  --status-active: 120 60% 90%; /* Soft green background */
+  --status-active-foreground: 120 60% 25%; /* Dark green text */
+  --status-inactive: 0 60% 92%; /* Soft red background */
+  --status-inactive-foreground: 0 60% 35%; /* Dark red text */
+  }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
-  --sidebar-background: 240 5.9% 10%;
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-/* Modern gradient utilities */
+/* Gradiente radial personalizado para a seção de preços */
 @layer utilities {
   .bg-gradient-pricing {
-    background: radial-gradient(ellipse at center, hsl(var(--pastel-blue)) 0%, hsl(var(--pastel-purple)) 100%);
-  }
-
-  .bg-gradient-hero {
-    background: var(--gradient-hero);
-  }
-
-  .bg-gradient-mesh {
-    background: var(--gradient-mesh);
-  }
-
-  .glass-morphism {
-    background: hsl(var(--glass));
-    backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(var(--glass-border));
-  }
-
-  .glass-card {
-    background: hsl(255 255 255 / 0.05);
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid hsl(255 255 255 / 0.1);
-  }
-
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(var(--vibrant-blue)), hsl(var(--vibrant-purple)));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .hover-lift {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-8px);
-  }
-
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-
-  .rotateY-12 {
-    transform: rotateY(12deg);
-  }
-
-  .rotateX-5 {
-    transform: rotateX(5deg);
+    background: var(--gradient-pricing);
   }
 }
 
 /* Custom scrollbar utilities */
 @layer utilities {
   .scrollbar-hide {
+    /* Firefox */
     scrollbar-width: none;
+    /* Safari and Chrome */
     &::-webkit-scrollbar {
       display: none;
     }
@@ -214,6 +173,7 @@
 
 /* Time picker customization */
 @layer utilities {
+  /* Remove aparência nativa completamente */
   input[type="time"] {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
@@ -221,6 +181,7 @@
     position: relative;
   }
 
+  /* Oculta todos os elementos internos do time picker */
   input[type="time"]::-webkit-clear-button,
   input[type="time"]::-webkit-inner-spin-button,
   input[type="time"]::-webkit-calendar-picker-indicator,
@@ -238,23 +199,27 @@
     height: 0 !important;
   }
 
+  /* Firefox */
   input[type="time"]::-moz-clear,
   input[type="time"]::-moz-focus-inner {
     display: none !important;
     visibility: hidden !important;
   }
 
+  /* Edge/IE */
   input[type="time"]::-ms-clear,
   input[type="time"]::-ms-reveal {
     display: none !important;
     visibility: hidden !important;
   }
 
+  /* Remove todos os pseudo-elementos possíveis */
   input[type="time"]::before,
   input[type="time"]::after {
     display: none !important;
   }
 
+  /* Container para time input com pseudo placeholder */
   .time-input-container {
     position: relative;
   }
@@ -284,3 +249,5 @@
     display: none;
   }
 }
+
+/* Remove CSS customizado do time picker - usando overflow-y-auto padrão do Tailwind */
