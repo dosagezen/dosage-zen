@@ -198,7 +198,7 @@ const LandingPage = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Medicações hoje</span>
+                    <span className="text-sm text-foreground">Medicações hoje</span>
                     <span className="text-sm font-semibold text-primary">75%</span>
                   </div>
                   <div className="flex items-center justify-between">
