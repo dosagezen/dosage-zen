@@ -198,11 +198,11 @@ const LandingPage = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Medicações hoje</span>
+                    <span className="text-sm text-muted-foreground">Medicações hoje</span>
                     <span className="text-sm font-semibold text-primary">75%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Consultas este mês</span>
+                    <span className="text-sm text-muted-foreground">Consultas este mês</span>
                     <span className="text-sm font-semibold text-success">3</span>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ const LandingPage = () => {
                     <p className="text-sm text-muted-foreground">Agenda organizada</p>
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Badge variant="outline" className="text-xs">Consulta - Cardiologista</Badge>
                   <Badge variant="outline" className="text-xs">Exame - Hemograma</Badge>
                 </div>
