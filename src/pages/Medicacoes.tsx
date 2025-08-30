@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+
 import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
 import SwipeableCard from "@/components/SwipeableCard"
@@ -685,31 +685,44 @@ const Medicacoes = () => {
       {/* Filtros */}
       <div className="flex items-center gap-4 mb-4">
         <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar medicações" />
-        <Tabs value={activeFilter} onValueChange={setActiveFilter}>
-          <TabsList className="grid w-full grid-cols-3 h-[36px] items-center p-0 m-0">
-            <TabsTrigger 
-              value="hoje" 
-              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-primary/10"
-              aria-selected={activeFilter === "hoje"}
-            >
-              Hoje
-            </TabsTrigger>
-            <TabsTrigger 
-              value="ativas" 
-              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-primary/10"
-              aria-selected={activeFilter === "ativas"}
-            >
-              Ativas
-            </TabsTrigger>
-            <TabsTrigger 
-              value="todas" 
-              className="h-[36px] px-6 border-0 transition-all flex items-center justify-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hover:bg-primary/10"
-              aria-selected={activeFilter === "todas"}
-            >
-              Todas
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex flex-wrap gap-2">
+          <Badge
+            variant={activeFilter === "hoje" ? "default" : "secondary"}
+            className={`cursor-pointer px-3 py-1 ${
+              activeFilter === "hoje" 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
+            }`}
+            onClick={() => setActiveFilter("hoje")}
+            aria-label="Filtrar por período: Hoje"
+          >
+            Hoje
+          </Badge>
+          <Badge
+            variant={activeFilter === "ativas" ? "default" : "secondary"}
+            className={`cursor-pointer px-3 py-1 ${
+              activeFilter === "ativas" 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
+            }`}
+            onClick={() => setActiveFilter("ativas")}
+            aria-label="Filtrar por período: Ativas"
+          >
+            Ativas
+          </Badge>
+          <Badge
+            variant={activeFilter === "todas" ? "default" : "secondary"}
+            className={`cursor-pointer px-3 py-1 ${
+              activeFilter === "todas" 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
+            }`}
+            onClick={() => setActiveFilter("todas")}
+            aria-label="Filtrar por período: Todas"
+          >
+            Todas
+          </Badge>
+        </div>
       </div>
 
       {/* Busca */}
