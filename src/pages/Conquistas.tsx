@@ -268,14 +268,16 @@ export default function Conquistas() {
               <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
               <p className="text-sm text-muted-foreground">Progresso diário</p>
             </div>
-            <div className={`flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 ${
-              metricas.aderencia >= 90 ? 'border-[8px] border-green-600' :
-              metricas.aderencia >= 75 ? 'border-[6px] border-green-500' :
-              metricas.aderencia >= 50 ? 'border-4 border-yellow-500' :
-              metricas.aderencia >= 25 ? 'border-3 border-orange-500' :
-              'border-2 border-red-400'
-            } ring-2 ring-primary/20`}>
-              <span className="text-3xl font-bold text-primary">{metricas.aderencia}%</span>
+            <div 
+              className="relative w-20 h-20 rounded-full flex items-center justify-center"
+              style={{
+                background: `conic-gradient(from -90deg, #16a34a 0deg ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg 360deg)`,
+                padding: '4px'
+              }}
+            >
+              <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
+                <span className="text-2xl font-bold text-foreground">{metricas.aderencia}%</span>
+              </div>
             </div>
           </div>
 
