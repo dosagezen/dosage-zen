@@ -268,7 +268,7 @@ export default function Conquistas() {
               <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
               <p className="text-sm text-muted-foreground">Progresso diário</p>
             </div>
-            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20">
+            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-3 border-primary">
               <span className="text-3xl font-bold text-primary">{metricas.aderencia}%</span>
             </div>
           </div>
@@ -342,44 +342,44 @@ export default function Conquistas() {
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
                   <p className="text-xl font-bold text-[#344E41]">{metricas.C}</p>
-                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#344E41]/70 bg-[#344E41]/10 px-1 rounded">
+                  <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#344E41]/70 bg-[#344E41]/10 px-1 rounded text-right">
                     {metricas.concluidosPct}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Concluídos</p>
+                <p className="text-xs text-muted-foreground mt-3">Concluídos</p>
               </div>
 
               {/* Faltando */}
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
                   <p className="text-xl font-bold text-[#588157]">{metricas.F}</p>
-                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded">
+                  <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded text-right">
                     {metricas.faltandoPct}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Faltando</p>
+                <p className="text-xs text-muted-foreground mt-3">Faltando</p>
               </div>
 
               {/* Atrasados */}
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
                   <p className="text-xl font-bold text-[#E67E22]">{metricas.A}</p>
-                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#E67E22]/70 bg-[#E67E22]/10 px-1 rounded">
+                  <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#E67E22]/70 bg-[#E67E22]/10 px-1 rounded text-right">
                     {metricas.atrasadosPct}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Atrasados</p>
+                <p className="text-xs text-muted-foreground mt-3">Atrasados</p>
               </div>
 
               {/* Excluídos */}
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
                   <p className="text-xl font-bold text-[#DAD7CD]">{metricas.E}</p>
-                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#DAD7CD]/70 bg-[#DAD7CD]/20 px-1 rounded">
+                  <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#DAD7CD]/70 bg-[#DAD7CD]/20 px-1 rounded text-right">
                     {metricas.excluidosPct}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Excluídos</p>
+                <p className="text-xs text-muted-foreground mt-3">Excluídos</p>
               </div>
             </div>
           </div>
