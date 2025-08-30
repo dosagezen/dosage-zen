@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2 } from "lucide-react"
+import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -679,7 +679,12 @@ const Medicacoes = () => {
           <h1 className="text-3xl font-bold text-primary">Medicações</h1>
           <p className="text-muted-foreground">Gerencie suas medicações e horários</p>
         </div>
-        <AddMedicationDialog />
+        <AddMedicationDialog>
+          <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12" aria-label="Adicionar nova medicação">
+            <Plus className="w-4 h-4 md:mr-2" />
+            <span className="hidden md:inline">Adicionar Medicação</span>
+          </Button>
+        </AddMedicationDialog>
       </div>
 
       {/* Filtros */}
