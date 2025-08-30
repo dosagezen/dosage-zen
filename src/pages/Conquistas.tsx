@@ -271,7 +271,8 @@ export default function Conquistas() {
             <div 
               className="relative w-20 h-20 rounded-full flex items-center justify-center"
               style={{
-                background: `conic-gradient(from -90deg, #16a34a 0deg ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg 360deg)`,
+                background: `conic-gradient(from 0deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`,
+                transform: 'rotate(-90deg)',
                 padding: '4px'
               }}
             >
