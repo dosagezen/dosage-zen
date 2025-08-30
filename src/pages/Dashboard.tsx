@@ -87,17 +87,37 @@ const Dashboard = () => {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {estatisticas.map((stat, index) => <Card key={index} className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${index === 0 ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`} onClick={index === 0 ? () => setIsDayModalOpen(true) : undefined}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.titulo}
-              </CardTitle>
-              <stat.icone className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{stat.valor}</div>
-            </CardContent>
-          </Card>)}
+        {estatisticas.map((stat, index) => {
+          const isClickable = index === 0 || index === 1;
+          const handleClick = () => {
+            if (index === 0) {
+              setIsDayModalOpen(true);
+            } else if (index === 1) {
+              navigate('/app/conquistas?periodo=semana');
+            }
+          };
+
+          return (
+            <Card 
+              key={index} 
+              className={`shadow-card hover:shadow-floating transition-shadow duration-300 ${
+                isClickable ? 'cursor-pointer hover:scale-105 transition-transform' : ''
+              }`} 
+              onClick={isClickable ? handleClick : undefined}
+              aria-label={isClickable ? `Ir para ${stat.titulo}` : undefined}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  {stat.titulo}
+                </CardTitle>
+                <stat.icone className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-primary">{stat.valor}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
