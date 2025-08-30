@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Settings, Users, Shield, Key, Bell, CreditCard } from "lucide-react";
+import { Settings, Users, Shield, Key, Bell, CreditCard, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserProfileManager } from "@/components/UserProfileManager";
+import MyProfileSection from "@/components/MyProfileSection";
 
 const Configuracoes = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [activeSection, setActiveSection] = useState("perfis")
+  const [activeSection, setActiveSection] = useState("meu-perfil")
 
   // Sincronizar com URL params
   useEffect(() => {
@@ -23,7 +24,7 @@ const Configuracoes = () => {
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId)
     // Atualizar rota interna sem reload
-    if (sectionId === 'perfis') {
+    if (sectionId === 'meu-perfil') {
       navigate('/configuracoes', { replace: true })
     } else {
       navigate(`/configuracoes?section=${sectionId}`, { replace: true })
@@ -31,6 +32,7 @@ const Configuracoes = () => {
   }
 
   const sections = [
+    { id: "meu-perfil", label: "Meu Perfil", icon: User },
     { id: "perfis", label: "Perfis de Usuário", icon: Users },
     { id: "seguranca", label: "Segurança", icon: Shield },
     { id: "notificacoes", label: "Notificações", icon: Bell },
@@ -40,6 +42,8 @@ const Configuracoes = () => {
 
   const renderContent = () => {
     switch (activeSection) {
+      case "meu-perfil":
+        return <MyProfileSection />;
       case "perfis":
         return <UserProfileManager />;
       default:
@@ -101,7 +105,12 @@ const Configuracoes = () => {
                         {section.label}
                         {section.id === "perfis" && (
                           <Badge variant="secondary" className="ml-auto text-xs">
-                            4
+                            5
+                          </Badge>
+                        )}
+                        {section.id === "meu-perfil" && (
+                          <Badge className="ml-auto text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-white">
+                            Você
                           </Badge>
                         )}
                       </Button>

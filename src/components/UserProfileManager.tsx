@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { Plus, MoreVertical, Edit, Shield, ShieldCheck, UserCheck, Settings as SettingsIcon } from "lucide-react";
+import { Plus, MoreVertical, Edit, Shield, ShieldCheck, UserCheck, Settings as SettingsIcon, Crown, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { UserProfileForm } from "./UserProfileForm";
+import AddCollaboratorDialog from "./AddCollaboratorDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export type UserRole = "paciente" | "acompanhante" | "cuidador" | "admin";
-export type UserStatus = "ativo" | "inativo";
+export type UserStatus = "ativo" | "inativo" | "pendente";
 
 export interface UserProfile {
   id: string;
@@ -23,6 +24,7 @@ export interface UserProfile {
   status: UserStatus;
   created_at: string;
   owner_user_id?: string;
+  isGestor?: boolean;
 }
 
 // Função para gerar código único alfanumérico de 6 dígitos
@@ -49,7 +51,8 @@ const mockUsers: UserProfile[] = [
     celular: "(81) 98888-8888",
     papel: "paciente",
     status: "ativo",
-    created_at: "2024-01-15T10:00:00Z"
+    created_at: "2024-01-15T10:00:00Z",
+    isGestor: true
   },
   {
     id: "2", 
@@ -60,7 +63,8 @@ const mockUsers: UserProfile[] = [
     papel: "acompanhante",
     status: "ativo",
     created_at: "2024-01-20T14:30:00Z",
-    owner_user_id: "1"
+    owner_user_id: "1",
+    isGestor: false
   },
   {
     id: "3",
@@ -71,7 +75,8 @@ const mockUsers: UserProfile[] = [
     papel: "cuidador",
     status: "ativo",
     created_at: "2024-02-01T09:15:00Z",
-    owner_user_id: "1"
+    owner_user_id: "1",
+    isGestor: false
   },
   {
     id: "4",
@@ -81,7 +86,20 @@ const mockUsers: UserProfile[] = [
     celular: "(81) 96666-6666", 
     papel: "admin",
     status: "ativo",
-    created_at: "2024-01-01T08:00:00Z"
+    created_at: "2024-01-01T08:00:00Z",
+    isGestor: false
+  },
+  {
+    id: "5",
+    codigo: "M8K2P7",
+    nome: "Carlos Silva",
+    email: "carlos@email.com",
+    celular: "(81) 95555-5555",
+    papel: "acompanhante",
+    status: "pendente",
+    created_at: "2024-08-30T12:00:00Z",
+    owner_user_id: "1",
+    isGestor: false
   }
 ];
 
@@ -109,17 +127,42 @@ const roleColors = {
 export const UserProfileManager = () => {
   const [users, setUsers] = useState<UserProfile[]>(mockUsers);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isAddCollaboratorOpen, setIsAddCollaboratorOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
-  const currentUser = users.find(u => u.papel === "paciente"); // Simula usuário logado
+  const currentUser = users.find(u => u.papel === "paciente" || u.isGestor); // Simula usuário logado
 
   const canManageUser = (user: UserProfile) => {
     if (!currentUser) return false;
+    
+    // Gestor tem poder total
+    if (currentUser.isGestor) {
+      return true;
+    }
+    
+    // Paciente pode gerenciar acompanhantes e cuidadores
     if (currentUser.papel === "paciente") {
       return user.papel === "acompanhante" || user.papel === "cuidador" || user.id === currentUser.id;
     }
+    
     return false;
+  };
+
+  const canPromoteToGestor = (user: UserProfile) => {
+    if (!currentUser?.isGestor) return false;
+    return (user.papel === "paciente" || user.papel === "acompanhante") && !user.isGestor;
+  };
+
+  const hasGestor = users.some(u => u.isGestor && u.papel === "paciente");
+
+  const searchUserByCode = (codigo: string) => {
+    // Simula busca por código em base de usuários externa
+    const availableUsers = [
+      { codigo: "M8K2P7", nome: "Carlos Silva", email: "carlos@email.com", celular: "(81) 95555-5555" }
+    ];
+    
+    return availableUsers.find(u => u.codigo.toUpperCase() === codigo.toUpperCase());
   };
 
   const handleToggleStatus = (userId: string) => {
@@ -158,6 +201,29 @@ export const UserProfileManager = () => {
     });
   };
 
+  const handlePromoteToGestor = (userId: string) => {
+    if (!canPromoteToGestor(users.find(u => u.id === userId)!)) return;
+
+    setUsers(prev => prev.map(user => {
+      if (user.id === userId) {
+        return { ...user, isGestor: !user.isGestor };
+      }
+      // Se promovendo alguém a gestor, remover gestor atual (só pode ter 1)
+      if (user.isGestor && user.papel === "paciente" && userId !== user.id) {
+        return { ...user, isGestor: false };
+      }
+      return user;
+    }));
+
+    const user = users.find(u => u.id === userId);
+    const action = user?.isGestor ? "removido" : "promovido";
+    
+    toast({
+      title: `Gestor ${action}`,
+      description: `${user?.nome} foi ${action} ${action === "promovido" ? "a" : "de"} gestor.`,
+    });
+  };
+
   const handleSaveUser = (userData: Omit<UserProfile, 'id' | 'created_at' | 'codigo'>) => {
     if (editingUser) {
       // Editar usuário existente (mantém o código existente)
@@ -180,7 +246,8 @@ export const UserProfileManager = () => {
         id: Date.now().toString(),
         codigo: newCode,
         created_at: new Date().toISOString(),
-        owner_user_id: currentUser?.id
+        owner_user_id: currentUser?.id,
+        isGestor: false
       };
       setUsers(prev => [...prev, newUser]);
       toast({
@@ -193,7 +260,33 @@ export const UserProfileManager = () => {
     setIsCreateDialogOpen(false);
   };
 
-  const canCreateProfiles = currentUser?.papel === "paciente";
+  const handleAddCollaborator = (data: { papel: string; codigo: string; status: string }) => {
+    const foundUser = searchUserByCode(data.codigo);
+    
+    if (foundUser) {
+      const existingCodes = users.map(u => u.codigo);
+      const newCode = data.codigo; // Usar código do usuário encontrado
+      
+      const newUser: UserProfile = {
+        id: Date.now().toString(),
+        codigo: newCode,
+        nome: foundUser.nome,
+        email: foundUser.email,
+        celular: foundUser.celular,
+        papel: data.papel as UserRole,
+        status: data.status as UserStatus,
+        created_at: new Date().toISOString(),
+        owner_user_id: currentUser?.id,
+        isGestor: false
+      };
+      
+      setUsers(prev => [...prev, newUser]);
+    }
+    
+    setIsAddCollaboratorOpen(false);
+  };
+
+  const canCreateProfiles = currentUser?.isGestor || currentUser?.papel === "paciente";
 
   return (
     <div className="space-y-6">
@@ -208,13 +301,23 @@ export const UserProfileManager = () => {
               </p>
             </div>
             {canCreateProfiles && (
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Perfil
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Perfil
+                </Button>
+                <Button 
+                  onClick={() => setIsAddCollaboratorOpen(true)}
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Adicionar Colaborador
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -243,29 +346,39 @@ export const UserProfileManager = () => {
                       <h3 className="font-semibold text-foreground truncate mb-1">
                         {user.nome}
                       </h3>
-                      {/* Linha com Código, Papel e Status */}
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <Badge 
-                          className="bg-slate-900 text-white font-semibold text-xs"
-                          aria-label="Código do usuário"
-                          aria-readonly="true"
-                        >
-                          {user.codigo}
-                        </Badge>
-                        <Badge 
-                          className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
-                        >
-                          {roleLabels[user.papel]}
-                        </Badge>
-                        <Badge 
-                          className={`text-xs ${user.status === "ativo" 
-                            ? "bg-status-active text-status-active-foreground" 
-                            : "bg-status-inactive text-status-inactive-foreground"
-                          }`}
-                        >
-                          {user.status === "ativo" ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </div>
+                       {/* Linha com Código, Papel e Status */}
+                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                         <Badge 
+                           className="bg-slate-900 text-white font-semibold text-xs"
+                           aria-label="Código do usuário"
+                           aria-readonly="true"
+                         >
+                           {user.codigo}
+                         </Badge>
+                         <div className="flex items-center gap-1">
+                           <Badge 
+                             className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
+                           >
+                             {roleLabels[user.papel]}
+                           </Badge>
+                           {user.isGestor && (
+                             <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white text-xs font-semibold">
+                               Gestor
+                             </Badge>
+                           )}
+                         </div>
+                         <Badge 
+                           className={`text-xs ${
+                             user.status === "ativo" 
+                               ? "bg-status-active text-status-active-foreground" 
+                               : user.status === "pendente"
+                               ? "bg-amber-100 text-amber-800"
+                               : "bg-status-inactive text-status-inactive-foreground"
+                           }`}
+                         >
+                           {user.status === "ativo" ? "Ativo" : user.status === "pendente" ? "Pendente" : "Inativo"}
+                         </Badge>
+                       </div>
                     </div>
                     
                     <div className="text-sm text-muted-foreground space-y-1">
@@ -282,31 +395,48 @@ export const UserProfileManager = () => {
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuItem 
-                          onClick={() => setEditingUser(user)}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="w-4 h-4 mr-2" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleToggleStatus(user.id)}
-                          className="cursor-pointer"
-                        >
-                          <Shield className="w-4 h-4 mr-2" />
-                          {user.status === "ativo" ? "Inativar" : "Ativar"}
-                        </DropdownMenuItem>
-                        {user.papel !== "paciente" && (
-                          <DropdownMenuItem 
-                            onClick={() => handleRemoveUser(user.id)}
-                            className="cursor-pointer text-destructive focus:text-destructive"
-                          >
-                            <Shield className="w-4 h-4 mr-2" />
-                            Remover
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
+                       <DropdownMenuContent align="end" className="w-56">
+                         <DropdownMenuItem 
+                           onClick={() => setEditingUser(user)}
+                           className="cursor-pointer"
+                         >
+                           <Edit className="w-4 h-4 mr-2" />
+                           Editar
+                         </DropdownMenuItem>
+                         
+                         {canPromoteToGestor(user) && (
+                           <DropdownMenuItem 
+                             onClick={() => handlePromoteToGestor(user.id)}
+                             className="cursor-pointer"
+                           >
+                             <Crown className="w-4 h-4 mr-2" />
+                             {user.isGestor ? "Remover Gestor" : "Promover a Gestor"}
+                           </DropdownMenuItem>
+                         )}
+                         
+                         {user.status !== "pendente" && (
+                           <DropdownMenuItem 
+                             onClick={() => handleToggleStatus(user.id)}
+                             className="cursor-pointer"
+                           >
+                             <Shield className="w-4 h-4 mr-2" />
+                             {user.status === "ativo" ? "Inativar" : "Ativar"}
+                           </DropdownMenuItem>
+                         )}
+                         
+                         {user.papel !== "paciente" && (
+                           <>
+                             <DropdownMenuSeparator />
+                             <DropdownMenuItem 
+                               onClick={() => handleRemoveUser(user.id)}
+                               className="cursor-pointer text-destructive focus:text-destructive"
+                             >
+                               <Shield className="w-4 h-4 mr-2" />
+                               Remover
+                             </DropdownMenuItem>
+                           </>
+                         )}
+                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
                 </div>
@@ -323,53 +453,55 @@ export const UserProfileManager = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-primary" />
-                <span className="font-medium">Paciente</span>
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• CRUD completo de medicações e agendas</li>
-                <li>• Gestão de Acompanhantes e Cuidadores</li>
-                <li>• Acesso total ao plano de assinatura</li>
-              </ul>
-            </div>
+             <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                 <UserCheck className="w-4 h-4 text-primary" />
+                 <span className="font-medium">Paciente</span>
+                 <Crown className="w-4 h-4 text-amber-500" />
+               </div>
+               <ul className="text-sm text-muted-foreground space-y-1 ml-6">
+                 <li>• Referência principal de saúde</li>
+                 <li>• Pode ser promovido a Gestor</li>
+                 <li>• Como Gestor: poder total sobre a conta</li>
+               </ul>
+             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-accent" />
-                <span className="font-medium">Acompanhante</span>
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• Acesso igual ao Paciente</li>
-                <li>• Gestão completa dos dados</li>
-                <li>• Acesso ao plano de assinatura</li>
-              </ul>
-            </div>
+             <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                 <Shield className="w-4 h-4 text-accent" />
+                 <span className="font-medium">Acompanhante</span>
+                 <Crown className="w-4 h-4 text-amber-500" />
+               </div>
+               <ul className="text-sm text-muted-foreground space-y-1 ml-6">
+                 <li>• Colaborador próximo</li>
+                 <li>• Pode ser promovido a Gestor</li>
+                 <li>• Como Gestor: acesso completo exceto promover outros</li>
+               </ul>
+             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-success" />
-                <span className="font-medium">Cuidador</span>
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• Apenas registrar conclusões</li>
-                <li>• Não pode criar/editar/excluir</li>
-                <li>• Sem acesso ao plano</li>
-              </ul>
-            </div>
+             <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                 <ShieldCheck className="w-4 h-4 text-success" />
+                 <span className="font-medium">Cuidador</span>
+               </div>
+               <ul className="text-sm text-muted-foreground space-y-1 ml-6">
+                 <li>• Colaborador técnico</li>
+                 <li>• Só visualiza e marca compromissos concluídos</li>
+                 <li>• Não pode ser promovido a Gestor</li>
+               </ul>
+             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <SettingsIcon className="w-4 h-4 text-muted-foreground" />
-                <span className="font-medium">Admin</span>
-              </div>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-6">
-                <li>• Configurações do sistema</li>
-                <li>• Relatórios técnicos</li>
-                <li>• Sem acesso a dados pessoais</li>
-              </ul>
-            </div>
+             <div className="space-y-3">
+               <div className="flex items-center gap-2">
+                 <SettingsIcon className="w-4 h-4 text-muted-foreground" />
+                 <span className="font-medium">Admin</span>
+               </div>
+               <ul className="text-sm text-muted-foreground space-y-1 ml-6">
+                 <li>• Configurações técnicas do sistema</li>
+                 <li>• Sem acesso a dados pessoais</li>
+                 <li>• Não pode gerenciar usuários</li>
+               </ul>
+             </div>
           </div>
         </CardContent>
       </Card>
@@ -387,6 +519,13 @@ export const UserProfileManager = () => {
           user={editingUser}
           onSave={handleSaveUser}
           onCancel={() => setEditingUser(null)}
+        />
+      </Dialog>
+
+      <Dialog open={isAddCollaboratorOpen} onOpenChange={setIsAddCollaboratorOpen}>
+        <AddCollaboratorDialog 
+          onSave={handleAddCollaborator}
+          onCancel={() => setIsAddCollaboratorOpen(false)}
         />
       </Dialog>
     </div>

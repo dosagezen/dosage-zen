@@ -1,0 +1,384 @@
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+
+interface MyProfileData {
+  id: string;
+  codigo: string;
+  nome: string;
+  email: string;
+  celular: string;
+  papel: string;
+  isGestor: boolean;
+}
+
+const MyProfileSection = () => {
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Simula o usuário logado
+  const [profileData, setProfileData] = useState<MyProfileData>({
+    id: "1",
+    codigo: "X7M2A9",
+    nome: "Maria Oliveira",
+    email: "maria@email.com",
+    celular: "(81) 98888-8888",
+    papel: "paciente",
+    isGestor: true
+  });
+
+  const [formData, setFormData] = useState({
+    nome: profileData.nome,
+    email: profileData.email,
+    celular: profileData.celular,
+    senha: "",
+    confirmarSenha: ""
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setFormData({
+      nome: profileData.nome,
+      email: profileData.email,
+      celular: profileData.celular,
+      senha: "",
+      confirmarSenha: ""
+    });
+  }, [profileData]);
+
+  const formatCelular = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    }
+    return value;
+  };
+
+  const handleCelularChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCelular(e.target.value);
+    setFormData({ ...formData, celular: formatted });
+  };
+
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(profileData.codigo);
+      setCopied(true);
+      toast({
+        title: "Código copiado",
+        description: "Código copiado para a área de transferência.",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível copiar o código.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.nome.trim()) {
+      newErrors.nome = "Nome é obrigatório";
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = "E-mail é obrigatório";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "E-mail inválido";
+    }
+
+    if (!formData.celular.trim()) {
+      newErrors.celular = "Celular é obrigatório";
+    }
+
+    if (formData.senha && formData.senha.length < 6) {
+      newErrors.senha = "Senha deve ter pelo menos 6 caracteres";
+    }
+
+    if (formData.senha && formData.senha !== formData.confirmarSenha) {
+      newErrors.confirmarSenha = "Senhas não coincidem";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validateForm()) return;
+
+    // Atualizar dados do perfil
+    setProfileData(prev => ({
+      ...prev,
+      nome: formData.nome,
+      email: formData.email,
+      celular: formData.celular
+    }));
+
+    setIsEditing(false);
+    setFormData(prev => ({ ...prev, senha: "", confirmarSenha: "" }));
+    
+    toast({
+      title: "Perfil atualizado",
+      description: "Seus dados foram atualizados com sucesso.",
+    });
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setFormData({
+      nome: profileData.nome,
+      email: profileData.email,
+      celular: profileData.celular,
+      senha: "",
+      confirmarSenha: ""
+    });
+    setErrors({});
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <Card className="shadow-card">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-16 h-16 bg-gradient-primary">
+                <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
+                  {profileData.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-xl text-primary flex items-center gap-2">
+                  {profileData.nome}
+                  {profileData.isGestor && (
+                    <span className="text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-2 py-1 rounded-full font-semibold">
+                      Gestor
+                    </span>
+                  )}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1 capitalize">
+                  {profileData.papel}
+                </p>
+              </div>
+            </div>
+            {!isEditing && (
+              <Button 
+                onClick={() => setIsEditing(true)}
+                className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Editar Perfil
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Código do Usuário */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="text-lg text-primary">Código de Identificação</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground mb-1">Seu código único</p>
+              <p className="font-bold text-2xl tracking-wider font-mono bg-slate-900 text-white px-3 py-2 rounded inline-block">
+                {profileData.codigo}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyCode}
+              className="shrink-0"
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-success" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3">
+            Este código é único e imutável. Use-o para ser adicionado por outros usuários.
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Dados Pessoais */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle className="text-lg text-primary">Dados Pessoais</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isEditing ? (
+            <>
+              {/* Nome */}
+              <div className="space-y-2">
+                <Label htmlFor="nome" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Nome Completo
+                </Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  className={errors.nome ? "border-destructive" : ""}
+                />
+                {errors.nome && (
+                  <p className="text-xs text-destructive">{errors.nome}</p>
+                )}
+              </div>
+
+              {/* E-mail */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  E-mail
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className={errors.email ? "border-destructive" : ""}
+                />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Celular */}
+              <div className="space-y-2">
+                <Label htmlFor="celular" className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Celular
+                </Label>
+                <Input
+                  id="celular"
+                  value={formData.celular}
+                  onChange={handleCelularChange}
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                  className={errors.celular ? "border-destructive" : ""}
+                />
+                {errors.celular && (
+                  <p className="text-xs text-destructive">{errors.celular}</p>
+                )}
+              </div>
+
+              {/* Senha */}
+              <div className="space-y-2">
+                <Label htmlFor="senha" className="flex items-center gap-2">
+                  <Key className="w-4 h-4" />
+                  Nova Senha (opcional)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="senha"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.senha}
+                    onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                    placeholder="Deixe em branco para manter a atual"
+                    className={errors.senha ? "border-destructive" : ""}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.senha && (
+                  <p className="text-xs text-destructive">{errors.senha}</p>
+                )}
+              </div>
+
+              {/* Confirmar Senha */}
+              {formData.senha && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmarSenha">Confirmar Nova Senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmarSenha"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={formData.confirmarSenha}
+                      onChange={(e) => setFormData({ ...formData, confirmarSenha: e.target.value })}
+                      className={errors.confirmarSenha ? "border-destructive" : ""}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {errors.confirmarSenha && (
+                    <p className="text-xs text-destructive">{errors.confirmarSenha}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Ações */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button onClick={handleSave} className="bg-primary hover:bg-primary-hover">
+                  Salvar Alterações
+                </Button>
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancelar
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    Nome
+                  </Label>
+                  <p className="font-medium">{profileData.nome}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="w-4 h-4" />
+                    E-mail
+                  </Label>
+                  <p className="font-medium">{profileData.email}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="w-4 h-4" />
+                    Celular
+                  </Label>
+                  <p className="font-medium">{profileData.celular}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default MyProfileSection;

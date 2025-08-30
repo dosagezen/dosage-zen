@@ -96,6 +96,8 @@
   --status-active-foreground: 120 60% 25%; /* Dark green text */
   --status-inactive: 0 60% 92%; /* Soft red background */
   --status-inactive-foreground: 0 60% 35%; /* Dark red text */
+  --status-pending: 45 86% 83%; /* Soft yellow background */
+  --status-pending-foreground: 45 86% 25%; /* Dark yellow text */
   }
 
   .dark {
