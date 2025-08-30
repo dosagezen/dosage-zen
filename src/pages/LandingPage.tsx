@@ -96,7 +96,7 @@ const LandingPage = () => {
                 
                 {/* Phone Mockup */}
                 <div className="relative w-64 h-[32rem] bg-gradient-to-br from-slate-800 to-slate-900 rounded-[2.5rem] p-2 shadow-2xl transform hover:rotate-2 transition-transform duration-500">
-                  <img src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" alt="Dosage Zen App Dashboard" className="w-full h-full object-cover rounded-[2rem]" />
+                  <img src="/lovable-uploads/3667c683-13c3-4104-b70a-9b5ad3235935.png" alt="DosageZen App Dashboard" className="w-full h-full object-cover rounded-[2rem]" />
                 </div>
               </div>
             </div>
@@ -420,7 +420,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">Dosage Zen</h3>
+              <h3 className="text-xl font-bold mb-4">DosageZen</h3>
               <p className="text-sm opacity-75">
                 Sua saúde organizada e no tempo certo.
               </p>
@@ -443,7 +443,7 @@ const LandingPage = () => {
           
           <div className="border-t border-white/20 pt-8 text-center">
             <p className="text-sm opacity-75">
-              © 2024 Dosage Zen. Todos os direitos reservados.
+              © 2024 DosageZen. Todos os direitos reservados.
             </p>
             <p className="text-xs opacity-60 mt-2">
               Pagamentos seguros via cartão de crédito

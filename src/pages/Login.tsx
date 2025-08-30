@@ -99,7 +99,7 @@ const Login = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary rounded-2xl mb-4">
             <span className="text-2xl font-bold text-primary-foreground">D</span>
           </div>
-          <h1 className="text-2xl font-bold text-primary">Dosage Zen</h1>
+          <h1 className="text-2xl font-bold text-primary">DosageZen</h1>
           <p className="text-muted-foreground mt-2">
             Faça login para acessar sua conta
           </p>

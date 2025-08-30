@@ -30,7 +30,7 @@ const AppLayout = () => {
               <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
                 <span className="text-primary-foreground text-xs font-bold">D</span>
               </div>
-              <span className="font-semibold text-primary">Dosage Zen</span>
+              <span className="font-semibold text-primary">DosageZen</span>
             </div>
           </header>
           <main className="flex-1">

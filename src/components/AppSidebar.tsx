@@ -85,7 +85,7 @@ export function AppSidebar() {
                 <Pill className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="font-semibold text-primary">Dosage Zen</h2>
+                <h2 className="font-semibold text-primary">DosageZen</h2>
                 <p className="text-xs text-muted-foreground">Sua saúde em dia</p>
               </div>
             </div>
