@@ -268,15 +268,21 @@ export default function Conquistas() {
               <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
               <p className="text-sm text-muted-foreground">Progresso diário</p>
             </div>
-            <div 
-              className="relative w-20 h-20 rounded-full flex items-center justify-center"
-              style={{
-                background: `conic-gradient(from 0deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`,
-                transform: 'rotate(-90deg)',
-                padding: '4px'
-              }}
-            >
-              <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
+            <div className="relative w-20 h-20">
+              {/* Círculo de progresso - rotacionado */}
+              <div 
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `conic-gradient(from 0deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`,
+                  transform: 'rotate(-90deg)',
+                  padding: '4px'
+                }}
+              >
+                <div className="w-full h-full rounded-full bg-background"></div>
+              </div>
+              
+              {/* Texto central - não rotacionado */}
+              <div className="relative w-full h-full flex items-center justify-center">
                 <span className="text-2xl font-bold text-foreground">{metricas.aderencia}%</span>
               </div>
             </div>
