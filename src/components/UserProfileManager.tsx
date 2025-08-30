@@ -245,13 +245,13 @@ export const UserProfileManager = () => {
                       </h3>
                       {/* Linha com Código, Papel e Status */}
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <span 
-                          className="font-semibold text-[#344E41] text-xs tracking-wide"
+                        <Badge 
+                          className="bg-slate-900 text-white font-semibold text-xs"
                           aria-label="Código do usuário"
                           aria-readonly="true"
                         >
                           {user.codigo}
-                        </span>
+                        </Badge>
                         <Badge 
                           className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
                         >
