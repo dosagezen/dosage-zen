@@ -11,7 +11,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineCh
 const MOCK_DATA = {
   hoje: {
     totalPlanejados: 12,
-    totalConcluidos: 9,
+    totalConcluidos: 7,
+    faltando: 3,
+    atrasados: 1,
+    excluidos: 1,
     categorias: {
       medicacoes: { planejados: 6, concluidos: 5 },
       consultas: { planejados: 2, concluidos: 1 },
@@ -116,6 +119,9 @@ export default function Conquistas() {
       dadosFiltrasdos.hoje = {
         totalPlanejados,
         totalConcluidos,
+        faltando: Math.floor(totalPlanejados * 0.25), // Mock: 25% faltando
+        atrasados: Math.floor(totalPlanejados * 0.08), // Mock: 8% atrasados  
+        excluidos: Math.floor(totalPlanejados * 0.08), // Mock: 8% excluídos
         categorias: categoriasFiltradasHoje as any
       }
     }
@@ -188,46 +194,193 @@ export default function Conquistas() {
     )
   }
 
+  // Função para calcular métricas detalhadas
+  const calcularMetricas = (dados: typeof MOCK_DATA.hoje) => {
+    const P = dados.totalPlanejados
+    const C = dados.totalConcluidos
+    const F = dados.faltando || 0
+    const A = dados.atrasados || 0
+    const E = dados.excluidos || 0
+
+    // Garantir que C + F + A + E == P (reconciliação)
+    const total = C + F + A + E
+    if (total !== P && P > 0) {
+      console.warn(`Inconsistência nos dados: ${total} !== ${P}`)
+    }
+
+    // Calcular percentuais (0 quando P == 0)
+    const concluidosPct = P > 0 ? Math.round((C / P) * 100) : 0
+    const faltandoPct = P > 0 ? Math.round((F / P) * 100) : 0
+    const atrasadosPct = P > 0 ? Math.round((A / P) * 100) : 0
+    const excluidosPct = P > 0 ? Math.round((E / P) * 100) : 0
+
+    return {
+      P, C, F, A, E,
+      concluidosPct,
+      faltandoPct,
+      atrasadosPct,
+      excluidosPct,
+      aderencia: concluidosPct
+    }
+  }
+
   const renderResumoCard = () => {
     const dados = dadosFiltrados.hoje
-    const percentual = dados.totalPlanejados > 0 ? Math.round((dados.totalConcluidos / dados.totalPlanejados) * 100) : 0
+    const metricas = calcularMetricas(dados)
+
+    // Estado quando P == 0
+    if (metricas.P === 0) {
+      return (
+        <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 shadow-lg">
+          <CardContent className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
+                <p className="text-sm text-muted-foreground">Progresso diário</p>
+              </div>
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20">
+                <span className="text-2xl font-bold text-primary">0%</span>
+              </div>
+            </div>
+            
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-lg">Nenhum compromisso no período</p>
+            </div>
+
+            <Button 
+              onClick={scrollToGraficos}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-11 font-medium"
+            >
+              Adicionar na Agenda
+            </Button>
+          </CardContent>
+        </Card>
+      )
+    }
 
     return (
       <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 opacity-60"></div>
-        <CardContent className="relative p-6 space-y-6">
+        <CardContent className="relative p-6 space-y-6" aria-live="polite">
+          {/* Cabeçalho */}
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
               <p className="text-sm text-muted-foreground">Progresso diário</p>
             </div>
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20">
-              <span className="text-2xl font-bold text-primary">{percentual}%</span>
+            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-2 border-primary/20">
+              <span className="text-3xl font-bold text-primary">{metricas.aderencia}%</span>
             </div>
           </div>
 
+          {/* Barra de progresso segmentada */}
           <div className="space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground">Progresso</span>
-              <span className="font-medium text-foreground">{dados.totalConcluidos} de {dados.totalPlanejados}</span>
+              <span className="font-medium text-foreground">{metricas.C} de {metricas.P}</span>
             </div>
-            <div className="relative">
-              <Progress value={percentual} className="h-2 bg-muted/50" />
-              <div className="absolute -top-1 left-0 w-full flex justify-between">
-                <div className="w-2 h-4 bg-primary/20 rounded-full"></div>
-                <div className="w-2 h-4 bg-primary/20 rounded-full"></div>
+            
+            <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
+              {/* Segmentos proporcionais */}
+              <div className="flex h-full">
+                {metricas.C > 0 && (
+                  <div 
+                    className="bg-[#344E41] h-full transition-all duration-300"
+                    style={{ width: `${metricas.concluidosPct}%` }}
+                    aria-label={`Concluídos: ${metricas.C} (${metricas.concluidosPct}%)`}
+                  />
+                )}
+                {metricas.F > 0 && (
+                  <div 
+                    className="bg-[#588157] h-full transition-all duration-300"
+                    style={{ width: `${metricas.faltandoPct}%` }}
+                    aria-label={`Faltando: ${metricas.F} (${metricas.faltandoPct}%)`}
+                  />
+                )}
+                {metricas.A > 0 && (
+                  <div 
+                    className="bg-[#E67E22] h-full transition-all duration-300"
+                    style={{ width: `${metricas.atrasadosPct}%` }}
+                    aria-label={`Atrasados: ${metricas.A} (${metricas.atrasadosPct}%)`}
+                  />
+                )}
+                {metricas.E > 0 && (
+                  <div 
+                    className="bg-[#DAD7CD] h-full transition-all duration-300"
+                    style={{ width: `${metricas.excluidosPct}%` }}
+                    aria-label={`Excluídos: ${metricas.E} (${metricas.excluidosPct}%)`}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Legenda compacta */}
+            <div className="flex flex-wrap gap-3 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-[#344E41] rounded-full"></div>
+                <span className="text-muted-foreground">Concluídos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-[#588157] rounded-full"></div>
+                <span className="text-muted-foreground">Faltando</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-[#E67E22] rounded-full"></div>
+                <span className="text-muted-foreground">Atrasados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-[#DAD7CD] rounded-full"></div>
+                <span className="text-muted-foreground">Excluídos</span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="text-center p-3 rounded-lg bg-background/50 border border-border/50">
-              <p className="text-lg font-bold text-primary">{dados.totalPlanejados}</p>
-              <p className="text-xs text-muted-foreground">Planejados</p>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-background/50 border border-border/50">
-              <p className="text-lg font-bold text-success">{dados.totalConcluidos}</p>
-              <p className="text-xs text-muted-foreground">Concluídos</p>
+          {/* Linha de métricas - 4 cards compactos em uma linha */}
+          <div className="overflow-x-auto">
+            <div className="flex gap-3 min-w-max md:min-w-0 md:grid md:grid-cols-4">
+              {/* Concluídos */}
+              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
+                <div className="relative inline-block">
+                  <p className="text-xl font-bold text-[#344E41]">{metricas.C}</p>
+                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#344E41]/70 bg-[#344E41]/10 px-1 rounded">
+                    {metricas.concluidosPct}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Concluídos</p>
+              </div>
+
+              {/* Faltando */}
+              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
+                <div className="relative inline-block">
+                  <p className="text-xl font-bold text-[#588157]">{metricas.F}</p>
+                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded">
+                    {metricas.faltandoPct}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Faltando</p>
+              </div>
+
+              {/* Atrasados */}
+              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
+                <div className="relative inline-block">
+                  <p className="text-xl font-bold text-[#E67E22]">{metricas.A}</p>
+                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#E67E22]/70 bg-[#E67E22]/10 px-1 rounded">
+                    {metricas.atrasadosPct}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Atrasados</p>
+              </div>
+
+              {/* Excluídos */}
+              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
+                <div className="relative inline-block">
+                  <p className="text-xl font-bold text-[#DAD7CD]">{metricas.E}</p>
+                  <span className="absolute -top-1 -right-2 text-xs font-semibold text-[#DAD7CD]/70 bg-[#DAD7CD]/20 px-1 rounded">
+                    {metricas.excluidosPct}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Excluídos</p>
+              </div>
             </div>
           </div>
 
