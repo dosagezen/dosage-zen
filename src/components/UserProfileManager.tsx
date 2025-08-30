@@ -255,7 +255,6 @@ export const UserProfileManager = () => {
                         <Badge 
                           className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
                         >
-                          <RoleIcon className="w-3 h-3 mr-1" />
                           {roleLabels[user.papel]}
                         </Badge>
                         <Badge 
