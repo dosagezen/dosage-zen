@@ -311,7 +311,7 @@ const LandingPage = () => {
               O que nossos usuários dizem
             </h2>
             <p className="text-lg text-muted-foreground">
-              Histórias reais de quem transformou sua rotina de saúde
+              Histórias de quem transformou sua rotina de saúde
             </p>
           </div>
           
