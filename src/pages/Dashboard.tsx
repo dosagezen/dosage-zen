@@ -108,7 +108,7 @@ const Dashboard = () => {
               <Clock className="w-5 h-5" />
               Próximas Medicações
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => navigate('/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/app/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {proximasMedicacoes.map((med, index) => <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
@@ -138,7 +138,7 @@ const Dashboard = () => {
               <Calendar className="w-5 h-5" />
               Próximos Compromissos
             </CardTitle>
-            <Button variant="outline" size="sm" onClick={() => navigate('/agenda')} aria-label="Ver agenda completa">Ver Agenda</Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/app/agenda')} aria-label="Ver agenda completa">Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-3">
             {/* Consultas */}
