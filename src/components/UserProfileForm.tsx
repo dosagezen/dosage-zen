@@ -145,30 +145,32 @@ export const UserProfileForm = ({ user, onSave, onCancel }: UserProfileFormProps
           <CardContent className="p-4 space-y-4">
             <h3 className="font-medium text-foreground">Informações Básicas</h3>
             
-            {/* Código do Usuário (somente na edição) */}
-            {isEditing && (
-              <div className="space-y-2">
-                <Label htmlFor="codigo">Código do Usuário</Label>
-                <div className="relative">
-                  <Input
-                    id="codigo"
-                    value={user?.codigo || ""}
-                    readOnly
-                    className="bg-muted/50 text-muted-foreground cursor-not-allowed"
-                    aria-label="Código do usuário"
-                    aria-readonly="true"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                    <span className="text-xs text-muted-foreground">
-                      Único e imutável
-                    </span>
-                  </div>
+            {/* Código do Usuário */}
+            <div className="space-y-2">
+              <Label htmlFor="codigo">Código do Usuário</Label>
+              <div className="relative">
+                <Input
+                  id="codigo"
+                  value={isEditing ? user?.codigo || "" : ""}
+                  placeholder={!isEditing ? "Será gerado automaticamente" : ""}
+                  readOnly
+                  className="bg-muted/50 text-muted-foreground cursor-not-allowed"
+                  aria-label="Código do usuário"
+                  aria-readonly="true"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <span className="text-xs text-muted-foreground">
+                    {isEditing ? "Único e imutável" : "Auto-gerado"}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Este código é único e não pode ser alterado.
-                </p>
               </div>
-            )}
+              <p className="text-xs text-muted-foreground">
+                {isEditing 
+                  ? "Este código é único e não pode ser alterado."
+                  : "O código será gerado automaticamente após criar o perfil."
+                }
+              </p>
+            </div>
             
             {/* Nome */}
             <div className="space-y-2">
