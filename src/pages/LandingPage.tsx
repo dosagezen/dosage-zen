@@ -179,7 +179,7 @@ const LandingPage = () => {
               Veja como é simples acompanhar sua saúde
             </h2>
             <p className="text-lg text-muted-foreground">
-              Interface intuitiva desenvolvida pensando em você
+              Interface intuitiva pensada em você
             </p>
           </div>
           
