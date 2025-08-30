@@ -64,8 +64,7 @@ const LandingPage = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-white/90 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Tecnologia inteligente que transforma como você cuida da sua saúde. 
-                <span className="text-vibrant-yellow font-semibold">Simples, eficaz e sempre com você.</span>
+                Tecnologia inteligente que transforma como você cuida da sua saúde. <span className="text-vibrant-yellow font-semibold">Simples, eficaz e sempre com você.</span>
               </p>
               
               <div className="flex justify-center lg:justify-start">
