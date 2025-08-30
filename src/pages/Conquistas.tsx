@@ -268,7 +268,13 @@ export default function Conquistas() {
               <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
               <p className="text-sm text-muted-foreground">Progresso diário</p>
             </div>
-            <div className="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 border-3 border-primary">
+            <div className={`flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 ${
+              metricas.aderencia >= 90 ? 'border-[8px] border-green-600' :
+              metricas.aderencia >= 75 ? 'border-[6px] border-green-500' :
+              metricas.aderencia >= 50 ? 'border-4 border-yellow-500' :
+              metricas.aderencia >= 25 ? 'border-3 border-orange-500' :
+              'border-2 border-red-400'
+            } ring-2 ring-primary/20`}>
               <span className="text-3xl font-bold text-primary">{metricas.aderencia}%</span>
             </div>
           </div>
