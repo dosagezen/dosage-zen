@@ -15,6 +15,7 @@ export type UserStatus = "ativo" | "inativo";
 
 export interface UserProfile {
   id: string;
+  codigo: string;
   nome: string;
   email: string;
   celular: string;
@@ -24,10 +25,25 @@ export interface UserProfile {
   owner_user_id?: string;
 }
 
+// Função para gerar código único alfanumérico de 6 dígitos
+const generateUniqueCode = (existingCodes: string[]): string => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code: string;
+  
+  do {
+    code = Array.from({ length: 6 }, () => 
+      characters.charAt(Math.floor(Math.random() * characters.length))
+    ).join('');
+  } while (existingCodes.includes(code));
+  
+  return code;
+};
+
 // Dados mockados
 const mockUsers: UserProfile[] = [
   {
     id: "1",
+    codigo: "X7M2A9",
     nome: "Maria Oliveira",
     email: "maria@email.com",
     celular: "(81) 98888-8888",
@@ -37,6 +53,7 @@ const mockUsers: UserProfile[] = [
   },
   {
     id: "2", 
+    codigo: "R4C1Z8",
     nome: "João Santos",
     email: "joao@email.com",
     celular: "(81) 99999-9999",
@@ -47,6 +64,7 @@ const mockUsers: UserProfile[] = [
   },
   {
     id: "3",
+    codigo: "K3P9Q2",
     nome: "Ana Nery",
     email: "ana@clinica.com", 
     celular: "(81) 97777-7777",
@@ -57,6 +75,7 @@ const mockUsers: UserProfile[] = [
   },
   {
     id: "4",
+    codigo: "T6B8D5",
     nome: "Equipe Admin",
     email: "admin@sistema.com",
     celular: "(81) 96666-6666", 
@@ -139,9 +158,9 @@ export const UserProfileManager = () => {
     });
   };
 
-  const handleSaveUser = (userData: Omit<UserProfile, 'id' | 'created_at'>) => {
+  const handleSaveUser = (userData: Omit<UserProfile, 'id' | 'created_at' | 'codigo'>) => {
     if (editingUser) {
-      // Editar usuário existente
+      // Editar usuário existente (mantém o código existente)
       setUsers(prev => prev.map(user => 
         user.id === editingUser.id 
           ? { ...user, ...userData }
@@ -152,10 +171,14 @@ export const UserProfileManager = () => {
         description: "Perfil atualizado com sucesso.",
       });
     } else {
-      // Criar novo usuário
+      // Criar novo usuário (gera código automaticamente)
+      const existingCodes = users.map(u => u.codigo);
+      const newCode = generateUniqueCode(existingCodes);
+      
       const newUser: UserProfile = {
         ...userData,
         id: Date.now().toString(),
+        codigo: newCode,
         created_at: new Date().toISOString(),
         owner_user_id: currentUser?.id
       };
@@ -220,7 +243,15 @@ export const UserProfileManager = () => {
                       <h3 className="font-semibold text-foreground truncate mb-1">
                         {user.nome}
                       </h3>
-                      <div className="flex items-center gap-2">
+                      {/* Linha com Código, Papel e Status */}
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <span 
+                          className="font-semibold text-[#344E41] text-xs tracking-wide"
+                          aria-label="Código do usuário"
+                          aria-readonly="true"
+                        >
+                          {user.codigo}
+                        </span>
                         <Badge 
                           className={`${roleColors[user.papel]} text-xs shrink-0 w-fit`}
                         >
