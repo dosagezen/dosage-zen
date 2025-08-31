@@ -239,8 +239,8 @@ const MyProfileSection = () => {
         <CardContent className="space-y-4">
           {isEditing ? (
             <>
-              {/* Nova seção - Elementos alinhados inline */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6">
+              {/* Nova seção - 2 colunas: Perfil e Toggle */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6">
                 {/* Campo Perfil */}
                 <div className="flex items-center gap-2">
                   <Label htmlFor="perfil" className="text-sm font-medium flex items-center gap-1 whitespace-nowrap">
@@ -255,9 +255,8 @@ const MyProfileSection = () => {
                       <SelectValue placeholder="Selecione o perfil" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Gestor">Gestor</SelectItem>
                       <SelectItem value="Acompanhante">Acompanhante</SelectItem>
-                      <SelectItem value="Cuidador">Cuidador</SelectItem>
+                      <SelectItem value="Paciente">Paciente</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -274,16 +273,6 @@ const MyProfileSection = () => {
                     onCheckedChange={(checked) => setFormData({ ...formData, isGestor: checked })}
                   />
                 </div>
-
-                {/* Tag dinâmica */}
-                {formData.isGestor && (
-                  <Badge 
-                    variant="default" 
-                    className="bg-[#344E41] text-white font-semibold hover:bg-[#344E41]/80"
-                  >
-                    Gestor
-                  </Badge>
-                )}
               </div>
 
               {/* Nome */}
