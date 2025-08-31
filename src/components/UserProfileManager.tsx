@@ -171,7 +171,18 @@ export const UserProfileManager = () => {
 
   const canPromoteToGestor = (user: UserProfile) => {
     if (!currentUser?.isGestor) return false;
-    return (user.papel === "paciente" || user.papel === "acompanhante") && !user.isGestor;
+    
+    // Permite promover acompanhantes e pacientes não-gestores a gestor
+    if ((user.papel === "paciente" || user.papel === "acompanhante") && !user.isGestor) {
+      return true;
+    }
+    
+    // Permite que gestor atual remova própria gestão (auto-demote)
+    if (user.id === currentUser.id && user.isGestor && user.papel === "paciente") {
+      return true;
+    }
+    
+    return false;
   };
 
   const hasGestor = users.some(u => u.isGestor && u.papel === "paciente");
@@ -449,18 +460,18 @@ export const UserProfileManager = () => {
                            </DropdownMenuItem>
                          )}
                          
-                         {user.papel !== "paciente" && (
-                           <>
-                             <DropdownMenuSeparator />
-                             <DropdownMenuItem 
-                               onClick={() => handleRemoveUser(user.id)}
-                               className="cursor-pointer text-destructive focus:text-destructive"
-                             >
-                               <Shield className="w-4 h-4 mr-2" />
-                               Remover
-                             </DropdownMenuItem>
-                           </>
-                         )}
+                          {(user.papel !== "paciente" || (user.papel === "paciente" && user.id !== currentUser?.id)) && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleRemoveUser(user.id)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                              >
+                                <Shield className="w-4 h-4 mr-2" />
+                                {user.papel === "paciente" ? "Transferir Responsabilidade" : "Remover"}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                        </DropdownMenuContent>
                     </DropdownMenu>
                   )}
