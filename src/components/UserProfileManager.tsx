@@ -286,7 +286,7 @@ export const UserProfileManager = () => {
     setIsAddCollaboratorOpen(false);
   };
 
-  const canCreateProfiles = currentUser?.isGestor || currentUser?.papel === "paciente";
+  const canCreateCollaborators = currentUser?.isGestor || currentUser?.papel === "paciente";
 
   return (
     <div className="space-y-6">
@@ -295,19 +295,19 @@ export const UserProfileManager = () => {
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="text-xl text-primary">Perfis de Usuário</CardTitle>
+              <CardTitle className="text-xl text-primary">Colaboradores</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Gerencie os usuários com acesso ao sistema
+                Gerencie os colaboradores que têm acesso ao sistema
               </p>
             </div>
-            {canCreateProfiles && (
+            {canCreateCollaborators && (
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)}
                   className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Perfil
+                  Adicionar Colaborador
                 </Button>
                 <Button 
                   onClick={() => setIsAddCollaboratorOpen(true)}
@@ -315,7 +315,7 @@ export const UserProfileManager = () => {
                   className="w-full sm:w-auto"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Adicionar Colaborador
+                  Buscar Colaborador
                 </Button>
               </div>
             )}

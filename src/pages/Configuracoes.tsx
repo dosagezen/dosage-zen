@@ -38,7 +38,7 @@ const Configuracoes = () => {
 
   const sections = [
     { id: "meu-perfil", label: "Meu Perfil", icon: User },
-    { id: "perfis", label: "Perfis de Usuário", icon: Users },
+    { id: "colaboradores", label: "Colaboradores", icon: Users },
     { id: "seguranca", label: "Segurança", icon: Shield },
     { id: "notificacoes", label: "Notificações", icon: Bell },
     { id: "assinatura", label: "Assinatura", icon: CreditCard },
@@ -49,7 +49,7 @@ const Configuracoes = () => {
     switch (activeSection) {
       case "meu-perfil":
         return <MyProfileSection />;
-      case "perfis":
+      case "colaboradores":
         return <UserProfileManager />;
       default:
         return (
@@ -108,7 +108,7 @@ const Configuracoes = () => {
                       >
                         <Icon className="w-4 h-4 mr-3" />
                         {section.label}
-                        {section.id === "perfis" && (
+                        {section.id === "colaboradores" && (
                           <Badge variant="secondary" className="ml-auto text-xs">
                             5
                           </Badge>
