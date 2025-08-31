@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuIte
 import { Separator } from "@/components/ui/separator";
 import { UserProfileForm } from "./UserProfileForm";
 import AddCollaboratorDialog from "./AddCollaboratorDialog";
+import { EditCollaboratorDialog } from "./EditCollaboratorDialog";
 import { useToast } from "@/hooks/use-toast";
 
 export type UserRole = "paciente" | "acompanhante" | "cuidador" | "admin";
@@ -129,6 +130,8 @@ export const UserProfileManager = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddCollaboratorOpen, setIsAddCollaboratorOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [isEditCollaboratorOpen, setIsEditCollaboratorOpen] = useState(false);
+  const [editingCollaborator, setEditingCollaborator] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
   const currentUser = users.find(u => u.papel === "paciente" || u.isGestor); // Simula usuário logado
@@ -147,6 +150,21 @@ export const UserProfileManager = () => {
     }
     
     return false;
+  };
+
+  // Função para verificar se é um colaborador convidado
+  const isInvitedCollaborator = (user: UserProfile): boolean => {
+    return !!user.owner_user_id;
+  };
+
+  // Função para editar usuário ou colaborador
+  const handleEditUser = (user: UserProfile) => {
+    if (isInvitedCollaborator(user)) {
+      setEditingCollaborator(user);
+      setIsEditCollaboratorOpen(true);
+    } else {
+      setEditingUser(user);
+    }
   };
 
   const canPromoteToGestor = (user: UserProfile) => {
@@ -258,6 +276,21 @@ export const UserProfileManager = () => {
     
     setEditingUser(null);
     setIsCreateDialogOpen(false);
+  };
+
+  // Função para salvar alterações do colaborador
+  const handleSaveCollaboratorRole = (collaboratorId: string, newRole: string) => {
+    setUsers(users.map(u => 
+      u.id === collaboratorId 
+        ? { ...u, papel: newRole as UserRole }
+        : u
+    ));
+    toast({
+      title: "Papel atualizado",
+      description: "Papel do colaborador atualizado com sucesso.",
+    });
+    setEditingCollaborator(null);
+    setIsEditCollaboratorOpen(false);
   };
 
   const handleAddCollaborator = (data: { papel: string; codigo: string; status: string }) => {
@@ -387,7 +420,7 @@ export const UserProfileManager = () => {
                       </DropdownMenuTrigger>
                        <DropdownMenuContent align="end" className="w-56">
                          <DropdownMenuItem 
-                           onClick={() => setEditingUser(user)}
+                           onClick={() => handleEditUser(user)}
                            className="cursor-pointer"
                          >
                            <Edit className="w-4 h-4 mr-2" />
@@ -518,6 +551,17 @@ export const UserProfileManager = () => {
           onCancel={() => setIsAddCollaboratorOpen(false)}
         />
       </Dialog>
+
+      {/* Dialog para editar colaborador */}
+      <EditCollaboratorDialog
+        isOpen={isEditCollaboratorOpen}
+        onClose={() => {
+          setIsEditCollaboratorOpen(false);
+          setEditingCollaborator(null);
+        }}
+        collaborator={editingCollaborator}
+        onSave={handleSaveCollaboratorRole}
+      />
     </div>
   );
 };
