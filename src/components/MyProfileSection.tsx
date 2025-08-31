@@ -239,11 +239,11 @@ const MyProfileSection = () => {
         <CardContent className="space-y-4">
           {isEditing ? (
             <>
-              {/* Nova seção - 3 colunas */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {/* Coluna 1 - Campo Perfil */}
-                <div className="space-y-2">
-                  <Label htmlFor="perfil" className="flex items-center gap-2">
+              {/* Nova seção - Elementos alinhados inline */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6">
+                {/* Campo Perfil */}
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="perfil" className="text-sm font-medium flex items-center gap-1 whitespace-nowrap">
                     <Users className="w-4 h-4" />
                     Perfil
                   </Label>
@@ -251,7 +251,7 @@ const MyProfileSection = () => {
                     value={formData.perfil} 
                     onValueChange={(value) => setFormData({ ...formData, perfil: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-40 sm:w-44">
                       <SelectValue placeholder="Selecione o perfil" />
                     </SelectTrigger>
                     <SelectContent>
@@ -262,35 +262,28 @@ const MyProfileSection = () => {
                   </Select>
                 </div>
 
-                {/* Coluna 2 - Toggle Gestor */}
-                <div className="space-y-2">
-                  <Label htmlFor="gestorToggle" className="flex items-center gap-2">
+                {/* Toggle Gestor */}
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="gestorToggle" className="text-sm font-medium flex items-center gap-1 whitespace-nowrap">
                     <User className="w-4 h-4" />
                     Gestor
                   </Label>
-                  <div className="flex items-center h-10">
-                    <Switch
-                      id="gestorToggle"
-                      checked={formData.isGestor}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isGestor: checked })}
-                    />
-                  </div>
+                  <Switch
+                    id="gestorToggle"
+                    checked={formData.isGestor}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isGestor: checked })}
+                  />
                 </div>
 
-                {/* Coluna 3 - Tag dinâmica */}
-                <div className="space-y-2">
-                  <Label className="text-transparent">Tag</Label>
-                  <div className="flex items-center h-10">
-                    {formData.isGestor && (
-                      <Badge 
-                        variant="default" 
-                        className="bg-[#344E41] text-white font-semibold hover:bg-[#344E41]/80"
-                      >
-                        Gestor
-                      </Badge>
-                    )}
-                  </div>
-                </div>
+                {/* Tag dinâmica */}
+                {formData.isGestor && (
+                  <Badge 
+                    variant="default" 
+                    className="bg-[#344E41] text-white font-semibold hover:bg-[#344E41]/80"
+                  >
+                    Gestor
+                  </Badge>
+                )}
               </div>
 
               {/* Nome */}
