@@ -303,19 +303,19 @@ export const UserProfileManager = () => {
             {canCreateCollaborators && (
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
+                  onClick={() => setIsAddCollaboratorOpen(true)}
                   className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
+                  <UserPlus className="w-4 h-4 mr-2" />
                   Adicionar Colaborador
                 </Button>
                 <Button 
-                  onClick={() => setIsAddCollaboratorOpen(true)}
+                  onClick={() => setIsCreateDialogOpen(true)}
                   variant="outline"
                   className="w-full sm:w-auto"
                 >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Buscar Colaborador
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar Perfil
                 </Button>
               </div>
             )}
