@@ -301,23 +301,13 @@ export const UserProfileManager = () => {
               </p>
             </div>
             {canCreateCollaborators && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button 
-                  onClick={() => setIsAddCollaboratorOpen(true)}
-                  className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
-                >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Adicionar Colaborador
-                </Button>
-                <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Criar Perfil
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setIsAddCollaboratorOpen(true)}
+                className="bg-primary hover:bg-primary-hover w-full sm:w-auto"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Adicionar Colaborador
+              </Button>
             )}
           </div>
         </CardHeader>
