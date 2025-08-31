@@ -159,7 +159,9 @@ export const UserProfileManager = () => {
 
   // Função para editar usuário ou colaborador
   const handleEditUser = (user: UserProfile) => {
-    if (isInvitedCollaborator(user)) {
+    // Todos os usuários na lista de colaboradores usam EditCollaboratorDialog
+    // exceto administradores que precisam de formulário completo
+    if (user.papel !== "admin") {
       setEditingCollaborator(user);
       setIsEditCollaboratorOpen(true);
     } else {

@@ -114,6 +114,7 @@ export const EditCollaboratorDialog: React.FC<EditCollaboratorDialogProps> = ({
               <SelectContent>
                 <SelectItem value="acompanhante">Acompanhante</SelectItem>
                 <SelectItem value="cuidador">Cuidador</SelectItem>
+                <SelectItem value="paciente">Paciente</SelectItem>
               </SelectContent>
             </Select>
           </div>
