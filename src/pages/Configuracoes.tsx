@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Settings, Users, Shield, Key, Bell, CreditCard, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +11,7 @@ import MyProfileSection from "@/components/MyProfileSection";
 const Configuracoes = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeSection, setActiveSection] = useState("meu-perfil")
 
   // Sincronizar com URL params
@@ -23,11 +24,15 @@ const Configuracoes = () => {
 
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId)
+    // Detectar se estamos no contexto do AppLayout (/app/) ou não
+    const isInAppContext = location.pathname.startsWith('/app/')
+    const basePath = isInAppContext ? '/app/configuracoes' : '/configuracoes'
+    
     // Atualizar rota interna sem reload
     if (sectionId === 'meu-perfil') {
-      navigate('/configuracoes', { replace: true })
+      navigate(basePath, { replace: true })
     } else {
-      navigate(`/configuracoes?section=${sectionId}`, { replace: true })
+      navigate(`${basePath}?section=${sectionId}`, { replace: true })
     }
   }
 
