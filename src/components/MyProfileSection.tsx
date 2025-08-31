@@ -249,13 +249,18 @@ const MyProfileSection = () => {
                   </Label>
                   <Select 
                     value={formData.perfil} 
-                    onValueChange={(value) => setFormData({ ...formData, perfil: value })}
+                    onValueChange={(value) => setFormData({ 
+                      ...formData, 
+                      perfil: value,
+                      isGestor: value === "Cuidador" ? false : formData.isGestor 
+                    })}
                   >
                     <SelectTrigger className="w-40 sm:w-44">
                       <SelectValue placeholder="Selecione o perfil" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                      <SelectItem value="Cuidador">Cuidador</SelectItem>
                       <SelectItem value="Paciente">Paciente</SelectItem>
                     </SelectContent>
                   </Select>
@@ -270,6 +275,7 @@ const MyProfileSection = () => {
                   <Switch
                     id="gestorToggle"
                     checked={formData.isGestor}
+                    disabled={formData.perfil === "Cuidador"}
                     onCheckedChange={(checked) => setFormData({ ...formData, isGestor: checked })}
                   />
                 </div>
