@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key } from "lucide-react";
+import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 interface MyProfileData {
@@ -15,6 +18,7 @@ interface MyProfileData {
   celular: string;
   papel: string;
   isGestor: boolean;
+  perfil: string;
 }
 
 const MyProfileSection = () => {
@@ -32,7 +36,8 @@ const MyProfileSection = () => {
     email: "maria@email.com",
     celular: "(81) 98888-8888",
     papel: "paciente",
-    isGestor: true
+    isGestor: true,
+    perfil: "Acompanhante"
   });
 
   const [formData, setFormData] = useState({
@@ -40,7 +45,9 @@ const MyProfileSection = () => {
     email: profileData.email,
     celular: profileData.celular,
     senha: "",
-    confirmarSenha: ""
+    confirmarSenha: "",
+    perfil: profileData.perfil,
+    isGestor: profileData.isGestor
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,7 +58,9 @@ const MyProfileSection = () => {
       email: profileData.email,
       celular: profileData.celular,
       senha: "",
-      confirmarSenha: ""
+      confirmarSenha: "",
+      perfil: profileData.perfil,
+      isGestor: profileData.isGestor
     });
   }, [profileData]);
 
@@ -123,7 +132,9 @@ const MyProfileSection = () => {
       ...prev,
       nome: formData.nome,
       email: formData.email,
-      celular: formData.celular
+      celular: formData.celular,
+      perfil: formData.perfil,
+      isGestor: formData.isGestor
     }));
 
     setIsEditing(false);
@@ -142,7 +153,9 @@ const MyProfileSection = () => {
       email: profileData.email,
       celular: profileData.celular,
       senha: "",
-      confirmarSenha: ""
+      confirmarSenha: "",
+      perfil: profileData.perfil,
+      isGestor: profileData.isGestor
     });
     setErrors({});
   };
@@ -226,6 +239,60 @@ const MyProfileSection = () => {
         <CardContent className="space-y-4">
           {isEditing ? (
             <>
+              {/* Nova seção - 3 colunas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Coluna 1 - Campo Perfil */}
+                <div className="space-y-2">
+                  <Label htmlFor="perfil" className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Perfil
+                  </Label>
+                  <Select 
+                    value={formData.perfil} 
+                    onValueChange={(value) => setFormData({ ...formData, perfil: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o perfil" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Gestor">Gestor</SelectItem>
+                      <SelectItem value="Acompanhante">Acompanhante</SelectItem>
+                      <SelectItem value="Cuidador">Cuidador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Coluna 2 - Toggle Gestor */}
+                <div className="space-y-2">
+                  <Label htmlFor="gestorToggle" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Gestor
+                  </Label>
+                  <div className="flex items-center h-10">
+                    <Switch
+                      id="gestorToggle"
+                      checked={formData.isGestor}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isGestor: checked })}
+                    />
+                  </div>
+                </div>
+
+                {/* Coluna 3 - Tag dinâmica */}
+                <div className="space-y-2">
+                  <Label className="text-transparent">Tag</Label>
+                  <div className="flex items-center h-10">
+                    {formData.isGestor && (
+                      <Badge 
+                        variant="default" 
+                        className="bg-[#344E41] text-white font-semibold hover:bg-[#344E41]/80"
+                      >
+                        Gestor
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Nome */}
               <div className="space-y-2">
                 <Label htmlFor="nome" className="flex items-center gap-2">
