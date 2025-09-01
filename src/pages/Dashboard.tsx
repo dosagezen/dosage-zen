@@ -7,6 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
 import CompromissosModal from "@/components/CompromissosModal";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +23,7 @@ const Dashboard = () => {
       setSearchParams(new URLSearchParams());
     }
   }, [searchParams, setSearchParams]);
+
   const proximasMedicacoes = [{
     nome: "Atorvastatina",
     dosagem: "10 mg",
@@ -38,6 +40,7 @@ const Dashboard = () => {
     horario: "20:00",
     status: "pendente"
   }];
+
   const proximasConsultas = [{
     especialidade: "Cardiologia",
     medico: "Dr. João Silva",
@@ -49,6 +52,7 @@ const Dashboard = () => {
     data: "22/05/2025",
     horario: "14:30"
   }];
+
   const estatisticas = [{
     titulo: "Compromissos Hoje",
     valor: "5",
@@ -70,6 +74,7 @@ const Dashboard = () => {
     icone: Stethoscope,
     cor: "muted"
   }];
+
   return <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-start">
@@ -258,7 +263,12 @@ const Dashboard = () => {
               <Calendar className="w-6 h-6" />
               Agendar Compromisso
             </Button>
-            <Button variant="outline" className="h-16 flex-col gap-2 hover:bg-accent/20" onClick={() => navigate('/compartilhar')} aria-label="Compartilhar dados de saúde">
+            <Button 
+              variant="outline" 
+              className="h-16 flex-col gap-2 hover:bg-accent/20" 
+              onClick={() => navigate('/app/configuracoes?section=colaboradores')} 
+              aria-label="Gerenciar colaboradores"
+            >
               <Users className="w-6 h-6" />
               Compartilhar Dados
             </Button>
@@ -270,4 +280,5 @@ const Dashboard = () => {
       <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
     </div>;
 };
+
 export default Dashboard;
