@@ -321,7 +321,7 @@ export default function Conquistas() {
                 )}
                 {metricas.E > 0 && (
                   <div 
-                    className="bg-[#DAD7CD] h-full transition-all duration-300"
+                    className="bg-destructive/50 h-full transition-all duration-300"
                     style={{ width: `${metricas.excluidosPct}%` }}
                     aria-label={`Excluídos: ${metricas.E} (${metricas.excluidosPct}%)`}
                   />
