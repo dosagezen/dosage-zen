@@ -361,7 +361,7 @@ export const UserProfileManager = () => {
 
       {/* Lista de Usuários */}
       <div className="grid gap-4">
-        {users.map((user) => {
+        {users.filter(user => user.id !== currentUser?.id).map((user) => {
           const RoleIcon = roleIcons[user.papel];
           const canManage = canManageUser(user);
           
