@@ -39,9 +39,9 @@ const Configuracoes = () => {
   const sections = [
     { id: "meu-perfil", label: "Meu Perfil", icon: User },
     { id: "colaboradores", label: "Colaboradores", icon: Users },
-    { id: "seguranca", label: "Segurança", icon: Shield },
-    { id: "notificacoes", label: "Notificações", icon: Bell },
     { id: "assinatura", label: "Assinatura", icon: CreditCard },
+    { id: "notificacoes", label: "Notificações", icon: Bell },
+    { id: "seguranca", label: "Segurança", icon: Shield },
     { id: "privacidade", label: "Privacidade", icon: Key },
   ];
 
