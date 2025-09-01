@@ -110,7 +110,7 @@ const Configuracoes = () => {
                         {section.label}
                         {section.id === "colaboradores" && (
                           <Badge variant="secondary" className="ml-auto text-xs">
-                            5
+                            4
                           </Badge>
                         )}
                         {section.id === "meu-perfil" && (
