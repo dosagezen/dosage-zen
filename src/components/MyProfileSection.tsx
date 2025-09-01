@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import DeleteAccountDialog from "./DeleteAccountDialog";
+import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 
 interface MyProfileData {
   id: string;
@@ -51,6 +53,10 @@ const MyProfileSection = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Estados para exclusão de conta
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -158,6 +164,25 @@ const MyProfileSection = () => {
       isGestor: profileData.isGestor
     });
     setErrors({});
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteDialog(false);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmDelete = () => {
+    // Mock da exclusão da conta
+    toast({
+      title: "Conta excluída",
+      description: "Sua conta foi excluída com sucesso. Redirecionando...",
+      variant: "destructive"
+    });
+    
+    // Simular redirecionamento para login após 2 segundos
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 2000);
   };
 
   return (
@@ -432,6 +457,37 @@ const MyProfileSection = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Seção de Exclusão de Conta */}
+      <Card className="shadow-card border-destructive/20">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Para excluir seu perfil,{" "}
+              <button
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive hover:text-destructive/80 font-semibold underline focus:outline-none focus:ring-2 focus:ring-destructive/20 focus:ring-offset-2"
+              >
+                clique aqui.
+              </button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dialogs */}
+      <DeleteAccountDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteAccount}
+      />
+
+      <ConfirmDeleteDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        onConfirm={handleConfirmDelete}
+        userCode={profileData.codigo}
+      />
     </div>
   );
 };
