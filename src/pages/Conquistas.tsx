@@ -273,7 +273,7 @@ export default function Conquistas() {
               <div 
                 className="absolute inset-0 rounded-full p-1"
                 style={{
-                  background: `conic-gradient(from -90deg, #16a34a 0deg ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg 360deg)`
+                  background: `conic-gradient(from -90deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`
                 }}
               >
                 <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
