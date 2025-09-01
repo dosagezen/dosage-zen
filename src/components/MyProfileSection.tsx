@@ -233,7 +233,7 @@ const MyProfileSection = () => {
           <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground mb-1">Seu código único</p>
-              <p className="font-bold text-2xl tracking-wider font-mono bg-slate-900 text-white px-3 py-2 rounded inline-block">
+              <p className="font-semibold text-lg tracking-wide font-mono bg-slate-900 text-white px-2 py-1 rounded inline-block">
                 {profileData.codigo}
               </p>
             </div>
