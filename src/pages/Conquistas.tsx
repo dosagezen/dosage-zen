@@ -389,7 +389,7 @@ export default function Conquistas() {
               {/* Excluídos */}
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
-                  <p className="text-xl font-bold text-[#DAD7CD]">{metricas.E}</p>
+                  <p className="text-xl font-bold text-[hsl(46,20%,60%)]">{metricas.E}</p>
                   <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#DAD7CD]/70 bg-[#DAD7CD]/20 px-1 rounded text-right">
                     {metricas.excluidosPct}%
                   </span>
