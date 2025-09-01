@@ -273,8 +273,7 @@ export default function Conquistas() {
               <div 
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: `conic-gradient(from 0deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`,
-                  transform: 'rotate(-90deg)',
+                  background: `conic-gradient(from 270deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`,
                   padding: '4px'
                 }}
               >
