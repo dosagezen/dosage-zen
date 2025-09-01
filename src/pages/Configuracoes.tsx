@@ -28,6 +28,9 @@ const Configuracoes = () => {
     const isInAppContext = location.pathname.startsWith('/app/')
     const basePath = isInAppContext ? '/app/configuracoes' : '/configuracoes'
     
+    // Rolar para o topo da página
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    
     // Atualizar rota interna sem reload
     if (sectionId === 'meu-perfil') {
       navigate(basePath, { replace: true })
