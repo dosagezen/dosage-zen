@@ -339,7 +339,7 @@ export default function Conquistas() {
                 <span className="text-muted-foreground">Atrasados</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-[#DAD7CD] rounded-full"></div>
+                <div className="w-2 h-2 bg-destructive/50 rounded-full"></div>
                 <span className="text-muted-foreground">Excluídos</span>
               </div>
             </div>
