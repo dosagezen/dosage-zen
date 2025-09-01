@@ -316,7 +316,7 @@ export default function Conquistas() {
                 )}
                 {metricas.E > 0 && (
                   <div 
-                    className="bg-destructive/50 h-full transition-all duration-300"
+                    className="bg-red-500/50 h-full transition-all duration-300"
                     style={{ width: `${metricas.excluidosPct}%` }}
                     aria-label={`Excluídos: ${metricas.E} (${metricas.excluidosPct}%)`}
                   />
@@ -339,7 +339,7 @@ export default function Conquistas() {
                 <span className="text-muted-foreground">Atrasados</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-destructive/50 rounded-full"></div>
+                <div className="w-2 h-2 bg-red-500/50 rounded-full"></div>
                 <span className="text-muted-foreground">Excluídos</span>
               </div>
             </div>
