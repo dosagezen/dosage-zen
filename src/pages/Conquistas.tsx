@@ -378,7 +378,7 @@ export default function Conquistas() {
               {/* Atrasados */}
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
-                  <p className="text-xl font-bold text-[#E67E22]">{metricas.A}</p>
+                  <p className="text-xl font-bold text-[#E67E22] mt-4">{metricas.A}</p>
                   <span className="absolute -top-1 -right-1 text-xs font-semibold text-[#E67E22]/70 bg-[#E67E22]/10 px-1 rounded text-right">
                     {metricas.atrasadosPct}%
                   </span>
