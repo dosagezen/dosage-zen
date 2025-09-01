@@ -19,6 +19,10 @@ const Configuracoes = () => {
     const section = searchParams.get('section')
     if (section && sections.find(s => s.id === section)) {
       setActiveSection(section)
+      // Rolar para o topo quando navegar via URL
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 100)
     }
   }, [searchParams])
 
