@@ -368,7 +368,7 @@ export default function Conquistas() {
               <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
                 <div className="relative inline-block">
                   <p className="text-xl font-bold text-[#588157]">{metricas.F}</p>
-                  <span className="absolute -top-2 -right-1 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded text-right">
+                  <span className="absolute -top-1 -right-1 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded text-right">
                     {metricas.faltandoPct}%
                   </span>
                 </div>
