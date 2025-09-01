@@ -129,7 +129,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <button 
                     onClick={handleLogoutClick}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/20 text-foreground/80 transition-colors"
+                    className={getNavCls({ isActive: false })}
                   >
                     <LogOut className="w-5 h-5" />
                     {!isCollapsed && <span>Sair</span>}
