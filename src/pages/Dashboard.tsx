@@ -266,7 +266,10 @@ const Dashboard = () => {
             <Button 
               variant="outline" 
               className="h-16 flex-col gap-2 hover:bg-accent/20" 
-              onClick={() => navigate('/app/configuracoes?section=colaboradores')} 
+              onClick={() => {
+                navigate('/app/configuracoes?section=colaboradores');
+                window.scrollTo(0, 0);
+              }}
               aria-label="Gerenciar colaboradores"
             >
               <Users className="w-6 h-6" />
