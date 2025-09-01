@@ -31,7 +31,6 @@ const items = [
   { title: "Medicações", url: "/app/medicacoes", icon: Pill },
   { title: "Agenda", url: "/app/agenda", icon: Calendar },
   { title: "Farmácias", url: "/app/farmacias", icon: MapPin },
-  { title: "Compartilhar", url: "/app/compartilhar", icon: Users },
   { title: "Relatórios", url: "/app/relatorios", icon: FileText },
   { title: "Configurações", url: "/app/configuracoes", icon: Settings },
 ]
