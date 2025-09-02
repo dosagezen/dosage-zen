@@ -14,16 +14,240 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      collaborations: {
+        Row: {
+          collaborator_profile_id: string
+          collaborator_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+          id: string
+          is_active: boolean | null
+          patient_profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_profile_id: string
+          collaborator_role: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          patient_profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_profile_id?: string
+          collaborator_role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          patient_profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborations_collaborator_profile_id_fkey"
+            columns: ["collaborator_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborations_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          collaborator_code: string
+          collaborator_role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+          created_by: string
+          id: string
+          patient_profile_id: string
+          status: Database["public"]["Enums"]["invitation_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          collaborator_code: string
+          collaborator_role: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          created_by: string
+          id?: string
+          patient_profile_id: string
+          status?: Database["public"]["Enums"]["invitation_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          collaborator_code?: string
+          collaborator_role?: Database["public"]["Enums"]["app_role"]
+          created_at?: string
+          created_by?: string
+          id?: string
+          patient_profile_id?: string
+          status?: Database["public"]["Enums"]["invitation_status"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          celular: string | null
+          codigo: string
+          created_at: string
+          email: string
+          id: string
+          is_gestor: boolean | null
+          nome: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          celular?: string | null
+          codigo: string
+          created_at?: string
+          email: string
+          id?: string
+          is_gestor?: boolean | null
+          nome: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          celular?: string | null
+          codigo?: string
+          created_at?: string
+          email?: string
+          id?: string
+          is_gestor?: boolean | null
+          nome?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          patient_profile_id: string
+          plan_name: string | null
+          status: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_profile_id: string
+          plan_name?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_profile_id?: string
+          plan_name?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          context_patient_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          profile_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_patient_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          profile_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_patient_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          profile_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_context_patient_id_fkey"
+            columns: ["context_patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "paciente" | "acompanhante" | "cuidador" | "admin"
+      invitation_status: "pendente" | "aceito" | "recusado"
+      subscription_status: "ativo" | "inativo" | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +374,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["paciente", "acompanhante", "cuidador", "admin"],
+      invitation_status: ["pendente", "aceito", "recusado"],
+      subscription_status: ["ativo", "inativo", "cancelado"],
+    },
   },
 } as const
