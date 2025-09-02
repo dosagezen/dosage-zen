@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfileSelector } from "@/components/ProfileSelector";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -34,6 +36,7 @@ const Signup = () => {
     salvarCartao: false
   });
 
+  const [initialProfile, setInitialProfile] = useState<string>('paciente');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showEndereco, setShowEndereco] = useState(false);
@@ -43,6 +46,7 @@ const Signup = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signUp } = useAuth();
 
   const formatarTelefone = (value: string) => {
     const numero = value.replace(/\D/g, '');
@@ -149,29 +153,44 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      // Simular criação de conta
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
-      const newUser = {
+      const userData = {
         nome: formData.nomeCompleto,
-        email: formData.email,
         celular: formData.celular,
-        papel: "paciente",
-        plano: formData.numeroCartao ? "premium" : "gratuito"
+        initialRole: initialProfile,
       };
 
-      // Simular armazenamento
-      localStorage.setItem('currentUser', JSON.stringify(newUser));
-      
+      const { error } = await signUp(formData.email, formData.senha, userData);
+
+      if (error) {
+        toast({
+          title: "Erro ao criar conta",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
       toast({
-        title: "Conta criada (mock)",
-        description: `Bem-vindo(a), ${newUser.nome}! Redirecionando...`,
+        title: "Conta criada com sucesso!",
+        description: `Bem-vindo(a), ${userData.nome}! Verifique seu e-mail para confirmar a conta.`,
       });
-      
-      // Aguardar um pouco antes de redirecionar
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
+
+      // Se é paciente, redirecionar para checkout
+      if (initialProfile === 'paciente') {
+        toast({
+          title: "Redirecionando para pagamento",
+          description: "O perfil Paciente requer assinatura. Você será direcionado para o checkout.",
+        });
+        // TODO: Implementar redirecionamento para Stripe
+        setTimeout(() => {
+          navigate("/app");
+        }, 2000);
+      } else {
+        // Para outros perfis, ir direto para o app
+        setTimeout(() => {
+          navigate("/app");
+        }, 1500);
+      }
       
     } catch (error) {
       toast({
@@ -230,6 +249,15 @@ const Signup = () => {
                 <div className="flex items-center gap-2 mb-4">
                   <User className="w-5 h-5 text-primary" />
                   <h3 className="text-lg font-semibold text-primary">Dados Pessoais</h3>
+                </div>
+
+                {/* Seletor de Perfil */}
+                <div className="md:col-span-2">
+                  <ProfileSelector
+                    value={initialProfile}
+                    onChange={setInitialProfile}
+                    disabled={isLoading}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

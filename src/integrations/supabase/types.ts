@@ -243,6 +243,17 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_collaborations: {
+        Args: { user_uuid: string }
+        Returns: {
+          collaborator_profile_id: string
+          patient_profile_id: string
+        }[]
+      }
+      get_user_profile_id: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "paciente" | "acompanhante" | "cuidador" | "admin"

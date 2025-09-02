@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ const Login = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { signIn } = useAuth();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -48,38 +50,23 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Simular autenticação
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock de usuários para demonstração
-      const mockUsers = [
-        { email: "maria@email.com", senha: "senha123", nome: "Maria Oliveira", papel: "paciente" },
-        { email: "joao@email.com", senha: "senha123", nome: "João Santos", papel: "acompanhante" },
-        { email: "ana@clinica.com", senha: "senha123", nome: "Ana Nery", papel: "cuidador" },
-        { email: "admin@sistema.com", senha: "admin123", nome: "Equipe Admin", papel: "admin" }
-      ];
+      const { error } = await signIn(formData.email, formData.senha);
 
-      const user = mockUsers.find(u => 
-        u.email === formData.email && u.senha === formData.senha
-      );
-
-      if (user) {
-        // Simular armazenamento de sessão
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        
-        toast({
-          title: "Login realizado",
-          description: `Bem-vindo(a), ${user.nome}!`,
-        });
-        
-        navigate("/app");
-      } else {
+      if (error) {
         toast({
           title: "Erro no login",
-          description: "E-mail ou senha incorretos.",
+          description: error.message,
           variant: "destructive"
         });
+        return;
       }
+
+      toast({
+        title: "Login realizado",
+        description: "Bem-vindo(a) de volta!",
+      });
+      
+      navigate("/app");
     } catch (error) {
       toast({
         title: "Erro",
