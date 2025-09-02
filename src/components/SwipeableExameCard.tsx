@@ -31,54 +31,100 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
 }) => {
   const isMobile = useIsMobile()
   const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState(0)
-  const [dragCurrent, setDragCurrent] = useState(0)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [dragCurrent, setDragCurrent] = useState({ x: 0, y: 0 })
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null)
+  const [touchMoved, setTouchMoved] = useState(false)
+  const [touchEnded, setTouchEnded] = useState(false)
+  const [isHorizontalSwipe, setIsHorizontalSwipe] = useState(false)
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!isMobile) return
+    const touch = e.touches[0]
     setIsDragging(true)
-    setDragStart(e.touches[0].clientX)
-    setDragCurrent(e.touches[0].clientX)
+    setDragStart({ x: touch.clientX, y: touch.clientY })
+    setDragCurrent({ x: touch.clientX, y: touch.clientY })
+    setDragDirection(null)
+    setTouchMoved(false)
+    setTouchEnded(false)
+    setIsHorizontalSwipe(false)
   }, [isMobile])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging || !isMobile) return
     
-    const current = e.touches[0].clientX
-    setDragCurrent(current)
+    const touch = e.touches[0]
+    setDragCurrent({ x: touch.clientX, y: touch.clientY })
     
-    const delta = current - dragStart
-    const direction = delta > 0 ? 'right' : 'left'
-    setDragDirection(Math.abs(delta) > 20 ? direction : null)
-  }, [isDragging, dragStart, isMobile])
+    const deltaX = touch.clientX - dragStart.x
+    const deltaY = touch.clientY - dragStart.y
+    const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    
+    // Mark that touch has moved if movement is significant
+    if (totalMovement > 10) {
+      setTouchMoved(true)
+    }
+    
+    // Only start horizontal swiping if horizontal movement is significant and greater than vertical
+    if (!isHorizontalSwipe && Math.abs(deltaX) > 15 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      setIsHorizontalSwipe(true)
+      e.preventDefault()
+    } else if (!isHorizontalSwipe && Math.abs(deltaY) > 15) {
+      // Allow vertical scrolling
+      return
+    }
+    
+    if (isHorizontalSwipe) {
+      e.preventDefault()
+      const direction = deltaX > 0 ? 'right' : 'left'
+      setDragDirection(Math.abs(deltaX) > 20 ? direction : null)
+    }
+  }, [isDragging, dragStart, isMobile, isHorizontalSwipe])
 
   const handleTouchEnd = useCallback(() => {
-    if (!isDragging || !isMobile) return
+    if (!isDragging || !isMobile || touchEnded) return
+    setTouchEnded(true)
     
-    const delta = dragCurrent - dragStart
-    const threshold = 100
+    if (isHorizontalSwipe && dragDirection) {
+      const deltaX = dragCurrent.x - dragStart.x
+      const threshold = 100
 
-    if (Math.abs(delta) > threshold) {
-      if (delta > 0) {
-        onComplete(exame.id)
-      } else {
-        onRemove(exame.id)
+      if (Math.abs(deltaX) > threshold) {
+        if (deltaX > 0) {
+          onComplete(exame.id)
+        } else {
+          onRemove(exame.id)
+        }
+      }
+    } else if (!touchMoved && onEdit) {
+      // Only trigger edit if there was minimal movement (tap gesture)
+      const deltaX = dragCurrent.x - dragStart.x
+      const deltaY = dragCurrent.y - dragStart.y
+      const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      
+      if (totalMovement < 30) {
+        // Add small delay to ensure this is a deliberate tap
+        setTimeout(() => {
+          if (!isHorizontalSwipe) {
+            onEdit(exame)
+          }
+        }, 50)
       }
     }
 
     setIsDragging(false)
-    setDragStart(0)
-    setDragCurrent(0)
+    setDragStart({ x: 0, y: 0 })
+    setDragCurrent({ x: 0, y: 0 })
     setDragDirection(null)
-  }, [isDragging, dragCurrent, dragStart, exame.id, onComplete, onRemove, isMobile])
+    setIsHorizontalSwipe(false)
+  }, [isDragging, dragCurrent, dragStart, exame.id, onComplete, onRemove, isMobile, touchEnded, touchMoved, onEdit, isHorizontalSwipe])
 
   const getTransformStyle = () => {
-    if (!isDragging) return {}
+    if (!isDragging || !isHorizontalSwipe) return {}
     
-    const delta = dragCurrent - dragStart
+    const deltaX = dragCurrent.x - dragStart.x
     const maxTranslate = 120
-    const translate = Math.max(-maxTranslate, Math.min(maxTranslate, delta * 0.4))
+    const translate = Math.max(-maxTranslate, Math.min(maxTranslate, deltaX * 0.4))
     
     return {
       transform: `translateX(${translate}px)`,
@@ -87,13 +133,13 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
   }
 
   const getBackgroundOverlay = () => {
-    if (!isDragging || !dragDirection) return null
+    if (!isDragging || !dragDirection || !isHorizontalSwipe) return null
 
     const isComplete = dragDirection === 'right'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
     const text = isComplete ? 'Concluir' : 'Excluir'
-    const delta = Math.abs(dragCurrent - dragStart)
-    const opacity = Math.min(1, delta / 80)
+    const deltaX = Math.abs(dragCurrent.x - dragStart.x)
+    const opacity = Math.min(1, deltaX / 80)
 
     return (
       <div 
@@ -109,7 +155,7 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
   }
 
   const handleCardClick = () => {
-    if (isMobile && onEdit && !isDragging) {
+    if (!isMobile && onEdit) {
       onEdit(exame)
     }
   }
@@ -118,8 +164,13 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
     <div className="relative">
       {getBackgroundOverlay()}
       <Card 
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10 ${isMobile && onEdit ? "cursor-pointer" : ""}`}
-        style={getTransformStyle()}
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10 ${
+          isDragging && isHorizontalSwipe ? 'pointer-events-none' : ''
+        }`}
+        style={{
+          ...getTransformStyle(),
+          touchAction: isMobile ? 'pan-y' : 'auto'
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

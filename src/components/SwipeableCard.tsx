@@ -53,6 +53,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     deltaX: 0,
     deltaY: 0,
     isHorizontalSwipe: false,
+    touchMoved: false,
+    touchEnded: false,
   })
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -71,6 +73,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       deltaX: 0,
       deltaY: 0,
       isHorizontalSwipe: false,
+      touchMoved: false,
+      touchEnded: false,
     })
   }
 
@@ -80,6 +84,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     const touch = e.touches[0]
     const deltaX = touch.clientX - dragState.startX
     const deltaY = touch.clientY - dragState.startY
+    
+    const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    
+    // Mark that touch has moved if movement is significant
+    if (totalMovement > 10) {
+      setDragState(prev => ({ ...prev, touchMoved: true }))
+    }
     
     // Aguardar movimento mínimo antes de determinar direção
     if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
@@ -133,7 +144,9 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isMobile || disabled || !dragState.isDragging) return
+    if (!isMobile || disabled || !dragState.isDragging || dragState.touchEnded) return
+    
+    setDragState(prev => ({ ...prev, touchEnded: true }))
     
     // Só executar ação se foi um swipe horizontal significativo
     if (dragState.isHorizontalSwipe) {
@@ -147,11 +160,16 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           onRemove(medicacao.id)
         }
       }
-    } else {
-      // Se não foi swipe horizontal e movimento foi mínimo, tratar como tap
+    } else if (!dragState.touchMoved && onEdit) {
+      // Só executar tap se não houve movimento significativo
       const totalMovement = Math.abs(dragState.deltaX) + Math.abs(dragState.deltaY)
-      if (totalMovement < 20) {
-        handleCardClick()
+      if (totalMovement < 30) {
+        // Add small delay to ensure this is a deliberate tap
+        setTimeout(() => {
+          if (!dragState.isHorizontalSwipe) {
+            onEdit(medicacao, origin)
+          }
+        }, 50)
       }
     }
 
@@ -165,6 +183,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       deltaX: 0,
       deltaY: 0,
       isHorizontalSwipe: false,
+      touchMoved: false,
+      touchEnded: false,
     })
     setShowActionHint(null)
   }
@@ -203,9 +223,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = () => {
-    if (isMobile) {
-      // Usar exatamente a mesma lógica do botão "Alterar" do desktop
-      onEdit?.(medicacao, origin)
+    if (!isMobile && onEdit) {
+      onEdit(medicacao, origin)
     }
   }
 
@@ -214,8 +233,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden touch-pan-y ${isMobile ? 'cursor-pointer' : ''}`}
-        style={getTransformStyle()}
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden ${
+          dragState.isDragging && dragState.isHorizontalSwipe ? 'pointer-events-none' : ''
+        }`}
+        style={{
+          ...getTransformStyle(),
+          touchAction: isMobile ? 'pan-y' : 'auto'
+        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
