@@ -407,9 +407,7 @@ const LandingPage = () => {
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             
-            <p className="text-sm opacity-75">
-              Plano único R$ 65/mês • Sem fidelidade
-            </p>
+            <p className="text-sm opacity-75">Plano único R$ 75/mês • Sem fidelidade</p>
           </div>
         </div>
       </section>
