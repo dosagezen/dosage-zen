@@ -500,7 +500,6 @@ const Signup = () => {
                 )}
               </div>
 
-              <Separator />
 
               {/* Seção: Pagamento (Mock) */}
               {showPagamento && (
