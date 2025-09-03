@@ -454,6 +454,24 @@ const MyProfileSection = () => {
                         locale={ptBR}
                         weekStartsOn={1}
                         className={cn("p-3 pointer-events-auto")}
+                        classNames={{
+                          caption: "flex flex-col gap-2 mb-4",
+                          caption_label: "hidden",
+                          caption_dropdowns: "flex justify-between gap-2",
+                          dropdown_month: "flex-1",
+                          dropdown_year: "flex-1",
+                          head_row: "flex",
+                          head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] flex-1 text-center",
+                          row: "flex w-full mt-2",
+                          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md flex-1",
+                          day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 mx-auto",
+                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                          day_today: "bg-accent text-accent-foreground",
+                          day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                          day_disabled: "text-muted-foreground opacity-50",
+                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                          day_hidden: "invisible",
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
