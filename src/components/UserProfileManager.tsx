@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, MoreVertical, Edit, Shield, ShieldCheck, UserCheck, Settings as SettingsIcon, Crown, UserPlus } from "lucide-react";
+import { Plus, MoreVertical, Edit, Shield, ShieldCheck, UserCheck, Settings as SettingsIcon, Crown, UserPlus, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +42,7 @@ const generateUniqueCode = (existingCodes: string[]): string => {
   return code;
 };
 
-// Dados mockados
+// Dados mockados para "Meus colaboradores"
 const mockUsers: UserProfile[] = [
   {
     id: "1",
@@ -104,6 +104,32 @@ const mockUsers: UserProfile[] = [
   }
 ];
 
+// Dados mockados para "Onde colaboro" - perfis de pacientes onde o usuário atual é colaborador
+const mockOndeColaboroUsers: UserProfile[] = [
+  {
+    id: "pac1",
+    codigo: "K3P9Q2",
+    nome: "Carlos Souza",
+    email: "carlos.souza@email.com",
+    celular: "(81) 94444-4444",
+    papel: "paciente",
+    status: "ativo",
+    created_at: "2024-03-10T10:00:00Z",
+    isGestor: true
+  },
+  {
+    id: "pac2",
+    codigo: "T6B8D5",
+    nome: "Ana Costa",
+    email: "ana.costa@email.com",
+    celular: "(81) 93333-3333",
+    papel: "paciente",
+    status: "inativo",
+    created_at: "2024-02-15T14:00:00Z",
+    isGestor: false
+  }
+];
+
 const roleIcons = {
   paciente: UserCheck,
   acompanhante: Shield,
@@ -127,6 +153,7 @@ const roleColors = {
 
 export const UserProfileManager = () => {
   const [users, setUsers] = useState<UserProfile[]>(mockUsers);
+  const [activeCollaboratorFilter, setActiveCollaboratorFilter] = useState<"meus-colaboradores" | "onde-colaboro">("meus-colaboradores");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isAddCollaboratorOpen, setIsAddCollaboratorOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
@@ -334,6 +361,19 @@ export const UserProfileManager = () => {
 
   const canCreateCollaborators = currentUser?.isGestor || currentUser?.papel === "paciente";
 
+  // Função para filtrar colaboradores baseado no filtro ativo
+  const getFilteredCollaborators = () => {
+    if (activeCollaboratorFilter === "meus-colaboradores") {
+      // Mostrar colaboradores do perfil atual (exceto o próprio usuário)
+      return users.filter(user => user.id !== currentUser?.id);
+    } else {
+      // Mostrar perfis onde o usuário atual é colaborador
+      return mockOndeColaboroUsers;
+    }
+  };
+
+  const filteredCollaborators = getFilteredCollaborators();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -359,11 +399,42 @@ export const UserProfileManager = () => {
         </CardHeader>
       </Card>
 
+      {/* Filtros */}
+      <div className="flex items-center gap-4 mb-4">
+        <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtrar colaboradores" />
+        <div className="flex flex-wrap gap-2">
+          <Badge
+            variant={activeCollaboratorFilter === "meus-colaboradores" ? "default" : "secondary"}
+            className={`cursor-pointer px-3 py-1 ${
+              activeCollaboratorFilter === "meus-colaboradores" 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
+            }`}
+            onClick={() => setActiveCollaboratorFilter("meus-colaboradores")}
+            aria-label="Filtrar colaboradores: Meus colaboradores"
+          >
+            Meus colaboradores
+          </Badge>
+          <Badge
+            variant={activeCollaboratorFilter === "onde-colaboro" ? "default" : "secondary"}
+            className={`cursor-pointer px-3 py-1 ${
+              activeCollaboratorFilter === "onde-colaboro" 
+                ? 'bg-primary text-primary-foreground' 
+                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
+            }`}
+            onClick={() => setActiveCollaboratorFilter("onde-colaboro")}
+            aria-label="Filtrar colaboradores: Onde colaboro"
+          >
+            Onde colaboro
+          </Badge>
+        </div>
+      </div>
+
       {/* Lista de Usuários */}
       <div className="grid gap-4">
-        {users.filter(user => user.id !== currentUser?.id).map((user) => {
+        {filteredCollaborators.map((user) => {
           const RoleIcon = roleIcons[user.papel];
-          const canManage = canManageUser(user);
+          const canManage = activeCollaboratorFilter === "meus-colaboradores" ? canManageUser(user) : false;
           
           return (
             <Card key={user.id} className="shadow-card hover:shadow-floating transition-shadow">
