@@ -44,7 +44,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
         Perfil Inicial
       </Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
-        <SelectTrigger id="profile-select" className="w-full">
+        <SelectTrigger id="profile-select" className="w-full py-2">
           <SelectValue placeholder="Selecione seu perfil" />
         </SelectTrigger>
         <SelectContent>
