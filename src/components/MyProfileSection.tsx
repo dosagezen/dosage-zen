@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key, Users, CalendarIcon, Calendar as CalendarLucide } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -376,39 +377,87 @@ const MyProfileSection = () => {
                   <CalendarLucide className="w-4 h-4" />
                   Nascimento
                 </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.dataNascimento && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.dataNascimento ? (
-                        format(formData.dataNascimento, "dd/MM/yyyy")
-                      ) : (
-                        <span>Selecione a data</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={formData.dataNascimento}
-                      onSelect={(date) => setFormData({ ...formData, dataNascimento: date })}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
+                <div className="relative">
+                  <Input
+                    id="dataNascimento"
+                    type="text"
+                    placeholder="dd/mm/aaaa"
+                    value={formData.dataNascimento 
+                      ? format(formData.dataNascimento, "dd/MM/yyyy")
+                      : ""
+                    }
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Allow only numbers and slashes
+                      const cleaned = value.replace(/[^\d\/]/g, '');
+                      
+                      // Format as dd/mm/yyyy
+                      let formatted = cleaned;
+                      if (cleaned.length >= 2 && cleaned[2] !== '/') {
+                        formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
                       }
-                      initialFocus
-                      captionLayout="dropdown"
-                      fromYear={1900}
-                      toYear={new Date().getFullYear()}
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                      if (cleaned.length >= 5 && cleaned[5] !== '/') {
+                        formatted = formatted.slice(0, 5) + '/' + formatted.slice(5);
+                      }
+                      if (formatted.length > 10) {
+                        formatted = formatted.slice(0, 10);
+                      }
+                      
+                      // Update input display
+                      e.target.value = formatted;
+                      
+                      // Try to parse and validate the date
+                      if (formatted.length === 10) {
+                        try {
+                          const parsedDate = parse(formatted, "dd/MM/yyyy", new Date());
+                          if (isValid(parsedDate) && 
+                              parsedDate <= new Date() && 
+                              parsedDate >= new Date("1900-01-01")) {
+                            setFormData({ ...formData, dataNascimento: parsedDate });
+                            return;
+                          }
+                        } catch (error) {
+                          // Invalid date format, don't update formData
+                        }
+                      }
+                      
+                      // If date is incomplete or invalid, don't update formData.dataNascimento
+                      if (formatted.length === 0) {
+                        setFormData({ ...formData, dataNascimento: undefined });
+                      }
+                    }}
+                    className="pr-10"
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        type="button"
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.dataNascimento}
+                        onSelect={(date) => setFormData({ ...formData, dataNascimento: date })}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        captionLayout="dropdown-buttons"
+                        fromYear={1900}
+                        toYear={new Date().getFullYear()}
+                        locale={ptBR}
+                        weekStartsOn={1}
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
 
               {/* Senha */}
