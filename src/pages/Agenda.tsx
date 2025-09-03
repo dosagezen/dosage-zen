@@ -153,6 +153,43 @@ const Agenda = () => {
       observacoes: "Acompanhamento nutricional mensal",
       status: "confirmado"
     },
+    // Setembro 2025 - Compromissos mockados
+    {
+      id: 10,
+      tipo: "consulta",
+      especialidade: "Cardiologia",
+      medico: "Dr. Carlos Santos",
+      local: "Clínica Coração",
+      data: "2025-09-03",
+      dataFormatada: "03/09/2025",
+      hora: "09:00",
+      observacoes: "Retorno de exames",
+      status: "agendado"
+    },
+    {
+      id: 11,
+      tipo: "consulta",
+      especialidade: "Oftalmologia",
+      medico: "Dra. Ana Visão",
+      local: "Clínica Visão",
+      data: "2025-09-11",
+      dataFormatada: "11/09/2025",
+      hora: "14:00",
+      observacoes: "Revisão de óculos",
+      status: "agendado"
+    },
+    {
+      id: 12,
+      tipo: "consulta",
+      especialidade: "Endocrinologia",
+      medico: "Dr. Pedro Vida",
+      local: "Clínica Vida",
+      data: "2025-09-17",
+      dataFormatada: "17/09/2025",
+      hora: "08:30",
+      observacoes: "Avaliação mensal de diabetes",
+      status: "agendado"
+    },
     {
       id: 2,
       tipo: "exame",
@@ -163,6 +200,43 @@ const Agenda = () => {
       dataFormatada: "22/08/2025",
       hora: "14:30",
       observacoes: "Jejum de 12 horas",
+      status: "agendado"
+    },
+    // Setembro 2025 - Exames mockados
+    {
+      id: 13,
+      tipo: "exame",
+      especialidade: "Cardiologia",
+      medico: "Dr. Carlos Santos",
+      local: "Laboratório Vida",
+      data: "2025-09-03",
+      dataFormatada: "03/09/2025",
+      hora: "11:00",
+      observacoes: "Levar pedido médico",
+      status: "agendado"
+    },
+    {
+      id: 14,
+      tipo: "exame",
+      especialidade: "Clínica Geral",
+      medico: "Dra. Maria Silva",
+      local: "Laboratório Saúde",
+      data: "2025-09-09",
+      dataFormatada: "09/09/2025",
+      hora: "07:30",
+      observacoes: "Jejum de 8 horas",
+      status: "agendado"
+    },
+    {
+      id: 15,
+      tipo: "exame",
+      especialidade: "Gastroenterologia",
+      medico: "Dr. João Ferreira",
+      local: "Imagem Diagnóstica",
+      data: "2025-09-15",
+      dataFormatada: "15/09/2025",
+      hora: "10:00",
+      observacoes: "Beber 1 litro de água antes",
       status: "agendado"
     }
   ];
@@ -195,6 +269,49 @@ const Agenda = () => {
       observacoes: "Atividade ao ar livre",
       status: "pendente",
       dias: ["Dom"],
+      repeticao: "Não se repete"
+    },
+    // Setembro 2025 - Atividades mockadas
+    {
+      id: 303,
+      tipo: "atividade",
+      nome: "Aula de Pilates",
+      local: "Studio Movimento",
+      data: "2025-09-05",
+      dataFormatada: "05/09/2025",
+      hora: "18:00",
+      duracao: "60min",
+      observacoes: "Sessão de alongamento",
+      status: "pendente",
+      dias: ["Sex"],
+      repeticao: "Não se repete"
+    },
+    {
+      id: 304,
+      tipo: "atividade",
+      nome: "Sessão de Fisioterapia",
+      local: "Espaço Reabilitar",
+      data: "2025-09-11",
+      dataFormatada: "11/09/2025",
+      hora: "16:30",
+      duracao: "45min",
+      observacoes: "Exercícios de joelho",
+      status: "pendente",
+      dias: ["Qui"],
+      repeticao: "Não se repete"
+    },
+    {
+      id: 305,
+      tipo: "atividade",
+      nome: "Caminhada Orientada",
+      local: "Parque Central",
+      data: "2025-09-17",
+      dataFormatada: "17/09/2025",
+      hora: "19:00",
+      duracao: "40min",
+      observacoes: "Leve tênis confortável",
+      status: "pendente",
+      dias: ["Qua"],
       repeticao: "Não se repete"
     }
   ];
