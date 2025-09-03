@@ -13,6 +13,8 @@ import { ProfileSelector } from "@/components/ProfileSelector";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
+    nome: "",
+    sobrenome: "",
     nomeCompleto: "",
     email: "",
     celular: "",
@@ -82,9 +84,12 @@ const Signup = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    // Nome completo
-    if (!formData.nomeCompleto.trim()) {
-      newErrors.nomeCompleto = "Nome completo é obrigatório";
+    // Nome e sobrenome
+    if (!formData.nome.trim()) {
+      newErrors.nome = "Nome é obrigatório";
+    }
+    if (!formData.sobrenome.trim()) {
+      newErrors.sobrenome = "Sobrenome é obrigatório";
     }
 
     // Email
@@ -154,7 +159,7 @@ const Signup = () => {
 
     try {
       const userData = {
-        nome: formData.nomeCompleto,
+        nome: `${formData.nome} ${formData.sobrenome}`.trim(),
         celular: formData.celular,
         initialRole: initialProfile,
       };
@@ -261,20 +266,37 @@ const Signup = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Nome Completo */}
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="nomeCompleto">Nome Completo</Label>
+                  {/* Nome */}
+                  <div className="space-y-2">
+                    <Label htmlFor="nome">Nome</Label>
                     <Input
-                      id="nomeCompleto"
+                      id="nome"
                       type="text"
-                      placeholder="Ex.: Maria Oliveira"
-                      value={formData.nomeCompleto}
-                      onChange={(e) => setFormData(prev => ({ ...prev, nomeCompleto: e.target.value }))}
-                      className={errors.nomeCompleto ? "border-destructive" : ""}
+                      placeholder="Ex.: Maria"
+                      value={formData.nome || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                      className={errors.nome ? "border-destructive" : ""}
                       disabled={isLoading}
                     />
-                    {errors.nomeCompleto && (
-                      <p className="text-sm text-destructive">{errors.nomeCompleto}</p>
+                    {errors.nome && (
+                      <p className="text-sm text-destructive">{errors.nome}</p>
+                    )}
+                  </div>
+
+                  {/* Sobrenome */}
+                  <div className="space-y-2">
+                    <Label htmlFor="sobrenome">Sobrenome</Label>
+                    <Input
+                      id="sobrenome"
+                      type="text"
+                      placeholder="Ex.: Oliveira"
+                      value={formData.sobrenome || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, sobrenome: e.target.value }))}
+                      className={errors.sobrenome ? "border-destructive" : ""}
+                      disabled={isLoading}
+                    />
+                     {errors.sobrenome && (
+                      <p className="text-sm text-destructive">{errors.sobrenome}</p>
                     )}
                   </div>
 
