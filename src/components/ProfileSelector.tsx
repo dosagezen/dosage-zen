@@ -52,11 +52,11 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
             const IconComponent = option.icon;
             return (
               <SelectItem key={option.value} value={option.value}>
-                <div className="flex items-center gap-3 py-2">
-                  <IconComponent className={`w-5 h-5 ${option.color}`} />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{option.label}</span>
-                    <span className="text-xs text-muted-foreground">
+                <div className="flex items-start gap-3 py-2 w-full">
+                  <IconComponent className={`w-5 h-5 ${option.color} mt-0.5`} />
+                  <div className="flex flex-col text-left">
+                    <span className="font-medium text-left">{option.label}</span>
+                    <span className="text-xs text-muted-foreground text-left">
                       {option.description}
                     </span>
                   </div>
