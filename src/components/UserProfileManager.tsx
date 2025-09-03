@@ -338,7 +338,7 @@ export const UserProfileManager = () => {
     <div className="space-y-6">
       {/* Header */}
       <Card className="shadow-card">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-4 bg-accent/10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="text-xl text-primary">Colaboradores</CardTitle>
