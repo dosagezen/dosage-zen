@@ -388,41 +388,33 @@ const MyProfileSection = () => {
                     }
                     onChange={(e) => {
                       const value = e.target.value;
-                      // Allow only numbers and slashes
-                      const cleaned = value.replace(/[^\d\/]/g, '');
+                      // Remover tudo que não é número ou barra
+                      let cleaned = value.replace(/[^\d\/]/g, '');
                       
-                      // Format as dd/mm/yyyy
-                      let formatted = cleaned;
-                      if (cleaned.length >= 2 && cleaned[2] !== '/') {
-                        formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+                      // Aplicar máscara dd/mm/aaaa
+                      if (cleaned.length >= 3 && cleaned.indexOf('/') === -1) {
+                        cleaned = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
                       }
-                      if (cleaned.length >= 5 && cleaned[5] !== '/') {
-                        formatted = formatted.slice(0, 5) + '/' + formatted.slice(5);
+                      if (cleaned.length >= 6 && cleaned.lastIndexOf('/') === 2) {
+                        cleaned = cleaned.slice(0, 5) + '/' + cleaned.slice(5);
                       }
-                      if (formatted.length > 10) {
-                        formatted = formatted.slice(0, 10);
+                      if (cleaned.length > 10) {
+                        cleaned = cleaned.slice(0, 10);
                       }
                       
-                      // Update input display
-                      e.target.value = formatted;
-                      
-                      // Try to parse and validate the date
-                      if (formatted.length === 10) {
+                      // Validar e atualizar estado apenas se a data for válida ou estiver vazia
+                      if (cleaned.length === 10) {
                         try {
-                          const parsedDate = parse(formatted, "dd/MM/yyyy", new Date());
+                          const parsedDate = parse(cleaned, "dd/MM/yyyy", new Date());
                           if (isValid(parsedDate) && 
                               parsedDate <= new Date() && 
                               parsedDate >= new Date("1900-01-01")) {
                             setFormData({ ...formData, dataNascimento: parsedDate });
-                            return;
                           }
                         } catch (error) {
-                          // Invalid date format, don't update formData
+                          console.warn("Data inválida:", cleaned);
                         }
-                      }
-                      
-                      // If date is incomplete or invalid, don't update formData.dataNascimento
-                      if (formatted.length === 0) {
+                      } else if (cleaned.length === 0) {
                         setFormData({ ...formData, dataNascimento: undefined });
                       }
                     }}
@@ -440,39 +432,93 @@ const MyProfileSection = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={formData.dataNascimento}
-                        onSelect={(date) => setFormData({ ...formData, dataNascimento: date })}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                        captionLayout="dropdown-buttons"
-                        fromYear={1900}
-                        toYear={new Date().getFullYear()}
-                        locale={ptBR}
-                        weekStartsOn={1}
-                        className={cn("p-3 pointer-events-auto")}
-                        classNames={{
-                          caption: "flex flex-col gap-2 mb-4",
-                          caption_label: "hidden",
-                          caption_dropdowns: "flex justify-between gap-2",
-                          dropdown_month: "flex-1",
-                          dropdown_year: "flex-1",
-                          head_row: "flex",
-                          head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] flex-1 text-center",
-                          row: "flex w-full mt-2",
-                          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md flex-1",
-                          day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 mx-auto",
-                          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                          day_today: "bg-accent text-accent-foreground",
-                          day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-                          day_disabled: "text-muted-foreground opacity-50",
-                          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-                          day_hidden: "invisible",
-                        }}
-                      />
+                      <div className="p-3">
+                        {/* Cabeçalho customizado com Ano e Mês */}
+                        <div className="flex justify-between gap-3 mb-4">
+                          <div className="flex-1">
+                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                              Ano
+                            </Label>
+                            <Select
+                              value={formData.dataNascimento?.getFullYear().toString() || new Date().getFullYear().toString()}
+                              onValueChange={(year) => {
+                                const currentDate = formData.dataNascimento || new Date();
+                                const newDate = new Date(parseInt(year), currentDate.getMonth(), currentDate.getDate());
+                                setFormData({ ...formData, dataNascimento: newDate });
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => {
+                                  const year = new Date().getFullYear() - i;
+                                  return (
+                                    <SelectItem key={year} value={year.toString()}>
+                                      {year}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex-1">
+                            <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                              Mês
+                            </Label>
+                            <Select
+                              value={(formData.dataNascimento?.getMonth() || new Date().getMonth()).toString()}
+                              onValueChange={(month) => {
+                                const currentDate = formData.dataNascimento || new Date();
+                                const newDate = new Date(currentDate.getFullYear(), parseInt(month), currentDate.getDate());
+                                setFormData({ ...formData, dataNascimento: newDate });
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 12 }, (_, i) => {
+                                  const monthName = format(new Date(2024, i, 1), "MMMM", { locale: ptBR });
+                                  return (
+                                    <SelectItem key={i} value={i.toString()}>
+                                      {monthName.charAt(0).toUpperCase() + monthName.slice(1)}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        
+                        {/* Calendário */}
+                        <Calendar
+                          mode="single"
+                          selected={formData.dataNascimento}
+                          onSelect={(date) => setFormData({ ...formData, dataNascimento: date })}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          defaultMonth={formData.dataNascimento || new Date()}
+                          locale={ptBR}
+                          weekStartsOn={1}
+                          className={cn("pointer-events-auto")}
+                          classNames={{
+                            caption: "hidden", // Esconder cabeçalho padrão
+                            head_row: "flex",
+                            head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem] flex-1 text-center",
+                            row: "flex w-full mt-2",
+                            cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md flex-1",
+                            day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100 mx-auto",
+                            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                            day_today: "bg-accent text-accent-foreground",
+                            day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                            day_disabled: "text-muted-foreground opacity-50",
+                            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                            day_hidden: "invisible",
+                          }}
+                        />
+                      </div>
                     </PopoverContent>
                   </Popover>
                 </div>
