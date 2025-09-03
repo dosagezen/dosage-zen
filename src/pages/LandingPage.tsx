@@ -440,7 +440,7 @@ const LandingPage = () => {
           
           <div className="border-t border-white/20 pt-8 text-center">
             <p className="text-sm opacity-75">
-              © 2024 DosageZen. Todos os direitos reservados.
+              © 2025 DosageZen. Todos os direitos reservados.
             </p>
             <p className="text-xs opacity-60 mt-2">
               Pagamentos seguros via cartão de crédito
