@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, Tooltip } from 'recharts'
+import { Filter } from 'lucide-react'
 
 // Dados mockados conforme especificado
 const MOCK_DATA = {
@@ -620,7 +621,10 @@ export default function Conquistas() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              {renderPeriodChips()}
+              <div className="flex items-center gap-4">
+                <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtros" />
+                {renderPeriodChips()}
+              </div>
               {renderCategoriaSelect()}
             </div>
           </div>
