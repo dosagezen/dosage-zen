@@ -666,7 +666,7 @@ const Signup = () => {
                     htmlFor="acceptTerms"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    Eu concordo com nossos{" "}
+                    Eu concordo com os{" "}
                     <a
                       href="/termos-de-servico"
                       target="_blank"
@@ -675,7 +675,7 @@ const Signup = () => {
                     >
                       Termos de Serviço
                     </a>
-                    {" "}e{" "}
+                    {" "}e a{" "}
                     <a
                       href="/politica-de-privacidade"
                       target="_blank"
