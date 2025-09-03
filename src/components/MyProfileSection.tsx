@@ -61,6 +61,8 @@ const MyProfileSection = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [inputValue, setInputValue] = useState('');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   
   // Estados para exclusão de conta
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -77,7 +79,26 @@ const MyProfileSection = () => {
       isGestor: profileData.isGestor,
       dataNascimento: profileData.dataNascimento
     });
+    
+    // Sincronizar inputValue com a data
+    if (profileData.dataNascimento) {
+      setInputValue(format(profileData.dataNascimento, "dd/MM/yyyy"));
+      setCurrentMonth(profileData.dataNascimento);
+    } else {
+      setInputValue('');
+      setCurrentMonth(new Date());
+    }
   }, [profileData]);
+
+  // Sincronizar inputValue quando formData.dataNascimento mudar
+  useEffect(() => {
+    if (formData.dataNascimento) {
+      setInputValue(format(formData.dataNascimento, "dd/MM/yyyy"));
+      setCurrentMonth(formData.dataNascimento);
+    } else {
+      setInputValue('');
+    }
+  }, [formData.dataNascimento]);
 
   const formatCelular = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -382,12 +403,10 @@ const MyProfileSection = () => {
                     id="dataNascimento"
                     type="text"
                     placeholder="dd/mm/aaaa"
-                    value={formData.dataNascimento 
-                      ? format(formData.dataNascimento, "dd/MM/yyyy")
-                      : ""
-                    }
+                    value={inputValue}
                     onChange={(e) => {
                       const value = e.target.value;
+                      
                       // Remover tudo que não é número ou barra
                       let cleaned = value.replace(/[^\d\/]/g, '');
                       
@@ -402,7 +421,10 @@ const MyProfileSection = () => {
                         cleaned = cleaned.slice(0, 10);
                       }
                       
-                      // Validar e atualizar estado apenas se a data for válida ou estiver vazia
+                      // Atualizar inputValue imediatamente para mostrar o que o usuário está digitando
+                      setInputValue(cleaned);
+                      
+                      // Validar e atualizar estado apenas se a data for válida e completa
                       if (cleaned.length === 10) {
                         try {
                           const parsedDate = parse(cleaned, "dd/MM/yyyy", new Date());
@@ -440,11 +462,15 @@ const MyProfileSection = () => {
                               Ano
                             </Label>
                             <Select
-                              value={formData.dataNascimento?.getFullYear().toString() || new Date().getFullYear().toString()}
+                              value={currentMonth.getFullYear().toString()}
                               onValueChange={(year) => {
-                                const currentDate = formData.dataNascimento || new Date();
-                                const newDate = new Date(parseInt(year), currentDate.getMonth(), currentDate.getDate());
-                                setFormData({ ...formData, dataNascimento: newDate });
+                                const newDate = new Date(parseInt(year), currentMonth.getMonth(), 1);
+                                setCurrentMonth(newDate);
+                                
+                                if (formData.dataNascimento) {
+                                  const updatedDate = new Date(parseInt(year), formData.dataNascimento.getMonth(), formData.dataNascimento.getDate());
+                                  setFormData({ ...formData, dataNascimento: updatedDate });
+                                }
                               }}
                             >
                               <SelectTrigger className="w-full">
@@ -467,11 +493,15 @@ const MyProfileSection = () => {
                               Mês
                             </Label>
                             <Select
-                              value={(formData.dataNascimento?.getMonth() || new Date().getMonth()).toString()}
+                              value={currentMonth.getMonth().toString()}
                               onValueChange={(month) => {
-                                const currentDate = formData.dataNascimento || new Date();
-                                const newDate = new Date(currentDate.getFullYear(), parseInt(month), currentDate.getDate());
-                                setFormData({ ...formData, dataNascimento: newDate });
+                                const newDate = new Date(currentMonth.getFullYear(), parseInt(month), 1);
+                                setCurrentMonth(newDate);
+                                
+                                if (formData.dataNascimento) {
+                                  const updatedDate = new Date(formData.dataNascimento.getFullYear(), parseInt(month), formData.dataNascimento.getDate());
+                                  setFormData({ ...formData, dataNascimento: updatedDate });
+                                }
                               }}
                             >
                               <SelectTrigger className="w-full">
@@ -499,7 +529,7 @@ const MyProfileSection = () => {
                           disabled={(date) =>
                             date > new Date() || date < new Date("1900-01-01")
                           }
-                          defaultMonth={formData.dataNascimento || new Date()}
+                          month={currentMonth}
                           locale={ptBR}
                           weekStartsOn={1}
                           className={cn("pointer-events-auto")}
