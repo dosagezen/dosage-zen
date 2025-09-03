@@ -263,7 +263,7 @@ const LandingPage = () => {
           <Card className="max-w-md mx-auto p-8 shadow-xl border-2 border-primary/20">
             <CardContent className="space-y-6">
               <div>
-                <div className="text-5xl font-bold text-primary mb-2">R$ 65</div>
+                <div className="text-5xl font-bold text-primary mb-2">R$ 75</div>
                 <div className="text-lg text-muted-foreground">/mês</div>
               </div>
               
