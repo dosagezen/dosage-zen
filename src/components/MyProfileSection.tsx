@@ -189,7 +189,7 @@ const MyProfileSection = () => {
     <div className="space-y-6">
       {/* Header */}
       <Card className="shadow-card">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-4 bg-accent/10">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16 bg-gradient-primary">
