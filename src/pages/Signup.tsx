@@ -45,6 +45,7 @@ const Signup = () => {
   const [showPagamento, setShowPagamento] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [acceptTerms, setAcceptTerms] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -652,12 +653,48 @@ const Signup = () => {
                 </div>
               )}
 
+              {/* Checkbox Termos de Serviço */}
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+                  disabled={isLoading}
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <label
+                    htmlFor="acceptTerms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Eu concordo com nossos{" "}
+                    <a
+                      href="/termos-de-servico"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary-hover underline"
+                    >
+                      Termos de Serviço
+                    </a>
+                    {" "}e{" "}
+                    <a
+                      href="/politica-de-privacidade"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary-hover underline"
+                    >
+                      Política de Privacidade
+                    </a>
+                    .
+                  </label>
+                </div>
+              </div>
+
               {/* Botões de Ação */}
               <div className="space-y-3">
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary-hover"
-                  disabled={isLoading}
+                  disabled={isLoading || !acceptTerms}
                   size="lg"
                 >
                   {isLoading ? (
