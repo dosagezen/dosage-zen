@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key, Users } from "lucide-react";
+import { Eye, EyeOff, Copy, Check, User, Mail, Phone, Key, Users, CalendarIcon, Calendar as CalendarLucide } from "lucide-react";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import DeleteAccountDialog from "./DeleteAccountDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
@@ -21,6 +25,7 @@ interface MyProfileData {
   papel: string;
   isGestor: boolean;
   perfil: string;
+  dataNascimento?: Date;
 }
 
 const MyProfileSection = () => {
@@ -39,7 +44,8 @@ const MyProfileSection = () => {
     celular: "(81) 98888-8888",
     papel: "paciente",
     isGestor: true,
-    perfil: "Acompanhante"
+    perfil: "Acompanhante",
+    dataNascimento: new Date("1990-05-15")
   });
 
   const [formData, setFormData] = useState({
@@ -49,7 +55,8 @@ const MyProfileSection = () => {
     senha: "",
     confirmarSenha: "",
     perfil: profileData.perfil,
-    isGestor: profileData.isGestor
+    isGestor: profileData.isGestor,
+    dataNascimento: profileData.dataNascimento
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -66,7 +73,8 @@ const MyProfileSection = () => {
       senha: "",
       confirmarSenha: "",
       perfil: profileData.perfil,
-      isGestor: profileData.isGestor
+      isGestor: profileData.isGestor,
+      dataNascimento: profileData.dataNascimento
     });
   }, [profileData]);
 
@@ -140,7 +148,8 @@ const MyProfileSection = () => {
       email: formData.email,
       celular: formData.celular,
       perfil: formData.perfil,
-      isGestor: formData.isGestor
+      isGestor: formData.isGestor,
+      dataNascimento: formData.dataNascimento
     }));
 
     setIsEditing(false);
@@ -161,7 +170,8 @@ const MyProfileSection = () => {
       senha: "",
       confirmarSenha: "",
       perfil: profileData.perfil,
-      isGestor: profileData.isGestor
+      isGestor: profileData.isGestor,
+      dataNascimento: profileData.dataNascimento
     });
     setErrors({});
   };
@@ -360,6 +370,44 @@ const MyProfileSection = () => {
                 )}
               </div>
 
+              {/* Data de Nascimento */}
+              <div className="space-y-2">
+                <Label htmlFor="dataNascimento" className="flex items-center gap-2">
+                  <CalendarLucide className="w-4 h-4" />
+                  Nascimento
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.dataNascimento && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.dataNascimento ? (
+                        format(formData.dataNascimento, "dd/MM/yyyy")
+                      ) : (
+                        <span>Selecione a data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.dataNascimento}
+                      onSelect={(date) => setFormData({ ...formData, dataNascimento: date })}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               {/* Senha */}
               <div className="space-y-2">
                 <Label htmlFor="senha" className="flex items-center gap-2">
@@ -451,6 +499,18 @@ const MyProfileSection = () => {
                     Celular
                   </Label>
                   <p className="font-medium">{profileData.celular}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <CalendarLucide className="w-4 h-4" />
+                    Nascimento
+                  </Label>
+                  <p className="font-medium">
+                    {profileData.dataNascimento 
+                      ? format(profileData.dataNascimento, "dd/MM/yyyy")
+                      : "Não informado"
+                    }
+                  </p>
                 </div>
               </div>
             </div>
