@@ -215,7 +215,7 @@ const Dashboard = () => {
 
             <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
               <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-atividade-foreground" />
+                <Heart className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-primary">Caminhada</p>
