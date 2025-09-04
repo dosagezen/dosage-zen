@@ -11,6 +11,7 @@ import Conquistas from "./pages/Conquistas";
 import Medicacoes from "./pages/Medicacoes";
 import Agenda from "./pages/Agenda";
 import Configuracoes from "./pages/Configuracoes";
+import Relatorios from "./pages/Relatorios";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
@@ -53,7 +54,7 @@ const AppLayout = () => {
               {/* Placeholder routes */}
               <Route path="/farmacias" element={<div className="p-6"><h1 className="text-2xl text-primary">Farmácias - Em desenvolvimento</h1></div>} />
               <Route path="/compartilhar" element={<div className="p-6"><h1 className="text-2xl text-primary">Compartilhar - Em desenvolvimento</h1></div>} />
-              <Route path="/relatorios" element={<div className="p-6"><h1 className="text-2xl text-primary">Relatórios - Em desenvolvimento</h1></div>} />
+              <Route path="/relatorios" element={<Relatorios />} />
               
               <Route path="*" element={<NotFound />} />
             </Routes>
