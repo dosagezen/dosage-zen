@@ -139,7 +139,7 @@ const Dashboard = () => {
             {proximasMedicacoes.map((med, index) => <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center">
-                    <Pill className="w-5 h-5 text-accent-foreground" />
+                    <Pill className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <p className="font-medium text-primary">{med.nome}</p>
