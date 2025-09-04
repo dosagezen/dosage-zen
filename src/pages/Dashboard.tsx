@@ -148,7 +148,7 @@ const Dashboard = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-primary">{med.horario}</p>
-                  <Badge variant={med.status === "próximo" ? "default" : "secondary"}>
+                  <Badge variant={med.status === "próximo" ? "default" : "destructive"} className={med.status === "pendente" ? "bg-orange-500 text-white hover:bg-orange-600" : ""}>
                     {med.status === "próximo" ? "Próximo" : "Pendente"}
                   </Badge>
                 </div>
