@@ -254,6 +254,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: string
       }
+      is_admin: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "paciente" | "acompanhante" | "cuidador" | "admin"
