@@ -35,12 +35,14 @@ interface AddMedicationDialogProps {
   children?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
-  medication?: Medication | null
+  medication?: any
   isEditing?: boolean
-  onDelete?: (medicationId: number) => void
+  onDelete?: (medicationId: string) => void
+  onSave?: (medicationData: any) => void
+  onUpdate?: (medicationData: any) => void
 }
 
-const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditing = false, onDelete }: AddMedicationDialogProps) => {
+const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditing = false, onDelete, onSave, onUpdate }: AddMedicationDialogProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
   const isMobile = useIsMobile()
@@ -92,18 +94,43 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
   const setDialogOpen = isControlled ? onOpenChange : setIsDialogOpen
 
   const handleSave = () => {
-    toast({
-      title: isEditing ? "Medicação atualizada" : "Medicação adicionada",
-      description: isEditing 
-        ? "A medicação foi atualizada com sucesso."
-        : "A medicação foi adicionada com sucesso ao seu plano de tratamento.",
-    })
+    // Validação dos campos obrigatórios
+    if (!formData.nome || !formData.dosagem || !formData.forma || !formData.frequencia) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos obrigatórios.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Preparar dados para envio
+    const medicationData = {
+      nome: formData.nome,
+      dosagem: formData.dosagem,
+      forma: formData.forma,
+      frequencia: formData.frequencia,
+      horarios: formData.horario ? [formData.horario] : [],
+      estoque: parseInt(formData.estoque) || 0,
+      ativo: formData.status,
+      data_inicio: formData.dataInicio ? formData.dataInicio.toISOString().split('T')[0] : null,
+      data_fim: formData.dataFim ? formData.dataFim.toISOString().split('T')[0] : null,
+      observacoes: null
+    }
+
+    // Chamar a função apropriada
+    if (isEditing && onUpdate) {
+      onUpdate(medicationData)
+    } else if (!isEditing && onSave) {
+      onSave(medicationData)
+    }
+    
     setDialogOpen(false)
   }
 
   const handleDelete = () => {
     if (medication && onDelete) {
-      onDelete(medication.id)
+      onDelete(medication.id.toString())
       toast({
         title: "Medicação excluída",
         description: "A medicação foi removida com sucesso.",

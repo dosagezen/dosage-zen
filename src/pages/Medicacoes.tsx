@@ -546,8 +546,8 @@ const Medicacoes = () => {
 
   const { pendentes: filteredMedicacoes, concluidas: completedMedicacoes } = getSeparatedMedicacoes()
 
-  const handleDeleteMedication = (medicationId: number) => {
-    setMedicacoesList(prev => prev.filter(med => med.id !== medicationId))
+  const handleDeleteMedication = (medicationId: string) => {
+    setMedicacoesList(prev => prev.filter(med => med.id !== parseInt(medicationId)))
   }
 
   // Função para remover medicação da lista do dia
@@ -819,7 +819,7 @@ const Medicacoes = () => {
                             variant="outline"
                             size="sm"
                             className="text-xs sm:text-sm flex-shrink-0 h-8 sm:h-9 hover:bg-[#3A5A40]/10 hover:border-[#3A5A40] hover:text-[#3A5A40]"
-                            onClick={() => handleDeleteMedication(medicacao.id)}
+                            onClick={() => handleDeleteMedication(medicacao.id.toString())}
                           >
                             <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Excluir

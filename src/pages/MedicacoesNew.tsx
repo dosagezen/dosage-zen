@@ -182,6 +182,8 @@ const MedicacoesNew = () => {
         medication={editingMedication}
         isEditing={!!editingMedication}
         onDelete={editingMedication ? () => handleDeleteMedication(editingMedication.id) : undefined}
+        onSave={handleAddMedication}
+        onUpdate={handleUpdateMedication}
       />
     </div>
   );
