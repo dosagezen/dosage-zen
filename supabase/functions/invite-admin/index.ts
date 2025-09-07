@@ -136,7 +136,8 @@ serve(async (req) => {
           user_id: userExists.id,
           profile_id: profile.id,
           role: 'admin',
-          is_active: true
+          is_active: true,
+          email_confirmed: !!userExists.email_confirmed_at
         });
 
       if (roleError) {

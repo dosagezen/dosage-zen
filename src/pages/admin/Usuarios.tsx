@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter, RotateCcw, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter, RotateCcw, Clock, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { InviteAdminDialog } from "@/components/admin/InviteAdminDialog";
 import { EditAdminDialog } from "@/components/admin/EditAdminDialog";
 import { RemoveAdminDialog } from "@/components/admin/RemoveAdminDialog";
@@ -21,7 +23,7 @@ interface AdminUser {
   is_active: boolean;
   status: 'ativo' | 'pendente' | 'inativo';
   user_id?: string;
-  email_confirmed_at?: string | null;
+  email_confirmed?: boolean;
 }
 
 export function Usuarios() {
@@ -33,6 +35,7 @@ export function Usuarios() {
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
   const [resendingInvites, setResendingInvites] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadAdminUsers();
@@ -42,7 +45,7 @@ export function Usuarios() {
     try {
       console.log('🔍 Iniciando carregamento dos usuários admin...');
       
-      // Get all admin roles (active and inactive)  
+      // Get all admin roles with email confirmation status
       const { data: adminRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select(`
@@ -50,6 +53,8 @@ export function Usuarios() {
           user_id,
           profile_id,
           is_active,
+          email_confirmed,
+          created_at,
           profiles!user_roles_profile_id_fkey (
             id,
             nome,
@@ -67,24 +72,15 @@ export function Usuarios() {
 
       const adminUsers: AdminUser[] = [];
 
-      // Process existing admin roles
+      // Process admin roles
       if (adminRoles) {
         for (const item of adminRoles) {
           const profile = item.profiles as any;
           
           if (profile) {
-            // Get auth user data to check email confirmation
-            let email_confirmed_at = null;
-            try {
-              const { data: authUser } = await supabase.auth.admin.getUserById(item.user_id);
-              email_confirmed_at = authUser.user?.email_confirmed_at || null;
-            } catch (authError) {
-              console.warn('Could not fetch auth data for user:', item.user_id);
-            }
-
             // Determine status based on email confirmation and role activity
             let status: 'ativo' | 'pendente' | 'inativo';
-            if (!email_confirmed_at) {
+            if (!item.email_confirmed) {
               status = 'pendente'; // Email not confirmed yet
             } else if (item.is_active) {
               status = 'ativo'; // Email confirmed and role active
@@ -101,43 +97,10 @@ export function Usuarios() {
               created_at: profile.created_at,
               is_active: item.is_active,
               status,
-              email_confirmed_at
+              email_confirmed: item.email_confirmed
             });
           }
         }
-      }
-
-      // Also check for auth users with admin role metadata who don't have roles yet
-      try {
-        const { data: authUsers } = await supabase.auth.admin.listUsers();
-        
-        if (authUsers.users) {
-          for (const authUser of authUsers.users) {
-            // Check if user has admin role in metadata but no user_role record
-            const isAdminInMeta = authUser.user_metadata?.role === 'admin';
-            const hasExistingRole = adminUsers.some(user => user.user_id === authUser.id);
-            
-            if (isAdminInMeta && !hasExistingRole && !authUser.email_confirmed_at) {
-              // This is a pending admin invite
-              const nome = authUser.user_metadata?.nome || authUser.email?.split('@')[0] || 'Usuário';
-              
-              adminUsers.push({
-                id: `pending-${authUser.id}`, // Temporary ID for pending users
-                user_id: authUser.id,
-                nome,
-                email: authUser.email || '',
-                avatar_url: null,
-                created_at: authUser.created_at,
-                is_active: false,
-                status: 'pendente',
-                email_confirmed_at: authUser.email_confirmed_at
-              });
-            }
-          }
-        }
-      } catch (authError) {
-        console.warn('Could not fetch auth users:', authError);
-        // Continue without auth users - fallback to just role-based users
       }
 
       console.log('✅ Usuários admin processados:', adminUsers);
@@ -268,24 +231,40 @@ export function Usuarios() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
             <Users className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Usuários Administradores</h2>
-            <p className="text-muted-foreground">Gerencie os administradores do sistema</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">Usuários Administradores</h2>
+            <p className="text-sm sm:text-base text-muted-foreground">Gerencie os administradores do sistema</p>
           </div>
         </div>
-        <Button onClick={() => setIsInviteDialogOpen(true)}>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Convidar Admin
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={loadAdminUsers}
+            disabled={loading}
+            className="flex-1 sm:flex-none"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+          <Button 
+            onClick={() => setIsInviteDialogOpen(true)}
+            size="sm"
+            className="flex-1 sm:flex-none"
+          >
+            <UserPlus className="w-4 h-4 mr-2" />
+            Convidar Admin
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -332,7 +311,7 @@ export function Usuarios() {
       {/* Search and Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -342,95 +321,168 @@ export function Usuarios() {
                 className="pl-10"
               />
             </div>
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtros
-            </Button>
+            {!isMobile && (
+              <Button variant="outline" size="sm">
+                <Filter className="w-4 h-4 mr-2" />
+                Filtros
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Users Table */}
+      {/* Users Table/Cards */}
       <Card>
         <CardHeader>
           <CardTitle>Lista de Administradores</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 sm:p-6">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-muted-foreground">Carregando...</div>
             </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Usuário</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Data de Criação</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={user.avatar_url || undefined} />
-                          <AvatarFallback>
-                            {user.nome.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-foreground">{user.nome}</p>
-                          <Badge variant="secondary" className="text-xs">
-                            <Shield className="w-3 h-3 mr-1" />
-                            Admin
-                          </Badge>
-                        </div>
+          ) : isMobile ? (
+            <div className="space-y-4 p-4">
+              {filteredUsers.map((user) => (
+                <Card key={user.id} className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={user.avatar_url || undefined} />
+                      <AvatarFallback>
+                        {user.nome.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-foreground truncate">{user.nome}</p>
+                        <Badge variant="secondary" className="text-xs flex-shrink-0">
+                          <Shield className="w-3 h-3 mr-1" />
+                          Admin
+                        </Badge>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                    <TableCell>
-                      {getStatusBadge(user.status)}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {user.status === 'pendente' && (
+                      <p className="text-sm text-muted-foreground mb-2 truncate">{user.email}</p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(user.status)}
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {user.status === 'pendente' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleResendInvite(user)}
+                              disabled={resendingInvites.has(user.id)}
+                              className="h-8 w-8 p-0"
+                              title="Reenviar convite"
+                            >
+                              <RotateCcw className={`w-4 h-4 ${resendingInvites.has(user.id) ? 'animate-spin' : ''}`} />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleResendInvite(user)}
-                            disabled={resendingInvites.has(user.id)}
-                            title="Reenviar convite"
+                            onClick={() => setEditingUser(user)}
+                            className="h-8 w-8 p-0"
                           >
-                            <RotateCcw className={`w-4 h-4 ${resendingInvites.has(user.id) ? 'animate-spin' : ''}`} />
+                            <Edit className="w-4 h-4" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingUser(user)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeletingUser(user)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeletingUser(user)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </TableCell>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <ScrollArea className="w-full">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Usuário</TableHead>
+                    <TableHead className="hidden md:table-cell">Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden lg:table-cell">Data de Criação</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={user.avatar_url || undefined} />
+                            <AvatarFallback>
+                              {user.nome.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{user.nome}</p>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                <Shield className="w-3 h-3 mr-1" />
+                                Admin
+                              </Badge>
+                              <span className="text-xs text-muted-foreground md:hidden truncate">{user.email}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-muted-foreground">{user.email}</TableCell>
+                      <TableCell>
+                        {getStatusBadge(user.status)}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell text-muted-foreground">
+                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {user.status === 'pendente' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleResendInvite(user)}
+                              disabled={resendingInvites.has(user.id)}
+                              className="h-8 w-8 p-0"
+                              title="Reenviar convite"
+                            >
+                              <RotateCcw className={`w-4 h-4 ${resendingInvites.has(user.id) ? 'animate-spin' : ''}`} />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingUser(user)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeletingUser(user)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           )}
 
           {!loading && filteredUsers.length === 0 && (

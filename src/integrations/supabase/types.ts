@@ -190,6 +190,7 @@ export type Database = {
         Row: {
           context_patient_id: string | null
           created_at: string
+          email_confirmed: boolean | null
           id: string
           is_active: boolean | null
           profile_id: string
@@ -200,6 +201,7 @@ export type Database = {
         Insert: {
           context_patient_id?: string | null
           created_at?: string
+          email_confirmed?: boolean | null
           id?: string
           is_active?: boolean | null
           profile_id: string
@@ -210,6 +212,7 @@ export type Database = {
         Update: {
           context_patient_id?: string | null
           created_at?: string
+          email_confirmed?: boolean | null
           id?: string
           is_active?: boolean | null
           profile_id?: string
