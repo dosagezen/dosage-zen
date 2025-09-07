@@ -24,40 +24,16 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
     setLoading(true);
 
     try {
-      // Primeiro, criar o usuário no auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: {
-          nome: nome
-        }
+      // Chamar edge function para convidar admin
+      const { data, error } = await supabase.functions.invoke('invite-admin', {
+        body: { email, nome }
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
 
-      // Aguardar um pouco para garantir que o trigger criou o perfil
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Buscar o perfil criado
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', authData.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Criar o role de admin
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          profile_id: profileData.id,
-          role: 'admin',
-          is_active: true
-        });
-
-      if (roleError) throw roleError;
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro desconhecido');
+      }
 
       toast({
         title: "Sucesso",
