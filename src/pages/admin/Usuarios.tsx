@@ -40,6 +40,8 @@ export function Usuarios() {
 
   const loadAdminUsers = async () => {
     try {
+      console.log('🔍 Iniciando carregamento dos usuários admin...');
+      
       // Get all admin roles (active and inactive)
       const { data: adminRoles, error: rolesError } = await supabase
         .from('user_roles')
@@ -59,32 +61,17 @@ export function Usuarios() {
         `)
         .eq('role', 'admin');
 
+      console.log('📋 Dados dos roles admin:', { adminRoles, rolesError });
+
       if (rolesError) throw rolesError;
 
-      // Get auth users to check email confirmation status
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      if (authError) throw authError;
-
-      // Create a map of auth users by ID for quick lookup
-      const authUsersMap = new Map<string, any>();
-      authUsers.users.forEach((user: any) => {
-        authUsersMap.set(user.id, user);
-      });
-
+      // For now, we'll use a simplified status logic without checking auth users
+      // This avoids issues with admin permissions
       const adminUsers: AdminUser[] = adminRoles?.map(item => {
         const profile = item.profiles as any;
-        const authUser = authUsersMap.get(item.user_id) as any;
         
-        // Determine status based on various factors
-        let status: 'ativo' | 'pendente' | 'inativo' = 'inativo';
-        
-        if (item.is_active && authUser?.email_confirmed_at) {
-          status = 'ativo';
-        } else if (authUser && !authUser.email_confirmed_at) {
-          status = 'pendente';
-        } else {
-          status = 'inativo';
-        }
+        // Simple status logic based on is_active flag
+        const status: 'ativo' | 'pendente' | 'inativo' = item.is_active ? 'ativo' : 'inativo';
 
         return {
           id: item.profile_id,
@@ -95,13 +82,14 @@ export function Usuarios() {
           created_at: profile.created_at,
           is_active: item.is_active,
           status,
-          email_confirmed_at: authUser?.email_confirmed_at || null
+          email_confirmed_at: null // We'll implement this later if needed
         };
       }) || [];
 
+      console.log('✅ Usuários admin processados:', adminUsers);
       setUsers(adminUsers);
     } catch (error) {
-      console.error('Erro ao carregar usuários admin:', error);
+      console.error('❌ Erro ao carregar usuários admin:', error);
       toast({
         title: "Erro",
         description: "Falha ao carregar usuários administradores.",
@@ -150,7 +138,8 @@ export function Usuarios() {
     setResendingInvites(prev => new Set(prev).add(user.id));
     
     try {
-      const { data, error } = await supabase.functions.invoke('resend-admin-invite', {
+      // For now, we'll use the same invite function instead of a separate resend
+      const { data, error } = await supabase.functions.invoke('invite-admin', {
         body: { 
           email: user.email, 
           nome: user.nome 
@@ -163,17 +152,17 @@ export function Usuarios() {
         throw new Error(data?.error || 'Erro ao reenviar convite');
       }
 
-      if (data.already_confirmed) {
-        toast({
-          title: "Informação",
-          description: "Usuário já confirmou o email. Não é necessário reenviar.",
-        });
-      } else {
-        toast({
-          title: "Sucesso",
-          description: "Convite reenviado com sucesso!",
-        });
-      }
+      toast({
+        title: "Sucesso",
+        description: data.already_admin ? 
+          "Usuário já possui privilégios de admin" : 
+          data.promoted_existing ? 
+            "Usuário existente promovido a admin" : 
+            "Convite enviado com sucesso!",
+      });
+
+      // Reload users after invite
+      await loadAdminUsers();
     } catch (error: any) {
       console.error('Erro ao reenviar convite:', error);
       toast({
