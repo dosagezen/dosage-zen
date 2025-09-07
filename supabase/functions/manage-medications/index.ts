@@ -25,9 +25,10 @@ serve(async (req) => {
       }
     );
 
-    const method = req.method;
-    const url = new URL(req.url);
-    const medicationId = url.searchParams.get('id');
+    const body = await req.json();
+    const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes } = body;
+
+    console.log('Processing medication request:', { action, id });
 
     // Get current user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
@@ -56,9 +57,10 @@ serve(async (req) => {
 
     const patientProfileId = profile.id;
 
-    switch (method) {
-      case 'GET': {
+    switch (action) {
+      case 'list': {
         // List all medications for the user
+        console.log('Fetching medications for profile:', patientProfileId);
         const { data: medications, error } = await supabaseClient
           .from('medications')
           .select('*')
@@ -73,15 +75,15 @@ serve(async (req) => {
           });
         }
 
+        console.log('Medications found:', medications?.length || 0);
         return new Response(JSON.stringify({ medications }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'POST': {
+      case 'create': {
         // Create new medication
-        const body = await req.json();
-        const { nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, observacoes } = body;
+        console.log('Creating medication:', { nome, dosagem, forma, frequencia });
 
         if (!nome || !dosagem || !forma || !frequencia) {
           return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -116,22 +118,22 @@ serve(async (req) => {
           });
         }
 
+        console.log('Medication created successfully:', medication.id);
         return new Response(JSON.stringify({ medication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'PUT': {
+      case 'update': {
         // Update existing medication
-        if (!medicationId) {
+        console.log('Updating medication:', id);
+
+        if (!id) {
           return new Response(JSON.stringify({ error: 'Medication ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
-
-        const body = await req.json();
-        const { nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes } = body;
 
         const { data: medication, error } = await supabaseClient
           .from('medications')
@@ -147,7 +149,7 @@ serve(async (req) => {
             ativo,
             observacoes
           })
-          .eq('id', medicationId)
+          .eq('id', id)
           .eq('patient_profile_id', patientProfileId)
           .select()
           .single();
@@ -160,14 +162,17 @@ serve(async (req) => {
           });
         }
 
+        console.log('Medication updated successfully:', id);
         return new Response(JSON.stringify({ medication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'DELETE': {
+      case 'delete': {
         // Delete medication
-        if (!medicationId) {
+        console.log('Deleting medication:', id);
+
+        if (!id) {
           return new Response(JSON.stringify({ error: 'Medication ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -177,7 +182,7 @@ serve(async (req) => {
         const { error } = await supabaseClient
           .from('medications')
           .delete()
-          .eq('id', medicationId)
+          .eq('id', id)
           .eq('patient_profile_id', patientProfileId);
 
         if (error) {
@@ -188,20 +193,21 @@ serve(async (req) => {
           });
         }
 
+        console.log('Medication deleted successfully:', id);
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
       default:
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-          status: 405,
+        return new Response(JSON.stringify({ error: 'Invalid action' }), {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
   } catch (error) {
     console.error('Function error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

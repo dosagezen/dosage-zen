@@ -37,7 +37,7 @@ export const useMedications = () => {
 
   const fetchMedications = async (): Promise<Medication[]> => {
     const { data, error } = await supabase.functions.invoke('manage-medications', {
-      method: 'GET',
+      body: { action: 'list' }
     });
 
     if (error) {
@@ -56,8 +56,7 @@ export const useMedications = () => {
   const createMutation = useMutation({
     mutationFn: async (medicationData: CreateMedicationData) => {
       const { data, error } = await supabase.functions.invoke('manage-medications', {
-        method: 'POST',
-        body: medicationData,
+        body: { action: 'create', ...medicationData },
       });
 
       if (error) {
@@ -86,28 +85,16 @@ export const useMedications = () => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...medicationData }: Partial<Medication> & { id: string }) => {
-      // Use direct fetch for PUT request with ID parameter
-
-      // Add query parameter for ID
-      const url = new URL(`https://pgbjqwdhtsinnaydijfj.supabase.co/functions/v1/manage-medications`);
-      url.searchParams.set('id', id);
-      
-      const response = await fetch(url.toString(), {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(medicationData),
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: { action: 'update', id, ...medicationData },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update medication');
+      if (error) {
+        console.error('Error updating medication:', error);
+        throw error;
       }
 
-      const result = await response.json();
-      return result.medication;
+      return data.medication;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medications'] });
@@ -128,23 +115,16 @@ export const useMedications = () => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const url = new URL(`https://pgbjqwdhtsinnaydijfj.supabase.co/functions/v1/manage-medications`);
-      url.searchParams.set('id', id);
-      
-      const response = await fetch(url.toString(), {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: { action: 'delete', id },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete medication');
+      if (error) {
+        console.error('Error deleting medication:', error);
+        throw error;
       }
 
-      return await response.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['medications'] });

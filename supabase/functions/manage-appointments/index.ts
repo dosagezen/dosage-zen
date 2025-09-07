@@ -25,10 +25,10 @@ serve(async (req) => {
       }
     );
 
-    const method = req.method;
-    const url = new URL(req.url);
-    const appointmentId = url.searchParams.get('id');
-    const tipo = url.searchParams.get('tipo'); // consulta, exame, atividade
+    const body = await req.json();
+    const { action, id, tipo, titulo, especialidade, medico_profissional, local_endereco, data_agendamento, duracao_minutos, status, observacoes, resultado } = body;
+
+    console.log('Processing appointment request:', { action, id, tipo });
 
     // Get current user
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
@@ -57,20 +57,21 @@ serve(async (req) => {
 
     const patientProfileId = profile.id;
 
-    switch (method) {
-      case 'GET': {
+    switch (action) {
+      case 'list': {
         // List appointments with optional filtering by type
+        console.log('Fetching appointments for profile:', patientProfileId, 'tipo:', tipo);
+        
         let query = supabaseClient
           .from('appointments')
           .select('*')
-          .eq('patient_profile_id', patientProfileId)
-          .order('data_agendamento', { ascending: true });
-
+          .eq('patient_profile_id', patientProfileId);
+        
         if (tipo) {
           query = query.eq('tipo', tipo);
         }
-
-        const { data: appointments, error } = await query;
+        
+        const { data: appointments, error } = await query.order('data_agendamento', { ascending: true });
 
         if (error) {
           console.error('Error fetching appointments:', error);
@@ -80,21 +81,18 @@ serve(async (req) => {
           });
         }
 
+        console.log('Appointments found:', appointments?.length || 0);
         return new Response(JSON.stringify({ appointments }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'POST': {
+      case 'create': {
         // Create new appointment
-        const body = await req.json();
-        const { 
-          tipo, titulo, especialidade, medico_profissional, local_endereco, 
-          data_agendamento, duracao_minutos, observacoes 
-        } = body;
+        console.log('Creating appointment:', { titulo, tipo, data_agendamento });
 
         if (!titulo || !data_agendamento) {
-          return new Response(JSON.stringify({ error: 'Missing required fields: titulo, data_agendamento' }), {
+          return new Response(JSON.stringify({ error: 'Missing required fields: titulo and data_agendamento' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -104,8 +102,8 @@ serve(async (req) => {
           .from('appointments')
           .insert({
             patient_profile_id: patientProfileId,
-            tipo: tipo || 'consulta',
             titulo,
+            tipo: tipo || 'consulta',
             especialidade,
             medico_profissional,
             local_endereco,
@@ -125,41 +123,39 @@ serve(async (req) => {
           });
         }
 
+        console.log('Appointment created successfully:', appointment.id);
         return new Response(JSON.stringify({ appointment }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'PUT': {
+      case 'update': {
         // Update existing appointment
-        if (!appointmentId) {
+        console.log('Updating appointment:', id);
+
+        if (!id) {
           return new Response(JSON.stringify({ error: 'Appointment ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
 
-        const body = await req.json();
-        const { 
-          tipo, titulo, especialidade, medico_profissional, local_endereco, 
-          data_agendamento, duracao_minutos, status, observacoes, resultado 
-        } = body;
+        const updateData: any = {};
+        if (titulo !== undefined) updateData.titulo = titulo;
+        if (tipo !== undefined) updateData.tipo = tipo;
+        if (especialidade !== undefined) updateData.especialidade = especialidade;
+        if (medico_profissional !== undefined) updateData.medico_profissional = medico_profissional;
+        if (local_endereco !== undefined) updateData.local_endereco = local_endereco;
+        if (data_agendamento !== undefined) updateData.data_agendamento = data_agendamento;
+        if (duracao_minutos !== undefined) updateData.duracao_minutos = duracao_minutos;
+        if (status !== undefined) updateData.status = status;
+        if (observacoes !== undefined) updateData.observacoes = observacoes;
+        if (resultado !== undefined) updateData.resultado = resultado;
 
         const { data: appointment, error } = await supabaseClient
           .from('appointments')
-          .update({
-            tipo,
-            titulo,
-            especialidade,
-            medico_profissional,
-            local_endereco,
-            data_agendamento,
-            duracao_minutos,
-            status,
-            observacoes,
-            resultado
-          })
-          .eq('id', appointmentId)
+          .update(updateData)
+          .eq('id', id)
           .eq('patient_profile_id', patientProfileId)
           .select()
           .single();
@@ -172,14 +168,17 @@ serve(async (req) => {
           });
         }
 
+        console.log('Appointment updated successfully:', id);
         return new Response(JSON.stringify({ appointment }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      case 'DELETE': {
+      case 'delete': {
         // Delete appointment
-        if (!appointmentId) {
+        console.log('Deleting appointment:', id);
+
+        if (!id) {
           return new Response(JSON.stringify({ error: 'Appointment ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -189,7 +188,7 @@ serve(async (req) => {
         const { error } = await supabaseClient
           .from('appointments')
           .delete()
-          .eq('id', appointmentId)
+          .eq('id', id)
           .eq('patient_profile_id', patientProfileId);
 
         if (error) {
@@ -200,20 +199,21 @@ serve(async (req) => {
           });
         }
 
+        console.log('Appointment deleted successfully:', id);
         return new Response(JSON.stringify({ success: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
       default:
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-          status: 405,
+        return new Response(JSON.stringify({ error: 'Invalid action' }), {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
   } catch (error) {
     console.error('Function error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

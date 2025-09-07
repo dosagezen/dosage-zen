@@ -35,26 +35,16 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
   const queryClient = useQueryClient();
 
   const fetchAppointments = async (): Promise<Appointment[]> => {
-    const url = new URL(`https://pgbjqwdhtsinnaydijfj.supabase.co/functions/v1/manage-appointments`);
-    if (tipo) {
-      url.searchParams.set('tipo', tipo);
-    }
-    
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        'Content-Type': 'application/json',
-      },
+    const { data, error } = await supabase.functions.invoke('manage-appointments', {
+      body: { action: 'list', tipo }
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch appointments');
+    if (error) {
+      console.error('Error fetching appointments:', error);
+      throw error;
     }
 
-    const result = await response.json();
-    return result.appointments || [];
+    return data.appointments || [];
   };
 
   const query = useQuery({
@@ -65,8 +55,7 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
   const createMutation = useMutation({
     mutationFn: async (appointmentData: CreateAppointmentData) => {
       const { data, error } = await supabase.functions.invoke('manage-appointments', {
-        method: 'POST',
-        body: appointmentData,
+        body: { action: 'create', ...appointmentData },
       });
 
       if (error) {
@@ -95,25 +84,16 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...appointmentData }: Partial<Appointment> & { id: string }) => {
-      const url = new URL(`https://pgbjqwdhtsinnaydijfj.supabase.co/functions/v1/manage-appointments`);
-      url.searchParams.set('id', id);
-      
-      const response = await fetch(url.toString(), {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(appointmentData),
+      const { data, error } = await supabase.functions.invoke('manage-appointments', {
+        body: { action: 'update', id, ...appointmentData },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update appointment');
+      if (error) {
+        console.error('Error updating appointment:', error);
+        throw error;
       }
 
-      const result = await response.json();
-      return result.appointment;
+      return data.appointment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
@@ -134,23 +114,16 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const url = new URL(`https://pgbjqwdhtsinnaydijfj.supabase.co/functions/v1/manage-appointments`);
-      url.searchParams.set('id', id);
-      
-      const response = await fetch(url.toString(), {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-          'Content-Type': 'application/json',
-        },
+      const { data, error } = await supabase.functions.invoke('manage-appointments', {
+        body: { action: 'delete', id },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete appointment');
+      if (error) {
+        console.error('Error deleting appointment:', error);
+        throw error;
       }
 
-      return await response.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
