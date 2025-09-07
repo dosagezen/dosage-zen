@@ -1,4 +1,4 @@
-import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut, AlertTriangle } from "lucide-react"
+import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut, AlertTriangle, Shield } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import {
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
+import { useAdminGuard } from "@/hooks/useAdminGuard"
 
 const items = [
   { title: "Início", url: "/app", icon: Home },
@@ -40,6 +41,7 @@ export function AppSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { isAdmin } = useAdminGuard()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
   const isMobile = useIsMobile()
@@ -123,6 +125,22 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              
+              {/* Item Admin (apenas para admin) */}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to="/app/admin" 
+                      className={({ isActive }) => getNavCls({ isActive })}
+                      onClick={handleMobileNavClick}
+                    >
+                      <Shield className="w-5 h-5" />
+                      {!isCollapsed && <span>Admin</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               
               {/* Item Sair */}
               <SidebarMenuItem>
