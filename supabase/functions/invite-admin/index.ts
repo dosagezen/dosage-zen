@@ -42,16 +42,64 @@ serve(async (req) => {
     if (userExists) {
       console.log('Usuário já existe, promovendo a admin:', email);
       
-      // Get user profile
-      const { data: profile, error: profileError } = await supabaseAdmin
+      // Get user profile (or create if missing)
+      let { data: profile, error: profileError } = await supabaseAdmin
         .from('profiles')
         .select('id')
         .eq('user_id', userExists.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('Erro ao buscar perfil do usuário:', profileError);
-        throw new Error('Usuário existe mas perfil não encontrado');
+        throw profileError;
+      }
+
+      // If profile doesn't exist, create it automatically
+      if (!profile) {
+        console.log('Perfil não encontrado, criando automaticamente para usuário órfão:', email);
+        
+        // Generate unique code for profile
+        const generateUniqueCode = async (): Promise<string> => {
+          let code: string;
+          let isUnique = false;
+          
+          while (!isUnique) {
+            code = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const { data: existingProfile } = await supabaseAdmin
+              .from('profiles')
+              .select('id')
+              .eq('codigo', code)
+              .maybeSingle();
+            
+            if (!existingProfile) {
+              isUnique = true;
+            }
+          }
+          
+          return code!;
+        };
+
+        const uniqueCode = await generateUniqueCode();
+
+        // Create the missing profile
+        const { data: newProfile, error: createProfileError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            user_id: userExists.id,
+            email: email,
+            nome: nome,
+            codigo: uniqueCode
+          })
+          .select('id')
+          .single();
+
+        if (createProfileError) {
+          console.error('Erro ao criar perfil para usuário órfão:', createProfileError);
+          throw new Error('Falha ao criar perfil para usuário existente');
+        }
+
+        profile = newProfile;
+        console.log('Perfil criado automaticamente:', profile.id);
       }
 
       // Check if user already has admin role
