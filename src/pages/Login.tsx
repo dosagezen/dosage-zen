@@ -25,7 +25,7 @@ const Login = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      navigate('/app');
+      navigate('/app/');
     }
   }, [user, loading, navigate]);
 
@@ -73,7 +73,7 @@ const Login = () => {
         description: "Bem-vindo(a) de volta!",
       });
       
-      navigate("/app");
+      navigate("/app/");
     } catch (error) {
       toast({
         title: "Erro",
