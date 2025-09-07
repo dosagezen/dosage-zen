@@ -1,5 +1,5 @@
 import { Calendar, Home, Pill, Users, FileText, Settings, MapPin, TrendingUp, LogOut, AlertTriangle, Shield } from "lucide-react"
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
+import { NavLink, useLocation } from "react-router-dom"
 import { useState } from "react"
 import {
   Sidebar,
@@ -25,6 +25,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 import { useAdminGuard } from "@/hooks/useAdminGuard"
+import { useAuth } from "@/contexts/AuthContext"
 
 const items = [
   { title: "Início", url: "/app", icon: Home },
@@ -39,9 +40,9 @@ const items = [
 export function AppSidebar() {
   const { state, setOpenMobile } = useSidebar()
   const location = useLocation()
-  const navigate = useNavigate()
   const { toast } = useToast()
   const { isAdmin } = useAdminGuard()
+  const { signOut } = useAuth()
   const currentPath = location.pathname
   const isCollapsed = state === "collapsed"
   const isMobile = useIsMobile()
@@ -64,16 +65,23 @@ export function AppSidebar() {
     setShowLogoutDialog(true)
   }
 
-  const handleLogoutConfirm = () => {
-    // Fechar sidebar no mobile antes de redirecionar
+  const handleLogoutConfirm = async () => {
+    // Fechar sidebar no mobile antes de fazer logout
     handleMobileNavClick()
     
-    // Mock logout - redirect to login
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso."
-    })
-    navigate("/login")
+    try {
+      await signOut()
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso."
+      })
+    } catch (error) {
+      toast({
+        title: "Erro no logout",
+        description: "Ocorreu um erro ao tentar sair. Tente novamente.",
+        variant: "destructive"
+      })
+    }
   }
 
   return (
