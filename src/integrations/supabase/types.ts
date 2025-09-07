@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          created_at: string
+          data_agendamento: string
+          duracao_minutos: number | null
+          especialidade: string | null
+          id: string
+          local_endereco: string | null
+          medico_profissional: string | null
+          observacoes: string | null
+          patient_profile_id: string
+          resultado: string | null
+          status: string | null
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_agendamento: string
+          duracao_minutos?: number | null
+          especialidade?: string | null
+          id?: string
+          local_endereco?: string | null
+          medico_profissional?: string | null
+          observacoes?: string | null
+          patient_profile_id: string
+          resultado?: string | null
+          status?: string | null
+          tipo?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_agendamento?: string
+          duracao_minutos?: number | null
+          especialidade?: string | null
+          id?: string
+          local_endereco?: string | null
+          medico_profissional?: string | null
+          observacoes?: string | null
+          patient_profile_id?: string
+          resultado?: string | null
+          status?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       collaborations: {
         Row: {
           collaborator_profile_id: string
@@ -99,6 +150,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      medication_schedules: {
+        Row: {
+          created_at: string
+          data_programada: string
+          horario_programado: string
+          horario_tomado: string | null
+          id: string
+          medication_id: string
+          observacoes: string | null
+          patient_profile_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_programada: string
+          horario_programado: string
+          horario_tomado?: string | null
+          id?: string
+          medication_id: string
+          observacoes?: string | null
+          patient_profile_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_programada?: string
+          horario_programado?: string
+          horario_tomado?: string | null
+          id?: string
+          medication_id?: string
+          observacoes?: string | null
+          patient_profile_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medications: {
+        Row: {
+          ativo: boolean | null
+          created_at: string
+          data_fim: string | null
+          data_inicio: string | null
+          dosagem: string
+          estoque: number | null
+          forma: string
+          frequencia: string
+          horarios: Json
+          id: string
+          nome: string
+          observacoes: string | null
+          patient_profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          dosagem: string
+          estoque?: number | null
+          forma: string
+          frequencia: string
+          horarios?: Json
+          id?: string
+          nome: string
+          observacoes?: string | null
+          patient_profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          dosagem?: string
+          estoque?: number | null
+          forma?: string
+          frequencia?: string
+          horarios?: Json
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          patient_profile_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

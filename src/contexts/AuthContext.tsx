@@ -20,9 +20,12 @@ interface UserRole {
   id: string;
   user_id: string;
   profile_id: string;
-  role: 'paciente' | 'acompanhante' | 'cuidador' | 'admin';
+  role: 'paciente' | 'acompanhante' | 'cuidador' | 'admin' | 'gestor';
   context_patient_id?: string;
   is_active: boolean;
+  email_confirmed: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 interface AuthContextType {
