@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ContextSelector } from "@/components/ContextSelector";
 import Dashboard from "./pages/Dashboard";
 import Conquistas from "./pages/Conquistas";
@@ -23,6 +23,22 @@ const queryClient = new QueryClient();
 
 const AppLayout = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
 
   return (
     <SidebarProvider defaultOpen={true}>
