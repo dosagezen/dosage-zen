@@ -42,7 +42,7 @@ export function Usuarios() {
     try {
       console.log('🔍 Iniciando carregamento dos usuários admin...');
       
-      // Get all admin roles (active and inactive)
+      // Get all admin roles (active and inactive)  
       const { data: adminRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select(`
@@ -65,26 +65,80 @@ export function Usuarios() {
 
       if (rolesError) throw rolesError;
 
-      // For now, we'll use a simplified status logic without checking auth users
-      // This avoids issues with admin permissions
-      const adminUsers: AdminUser[] = adminRoles?.map(item => {
-        const profile = item.profiles as any;
-        
-        // Simple status logic based on is_active flag
-        const status: 'ativo' | 'pendente' | 'inativo' = item.is_active ? 'ativo' : 'inativo';
+      const adminUsers: AdminUser[] = [];
 
-        return {
-          id: item.profile_id,
-          user_id: item.user_id,
-          nome: profile.nome,
-          email: profile.email,
-          avatar_url: profile.avatar_url,
-          created_at: profile.created_at,
-          is_active: item.is_active,
-          status,
-          email_confirmed_at: null // We'll implement this later if needed
-        };
-      }) || [];
+      // Process existing admin roles
+      if (adminRoles) {
+        for (const item of adminRoles) {
+          const profile = item.profiles as any;
+          
+          if (profile) {
+            // Get auth user data to check email confirmation
+            let email_confirmed_at = null;
+            try {
+              const { data: authUser } = await supabase.auth.admin.getUserById(item.user_id);
+              email_confirmed_at = authUser.user?.email_confirmed_at || null;
+            } catch (authError) {
+              console.warn('Could not fetch auth data for user:', item.user_id);
+            }
+
+            // Determine status based on email confirmation and role activity
+            let status: 'ativo' | 'pendente' | 'inativo';
+            if (!email_confirmed_at) {
+              status = 'pendente'; // Email not confirmed yet
+            } else if (item.is_active) {
+              status = 'ativo'; // Email confirmed and role active
+            } else {
+              status = 'inativo'; // Email confirmed but role inactive
+            }
+
+            adminUsers.push({
+              id: item.profile_id,
+              user_id: item.user_id,
+              nome: profile.nome,
+              email: profile.email,
+              avatar_url: profile.avatar_url,
+              created_at: profile.created_at,
+              is_active: item.is_active,
+              status,
+              email_confirmed_at
+            });
+          }
+        }
+      }
+
+      // Also check for auth users with admin role metadata who don't have roles yet
+      try {
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        
+        if (authUsers.users) {
+          for (const authUser of authUsers.users) {
+            // Check if user has admin role in metadata but no user_role record
+            const isAdminInMeta = authUser.user_metadata?.role === 'admin';
+            const hasExistingRole = adminUsers.some(user => user.user_id === authUser.id);
+            
+            if (isAdminInMeta && !hasExistingRole && !authUser.email_confirmed_at) {
+              // This is a pending admin invite
+              const nome = authUser.user_metadata?.nome || authUser.email?.split('@')[0] || 'Usuário';
+              
+              adminUsers.push({
+                id: `pending-${authUser.id}`, // Temporary ID for pending users
+                user_id: authUser.id,
+                nome,
+                email: authUser.email || '',
+                avatar_url: null,
+                created_at: authUser.created_at,
+                is_active: false,
+                status: 'pendente',
+                email_confirmed_at: authUser.email_confirmed_at
+              });
+            }
+          }
+        }
+      } catch (authError) {
+        console.warn('Could not fetch auth users:', authError);
+        // Continue without auth users - fallback to just role-based users
+      }
 
       console.log('✅ Usuários admin processados:', adminUsers);
       setUsers(adminUsers);

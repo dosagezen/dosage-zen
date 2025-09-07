@@ -160,12 +160,19 @@ serve(async (req) => {
     } else {
       console.log('Usuário não existe, enviando convite:', email);
       
+      // Get the current request URL to build the correct redirect URL
+      const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/')[0] + '//' + req.headers.get('referer')?.split('/')[2] || 'https://pgbjqwdhtsinnaydijfj.supabase.co';
+      const redirectUrl = `${origin}/`;
+
+      console.log('🔗 Using redirect URL:', redirectUrl);
+
       // Invite new user via Supabase native invite
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
         data: {
           nome: nome,
           role: 'admin'
-        }
+        },
+        redirectTo: redirectUrl
       });
 
       if (inviteError) {
