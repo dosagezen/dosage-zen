@@ -16,6 +16,7 @@ interface InviteAdminDialogProps {
 export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdminDialogProps) {
   const [email, setEmail] = useState("");
   const [nome, setNome] = useState("");
+  const [sobrenome, setSobrenome] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -25,8 +26,9 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
 
     try {
       // Chamar edge function para convidar admin
+      const nomeCompleto = `${nome} ${sobrenome}`.trim();
       const { data, error } = await supabase.functions.invoke('invite-admin', {
-        body: { email, nome }
+        body: { email, nome: nomeCompleto }
       });
 
       if (error) throw error;
@@ -42,6 +44,7 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
 
       setEmail("");
       setNome("");
+      setSobrenome("");
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
@@ -69,16 +72,29 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nome">Nome Completo</Label>
-            <Input
-              id="nome"
-              type="text"
-              placeholder="Digite o nome completo"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="nome">Nome</Label>
+              <Input
+                id="nome"
+                type="text"
+                placeholder="Digite o nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sobrenome">Sobrenome</Label>
+              <Input
+                id="sobrenome"
+                type="text"
+                placeholder="Digite o sobrenome"
+                value={sobrenome}
+                onChange={(e) => setSobrenome(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
