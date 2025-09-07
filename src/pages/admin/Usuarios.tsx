@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter } from "lucide-react";
+import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter, RotateCcw, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,9 @@ interface AdminUser {
   avatar_url: string | null;
   created_at: string;
   is_active: boolean;
+  status: 'ativo' | 'pendente' | 'inativo';
+  user_id?: string;
+  email_confirmed_at?: string | null;
 }
 
 export function Usuarios() {
@@ -28,6 +31,7 @@ export function Usuarios() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [resendingInvites, setResendingInvites] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,7 +40,8 @@ export function Usuarios() {
 
   const loadAdminUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Get all admin roles (active and inactive)
+      const { data: adminRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select(`
           id,
@@ -48,22 +53,51 @@ export function Usuarios() {
             nome,
             email,
             avatar_url,
-            created_at
+            created_at,
+            user_id
           )
         `)
-        .eq('role', 'admin')
-        .eq('is_active', true);
+        .eq('role', 'admin');
 
-      if (error) throw error;
+      if (rolesError) throw rolesError;
 
-      const adminUsers = data?.map(item => ({
-        id: item.profile_id,
-        nome: (item.profiles as any).nome,
-        email: (item.profiles as any).email,
-        avatar_url: (item.profiles as any).avatar_url,
-        created_at: (item.profiles as any).created_at,
-        is_active: item.is_active
-      })) || [];
+      // Get auth users to check email confirmation status
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      if (authError) throw authError;
+
+      // Create a map of auth users by ID for quick lookup
+      const authUsersMap = new Map<string, any>();
+      authUsers.users.forEach((user: any) => {
+        authUsersMap.set(user.id, user);
+      });
+
+      const adminUsers: AdminUser[] = adminRoles?.map(item => {
+        const profile = item.profiles as any;
+        const authUser = authUsersMap.get(item.user_id) as any;
+        
+        // Determine status based on various factors
+        let status: 'ativo' | 'pendente' | 'inativo' = 'inativo';
+        
+        if (item.is_active && authUser?.email_confirmed_at) {
+          status = 'ativo';
+        } else if (authUser && !authUser.email_confirmed_at) {
+          status = 'pendente';
+        } else {
+          status = 'inativo';
+        }
+
+        return {
+          id: item.profile_id,
+          user_id: item.user_id,
+          nome: profile.nome,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+          created_at: profile.created_at,
+          is_active: item.is_active,
+          status,
+          email_confirmed_at: authUser?.email_confirmed_at || null
+        };
+      }) || [];
 
       setUsers(adminUsers);
     } catch (error) {
@@ -93,7 +127,8 @@ export function Usuarios() {
 
       if (error) throw error;
 
-      setUsers(users.filter(u => u.id !== user.id));
+      // Reload users to reflect changes
+      await loadAdminUsers();
       toast({
         title: "Sucesso",
         description: "Usuário administrador removido com sucesso.",
@@ -107,6 +142,84 @@ export function Usuarios() {
       });
     }
     setDeletingUser(null);
+  };
+
+  const handleResendInvite = async (user: AdminUser) => {
+    if (!user.email || !user.nome) return;
+    
+    setResendingInvites(prev => new Set(prev).add(user.id));
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-admin-invite', {
+        body: { 
+          email: user.email, 
+          nome: user.nome 
+        }
+      });
+
+      if (error) throw error;
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Erro ao reenviar convite');
+      }
+
+      if (data.already_confirmed) {
+        toast({
+          title: "Informação",
+          description: "Usuário já confirmou o email. Não é necessário reenviar.",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Convite reenviado com sucesso!",
+        });
+      }
+    } catch (error: any) {
+      console.error('Erro ao reenviar convite:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Falha ao reenviar convite.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendingInvites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(user.id);
+        return newSet;
+      });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ativo':
+        return (
+          <Badge variant="default" className="bg-success/10 text-success border-success/20">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Ativo
+          </Badge>
+        );
+      case 'pendente':
+        return (
+          <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
+            <Clock className="w-3 h-3 mr-1" />
+            Pendente
+          </Badge>
+        );
+      case 'inativo':
+        return (
+          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+            <XCircle className="w-3 h-3 mr-1" />
+            Inativo
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="secondary">
+            {status}
+          </Badge>
+        );
+    }
   };
 
   return (
@@ -148,10 +261,10 @@ export function Usuarios() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
-                <Users className="w-4 h-4 text-success" />
+                <CheckCircle className="w-4 h-4 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{users.filter(u => u.is_active).length}</p>
+                <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'ativo').length}</p>
                 <p className="text-xs text-muted-foreground">Admins Ativos</p>
               </div>
             </div>
@@ -161,11 +274,11 @@ export function Usuarios() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
-                <Mail className="w-4 h-4 text-accent" />
+              <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
+                <Clock className="w-4 h-4 text-warning" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">0</p>
+                <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'pendente').length}</p>
                 <p className="text-xs text-muted-foreground">Convites Pendentes</p>
               </div>
             </div>
@@ -237,15 +350,24 @@ export function Usuarios() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant={user.is_active ? "default" : "secondary"}>
-                        {user.is_active ? "Ativo" : "Inativo"}
-                      </Badge>
+                      {getStatusBadge(user.status)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(user.created_at).toLocaleDateString('pt-BR')}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {user.status === 'pendente' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleResendInvite(user)}
+                            disabled={resendingInvites.has(user.id)}
+                            title="Reenviar convite"
+                          >
+                            <RotateCcw className={`w-4 h-4 ${resendingInvites.has(user.id) ? 'animate-spin' : ''}`} />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
