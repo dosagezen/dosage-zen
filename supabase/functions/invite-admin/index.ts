@@ -29,31 +29,116 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Invite user via Supabase native invite
-    const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-      data: {
-        nome: nome,
-        role: 'admin'
-      }
-    });
-
-    if (inviteError) {
-      console.error('Erro ao convidar usuário:', inviteError);
-      throw inviteError;
+    // First, check if user already exists
+    const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (checkError) {
+      console.error('Erro ao verificar usuários existentes:', checkError);
+      throw checkError;
     }
 
-    console.log('Convite enviado para:', email, 'User ID:', inviteData.user.id);
+    const userExists = existingUser.users.find(user => user.email === email);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Convite de administrador enviado com sucesso',
-        user_id: inviteData.user.id 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (userExists) {
+      console.log('Usuário já existe, promovendo a admin:', email);
+      
+      // Get user profile
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('user_id', userExists.id)
+        .single();
+
+      if (profileError) {
+        console.error('Erro ao buscar perfil do usuário:', profileError);
+        throw new Error('Usuário existe mas perfil não encontrado');
       }
-    );
+
+      // Check if user already has admin role
+      const { data: existingRole, error: roleCheckError } = await supabaseAdmin
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', userExists.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleCheckError) {
+        console.error('Erro ao verificar role existente:', roleCheckError);
+        throw roleCheckError;
+      }
+
+      if (existingRole) {
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Usuário já possui privilégios de administrador',
+            user_id: userExists.id,
+            already_admin: true
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      // Create admin role for existing user
+      const { error: roleError } = await supabaseAdmin
+        .from('user_roles')
+        .insert({
+          user_id: userExists.id,
+          profile_id: profile.id,
+          role: 'admin',
+          is_active: true
+        });
+
+      if (roleError) {
+        console.error('Erro ao criar role de admin:', roleError);
+        throw roleError;
+      }
+
+      console.log('Role de admin criado para usuário existente:', email);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Usuário existente promovido a administrador com sucesso',
+          user_id: userExists.id,
+          promoted_existing: true
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    } else {
+      console.log('Usuário não existe, enviando convite:', email);
+      
+      // Invite new user via Supabase native invite
+      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        data: {
+          nome: nome,
+          role: 'admin'
+        }
+      });
+
+      if (inviteError) {
+        console.error('Erro ao convidar usuário:', inviteError);
+        throw inviteError;
+      }
+
+      console.log('Convite enviado para:', email, 'User ID:', inviteData.user.id);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Convite de administrador enviado com sucesso',
+          user_id: inviteData.user.id,
+          invited_new: true
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
   } catch (error: any) {
     console.error('Erro na function invite-admin:', error);
