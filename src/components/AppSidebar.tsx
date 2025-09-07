@@ -66,7 +66,7 @@ export function AppSidebar() {
   }
 
   const handleLogoutConfirm = async () => {
-    // Fechar sidebar no mobile antes de fazer logout
+    setShowLogoutDialog(false)
     handleMobileNavClick()
     
     try {
@@ -76,6 +76,7 @@ export function AppSidebar() {
         description: "Você foi desconectado com sucesso."
       })
     } catch (error) {
+      console.error('Erro durante logout:', error)
       toast({
         title: "Erro no logout",
         description: "Ocorreu um erro ao tentar sair. Tente novamente.",
