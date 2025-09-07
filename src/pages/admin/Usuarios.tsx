@@ -64,7 +64,8 @@ export function Usuarios() {
             user_id
           )
         `)
-        .eq('role', 'admin');
+        .eq('role', 'admin')
+        .order('created_at', { ascending: false });
 
       console.log('📋 Dados dos roles admin:', { adminRoles, rolesError });
 

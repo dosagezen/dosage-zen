@@ -37,7 +37,7 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
 
       toast({
         title: "Sucesso",
-        description: "Administrador convidado com sucesso!",
+        description: "Convite enviado. Usuário adicionado como Pendente.",
       });
 
       setEmail("");
@@ -48,7 +48,7 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
       console.error('Erro ao convidar admin:', error);
       toast({
         title: "Erro",
-        description: error.message || "Falha ao convidar administrador.",
+        description: error.message || "Falha ao enviar convite.",
         variant: "destructive",
       });
     } finally {
