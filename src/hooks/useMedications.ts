@@ -31,7 +31,11 @@ export interface CreateMedicationData {
   observacoes?: string;
 }
 
-export const useMedications = () => {
+export const useMedications = (callbacks?: {
+  onCreateSuccess?: () => void;
+  onUpdateSuccess?: () => void;
+  onDeleteSuccess?: () => void;
+}) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,6 +76,7 @@ export const useMedications = () => {
         title: 'Sucesso',
         description: 'Medicação criada com sucesso!',
       });
+      callbacks?.onCreateSuccess?.();
     },
     onError: (error: any) => {
       console.error('Error creating medication:', error);
@@ -102,6 +107,7 @@ export const useMedications = () => {
         title: 'Sucesso',
         description: 'Medicação atualizada com sucesso!',
       });
+      callbacks?.onUpdateSuccess?.();
     },
     onError: (error: any) => {
       console.error('Error updating medication:', error);
@@ -132,6 +138,7 @@ export const useMedications = () => {
         title: 'Sucesso',
         description: 'Medicação removida com sucesso!',
       });
+      callbacks?.onDeleteSuccess?.();
     },
     onError: (error: any) => {
       console.error('Error deleting medication:', error);

@@ -20,11 +20,22 @@ const MedicacoesNew = () => {
     isCreating,
     isUpdating,
     isDeleting
-  } = useMedications();
+  } = useMedications({
+    onCreateSuccess: () => {
+      setIsDialogOpen(false);
+    },
+    onUpdateSuccess: () => {
+      setIsDialogOpen(false);
+      setEditingMedication(null);
+    },
+    onDeleteSuccess: () => {
+      setIsDialogOpen(false);
+      setEditingMedication(null);
+    }
+  });
 
   const handleAddMedication = (medicationData) => {
     createMedication(medicationData);
-    setIsDialogOpen(false);
   };
 
   const handleEditMedication = (medication) => {
@@ -36,14 +47,10 @@ const MedicacoesNew = () => {
     if (editingMedication) {
       updateMedication({ id: editingMedication.id, ...medicationData });
     }
-    setIsDialogOpen(false);
-    setEditingMedication(null);
   };
 
   const handleDeleteMedication = (id) => {
     deleteMedication(id);
-    setIsDialogOpen(false);
-    setEditingMedication(null);
   };
 
   if (isLoading) {

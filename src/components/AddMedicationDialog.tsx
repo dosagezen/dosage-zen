@@ -125,6 +125,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       onSave(medicationData)
     }
     
+    // Fechar o dialog após chamar a função
     setDialogOpen(false)
   }
 
