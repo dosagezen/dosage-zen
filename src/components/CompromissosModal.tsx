@@ -11,6 +11,8 @@ import SwipeableExameCard from './SwipeableExameCard'
 import SwipeableAtividadeCard from './SwipeableAtividadeCard'
 import AddMedicationDialog from './AddMedicationDialog'
 import EditarCompromissoDialog from './EditarCompromissoDialog'
+import { useMedications } from '@/hooks/useMedications'
+import { useAppointments } from '@/hooks/useAppointments'
 
 interface HorarioStatus {
   hora: string;
@@ -89,6 +91,9 @@ interface CompromissosModalProps {
 }
 
 const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }) => {
+  // Hooks para integração com backend
+  const { medications, updateMedication } = useMedications()
+  const { appointments, updateAppointment } = useAppointments()
   // Dados mockados expandidos para o modal
   const initialMedicacoes: MedicacaoCompleta[] = [
     {
@@ -296,6 +301,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       const consulta = consultasList.find(c => c.id === itemId)
       if (!consulta) return
 
+      // Atualizar no backend - status para realizado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'consulta')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'realizado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Concluído em ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
+
       const undoAction: UndoAction = {
         itemId,
         itemType: 'consulta',
@@ -342,6 +357,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       const exame = examesList.find(e => e.id === itemId)
       if (!exame) return
 
+      // Atualizar no backend - status para realizado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'exame')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'realizado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Concluído em ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
+
       const undoAction: UndoAction = {
         itemId,
         itemType: 'exame',
@@ -387,6 +412,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     } else if (itemType === 'atividade') {
       const atividade = atividadesList.find(a => a.id === itemId)
       if (!atividade) return
+
+      // Atualizar no backend - status para realizado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'atividade')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'realizado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Concluído em ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
 
       const undoAction: UndoAction = {
         itemId,
@@ -441,13 +476,22 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, consultasList, examesList, atividadesList, calculateNextDose, undoTimeout])
+  }, [medicacoesList, consultasList, examesList, atividadesList, calculateNextDose, undoTimeout, medications, appointments, updateMedication, updateAppointment])
 
   // Função genérica para remover da lista
   const handleRemove = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
+
+      // Atualizar no backend - medicação não é excluída, apenas marcada como removida do dia
+      const medicationFromBackend = medications.find(med => med.id === itemId.toString())
+      if (medicationFromBackend) {
+        updateMedication({
+          id: medicationFromBackend.id,
+          observacoes: `${medicationFromBackend.observacoes || ''}\n[Removido do dia ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
 
       const undoAction: UndoAction = {
         itemId,
@@ -492,6 +536,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       const consulta = consultasList.find(c => c.id === itemId)
       if (!consulta) return
 
+      // Atualizar no backend - status para cancelado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'consulta')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'cancelado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Removido do dia ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
+
       const undoAction: UndoAction = {
         itemId,
         itemType: 'consulta',
@@ -535,6 +589,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       const exame = examesList.find(e => e.id === itemId)
       if (!exame) return
 
+      // Atualizar no backend - status para cancelado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'exame')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'cancelado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Removido do dia ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
+
       const undoAction: UndoAction = {
         itemId,
         itemType: 'exame',
@@ -577,6 +641,16 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     } else if (itemType === 'atividade') {
       const atividade = atividadesList.find(a => a.id === itemId)
       if (!atividade) return
+
+      // Atualizar no backend - status para cancelado
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'atividade')
+      if (appointmentFromBackend) {
+        updateAppointment({
+          id: appointmentFromBackend.id,
+          status: 'cancelado',
+          observacoes: `${appointmentFromBackend.observacoes || ''}\n[Removido do dia ${new Date().toLocaleDateString()}]`.trim()
+        })
+      }
 
       const undoAction: UndoAction = {
         itemId,
@@ -628,7 +702,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, consultasList, examesList, atividadesList, undoTimeout])
+  }, [medicacoesList, consultasList, examesList, atividadesList, undoTimeout, medications, appointments, updateMedication, updateAppointment])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
