@@ -94,6 +94,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/admin/signup" element={<AdminSignup />} />
+          <Route path="/test-signup" element={<AdminSignup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/app/*" element={<AppLayout />} />
         </Routes>

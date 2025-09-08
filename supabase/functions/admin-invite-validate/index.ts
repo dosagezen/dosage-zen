@@ -16,6 +16,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse query parameters
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
+    
+    console.log('Validating invitation with token:', token);
 
     if (!token) {
       return new Response(
@@ -95,8 +97,11 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate a unique user code for the new admin
+    console.log('Generating unique user code...');
     const { data: userCode, error: codeError } = await supabase
       .rpc('generate_unique_code');
+
+    console.log('User code generation result:', { userCode, codeError });
 
     if (codeError || !userCode) {
       console.error('Error generating user code:', codeError);
