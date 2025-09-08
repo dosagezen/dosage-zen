@@ -13,6 +13,7 @@ import Agenda from "./pages/Agenda";
 import Configuracoes from "./pages/Configuracoes";
 import Relatorios from "./pages/Relatorios";
 import Admin from "./pages/Admin";
+import AdminSignup from "./pages/AdminSignup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
@@ -92,6 +93,7 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/admin/signup" element={<AdminSignup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/app/*" element={<AppLayout />} />
         </Routes>

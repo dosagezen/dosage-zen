@@ -1,13 +1,15 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.56.1';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.56.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ResendInviteRequest {
-  invitation_id: string;
+interface AdminInviteRequest {
+  first_name: string;
+  last_name: string;
+  email: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -18,11 +20,24 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     // Parse request body
-    const { invitation_id }: ResendInviteRequest = await req.json();
+    const { first_name, last_name, email }: AdminInviteRequest = await req.json();
 
-    if (!invitation_id) {
+    // Validate required fields
+    if (!first_name || !last_name || !email) {
       return new Response(
-        JSON.stringify({ error: 'ID do convite é obrigatório' }),
+        JSON.stringify({ error: 'Nome, sobrenome e e-mail são obrigatórios' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return new Response(
+        JSON.stringify({ error: 'Formato de e-mail inválido' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -85,42 +100,17 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Find the invitation
-    const { data: invitation, error: inviteError } = await supabase
+    // Check if there's already a pending invitation for this email
+    const { data: existingInvites, error: inviteCheckError } = await supabase
       .from('admin_invitations')
       .select('*')
-      .eq('id', invitation_id)
-      .single();
+      .eq('email', email.toLowerCase())
+      .eq('status', 'pendente');
 
-    if (inviteError || !invitation) {
+    if (inviteCheckError) {
+      console.error('Error checking existing invites:', inviteCheckError);
       return new Response(
-        JSON.stringify({ error: 'Convite não encontrado' }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Check if invitation is in a state that allows resending
-    if (invitation.status !== 'pendente') {
-      return new Response(
-        JSON.stringify({ error: 'Apenas convites pendentes podem ser reenviados' }),
-        {
-          status: 409,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // Generate new token and extend expiration
-    const { data: newToken, error: tokenError } = await supabase
-      .rpc('generate_invite_token');
-
-    if (tokenError || !newToken) {
-      console.error('Error generating new invite token:', tokenError);
-      return new Response(
-        JSON.stringify({ error: 'Erro ao gerar novo token de convite' }),
+        JSON.stringify({ error: 'Erro ao verificar convites existentes' }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -128,26 +118,54 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Set new expiration date (7 days from now)
-    const newExpiresAt = new Date();
-    newExpiresAt.setDate(newExpiresAt.getDate() + 7);
+    if (existingInvites && existingInvites.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Já existe um convite pendente para este e-mail' }),
+        {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-    // Update invitation with new token and expiration
-    const { data: updatedInvitation, error: updateError } = await supabase
+    // Generate invite token
+    const { data: tokenData, error: tokenError } = await supabase
+      .rpc('generate_invite_token');
+
+    if (tokenError || !tokenData) {
+      console.error('Error generating invite token:', tokenError);
+      return new Response(
+        JSON.stringify({ error: 'Erro ao gerar token de convite' }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Set expiration date (7 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    // Create admin invitation
+    const { data: invitation, error: inviteError } = await supabase
       .from('admin_invitations')
-      .update({
-        invite_token: newToken,
-        expires_at: newExpiresAt.toISOString(),
-        updated_at: new Date().toISOString()
+      .insert({
+        email: email.toLowerCase(),
+        first_name,
+        last_name,
+        invite_token: tokenData,
+        expires_at: expiresAt.toISOString(),
+        created_by: user.id,
+        status: 'pendente'
       })
-      .eq('id', invitation_id)
       .select()
       .single();
 
-    if (updateError) {
-      console.error('Error updating invitation:', updateError);
+    if (inviteError) {
+      console.error('Error creating invitation:', inviteError);
       return new Response(
-        JSON.stringify({ error: 'Erro ao atualizar convite' }),
+        JSON.stringify({ error: 'Erro ao criar convite de administrador' }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -157,49 +175,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Log the action
     await supabase.rpc('log_admin_action', {
-      p_action: 'admin_invite_resent',
+      p_action: 'admin_invite_created',
       p_entity: 'admin_invitations',
       p_entity_id: invitation.id,
-      p_old_data: {
-        invite_token: invitation.invite_token,
-        expires_at: invitation.expires_at
-      },
       p_new_data: {
-        invite_token: newToken,
-        expires_at: newExpiresAt.toISOString()
+        email: email.toLowerCase(),
+        first_name,
+        last_name,
+        invite_token: tokenData
       }
     });
 
-    // TODO: Send email with new invitation link
+    // TODO: Send email with invitation link
     // For now, we'll just log the invitation details
-    console.log('Admin invitation resent:', {
-      email: invitation.email,
-      name: `${invitation.first_name} ${invitation.last_name}`,
-      token: newToken,
-      inviteLink: `${req.headers.get('origin') || supabaseUrl}/admin/signup?token=${newToken}`
+    console.log('Admin invitation created:', {
+      email: email.toLowerCase(),
+      name: `${first_name} ${last_name}`,
+      token: tokenData,
+      inviteLink: `${req.headers.get('origin') || supabaseUrl}/admin/signup?token=${tokenData}`
     });
 
+    // Return success response with invitation data
     return new Response(
       JSON.stringify({
-        message: 'Convite reenviado com sucesso',
+        message: 'Convite de administrador criado com sucesso',
         invitation: {
-          id: updatedInvitation.id,
-          email: updatedInvitation.email,
-          first_name: updatedInvitation.first_name,
-          last_name: updatedInvitation.last_name,
-          status: updatedInvitation.status,
-          expires_at: updatedInvitation.expires_at,
-          updated_at: updatedInvitation.updated_at
+          id: invitation.id,
+          email: invitation.email,
+          first_name: invitation.first_name,
+          last_name: invitation.last_name,
+          status: invitation.status,
+          created_at: invitation.created_at,
+          expires_at: invitation.expires_at
         }
       }),
       {
-        status: 200,
+        status: 201,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
 
   } catch (error) {
-    console.error('Error in resend-admin-invite function:', error);
+    console.error('Error in admin-invite function:', error);
     return new Response(
       JSON.stringify({ error: 'Erro interno do servidor' }),
       {

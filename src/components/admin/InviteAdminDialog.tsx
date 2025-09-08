@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useAdminInvitations } from "@/hooks/useAdminInvitations";
 
 interface InviteAdminDialogProps {
   open: boolean;
@@ -19,41 +19,28 @@ export function InviteAdminDialog({ open, onOpenChange, onSuccess }: InviteAdmin
   const [sobrenome, setSobrenome] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { createInvitation } = useAdminInvitations();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Chamar edge function para convidar admin
-      const nomeCompleto = `${nome} ${sobrenome}`.trim();
-      const { data, error } = await supabase.functions.invoke('invite-admin', {
-        body: { email, nome: nomeCompleto }
+      const result = await createInvitation({
+        first_name: nome.trim(),
+        last_name: sobrenome.trim(),
+        email: email.trim().toLowerCase()
       });
 
-      if (error) throw error;
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'Erro desconhecido');
+      if (result) {
+        setEmail("");
+        setNome("");
+        setSobrenome("");
+        onOpenChange(false);
+        onSuccess();
       }
-
-      toast({
-        title: "Sucesso",
-        description: "Convite enviado. Usuário adicionado como Pendente.",
-      });
-
-      setEmail("");
-      setNome("");
-      setSobrenome("");
-      onOpenChange(false);
-      onSuccess();
     } catch (error: any) {
       console.error('Erro ao convidar admin:', error);
-      toast({
-        title: "Erro",
-        description: error.message || "Falha ao enviar convite.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }

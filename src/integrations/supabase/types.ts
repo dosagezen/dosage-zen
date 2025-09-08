@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invitations: {
+        Row: {
+          created_at: string
+          created_by: string
+          email: string
+          expires_at: string
+          first_name: string
+          id: string
+          invite_token: string
+          last_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          email: string
+          expires_at: string
+          first_name: string
+          id?: string
+          invite_token: string
+          last_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          email?: string
+          expires_at?: string
+          first_name?: string
+          id?: string
+          invite_token?: string
+          last_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           created_at: string
@@ -62,6 +101,45 @@ export type Database = {
           tipo?: string
           titulo?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -383,6 +461,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invite_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_unique_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -401,6 +483,16 @@ export type Database = {
       is_admin: {
         Args: { user_uuid: string }
         Returns: boolean
+      }
+      log_admin_action: {
+        Args: {
+          p_action: string
+          p_entity: string
+          p_entity_id?: string
+          p_new_data?: Json
+          p_old_data?: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {
