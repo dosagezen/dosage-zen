@@ -13,13 +13,15 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== Admin Invite Validate Function Started ===');
+    
     // Parse query parameters
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
-    
-    console.log('Validating invitation with token:', token);
+    console.log('Token received:', token);
 
     if (!token) {
+      console.log('No token provided');
       return new Response(
         JSON.stringify({ error: 'Token de convite é obrigatório' }),
         {
@@ -33,15 +35,20 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('Supabase client initialized');
 
     // Find invitation by token
+    console.log('Looking for invitation with token:', token);
     const { data: invitation, error } = await supabase
       .from('admin_invitations')
       .select('*')
       .eq('invite_token', token)
       .single();
 
+    console.log('Invitation query result:', { invitation, error });
+
     if (error || !invitation) {
+      console.log('Invitation not found or error:', error);
       return new Response(
         JSON.stringify({ error: 'Token de convite inválido' }),
         {
@@ -54,8 +61,10 @@ const handler = async (req: Request): Promise<Response> => {
     // Check if invitation is still valid
     const now = new Date();
     const expiresAt = new Date(invitation.expires_at);
+    console.log('Time check:', { now: now.toISOString(), expiresAt: expiresAt.toISOString() });
 
     if (now > expiresAt) {
+      console.log('Invitation expired');
       // Mark invitation as expired
       await supabase
         .from('admin_invitations')
@@ -72,6 +81,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Check invitation status
+    console.log('Invitation status:', invitation.status);
     if (invitation.status !== 'pendente') {
       let errorMessage = 'Convite não está mais disponível';
       
@@ -87,6 +97,7 @@ const handler = async (req: Request): Promise<Response> => {
           break;
       }
 
+      console.log('Invitation status invalid:', errorMessage);
       return new Response(
         JSON.stringify({ error: errorMessage }),
         {
@@ -97,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate a unique user code for the new admin
-    console.log('Generating unique user code...');
+    console.log('Generating user code...');
     const { data: userCode, error: codeError } = await supabase
       .rpc('generate_unique_code');
 
@@ -105,16 +116,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (codeError || !userCode) {
       console.error('Error generating user code:', codeError);
+      // Fallback: generate a simple code if the function fails
+      const fallbackCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+      console.log('Using fallback code:', fallbackCode);
+      
       return new Response(
-        JSON.stringify({ error: 'Erro ao gerar código de usuário' }),
+        JSON.stringify({
+          invitation: {
+            email: invitation.email,
+            first_name: invitation.first_name,
+            last_name: invitation.last_name,
+            user_code: fallbackCode,
+            expires_at: invitation.expires_at
+          }
+        }),
         {
-          status: 500,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
     // Return invitation data
+    console.log('Returning successful response with user code:', userCode);
     return new Response(
       JSON.stringify({
         invitation: {
