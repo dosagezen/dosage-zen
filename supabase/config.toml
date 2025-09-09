@@ -1,6 +1,12 @@
 project_id = "pgbjqwdhtsinnaydijfj"
 
-[functions.invite-admin]
+[functions.admin-invite]
+verify_jwt = false
+
+[functions.admin-invite-validate]
+verify_jwt = false
+
+[functions.admin-signup-accept]
 verify_jwt = false
 
 [functions.resend-admin-invite]

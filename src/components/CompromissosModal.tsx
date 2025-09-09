@@ -94,8 +94,74 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Hooks para integração com backend
   const { medications, updateMedication } = useMedications()
   const { appointments, updateAppointment } = useAppointments()
-  // Dados mockados expandidos para o modal
-  const initialMedicacoes: MedicacaoCompleta[] = [
+  
+  // Converter dados reais para formato da interface
+  const convertMedicationsToModal = (): MedicacaoCompleta[] => {
+    return medications.filter(med => med.ativo).slice(0, 5).map((med, index) => ({
+      id: parseInt(med.id),
+      nome: med.nome,
+      dosagem: med.dosagem,
+      forma: med.forma,
+      frequencia: med.frequencia,
+      horarios: Array.isArray(med.horarios) ? med.horarios.map(hora => ({ hora, status: 'pendente' as const })) : [{ hora: "08:00", status: 'pendente' as const }],
+      proximaDose: Array.isArray(med.horarios) && med.horarios.length > 0 ? med.horarios[0] : "08:00",
+      estoque: med.estoque || 0,
+      status: "ativa" as const
+    }));
+  };
+
+  const convertAppointmentsToModal = (): (ConsultaCompleta | ExameCompleto | AtividadeCompleta)[] => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayAppointments = appointments.filter(apt => 
+      apt.data_agendamento.startsWith(today) && apt.status === 'agendado'
+    ).slice(0, 6);
+
+    return todayAppointments.map((apt, index) => {
+      const time = new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+
+      if (apt.tipo === 'consulta') {
+        return {
+          id: parseInt(apt.id),
+          especialidade: apt.especialidade || 'Consulta Médica',
+          profissional: apt.medico_profissional || 'Médico',
+          local: apt.local_endereco || 'Clínica',
+          hora: time,
+          status: 'agendado' as const
+        } as ConsultaCompleta;
+      } else if (apt.tipo === 'exame') {
+        return {
+          id: parseInt(apt.id),
+          tipo: apt.titulo || 'Exame',
+          local: apt.local_endereco || 'Laboratório',
+          hora: time,
+          status: 'agendado' as const
+        } as ExameCompleto;
+      } else {
+        return {
+          id: parseInt(apt.id),
+          tipo: apt.titulo || 'Atividade',
+          local: apt.local_endereco || 'Local',
+          hora: time,
+          duracao: `${apt.duracao_minutos || 30}min`,
+          status: 'pendente' as const
+        } as AtividadeCompleta;
+      }
+    });
+  };
+
+  // Usar dados reais quando disponíveis, senão usar dados de exemplo
+  const realAppointments = convertAppointmentsToModal();
+  const separatedAppointments = {
+    consultas: realAppointments.filter(apt => 'especialidade' in apt) as ConsultaCompleta[],
+    exames: realAppointments.filter(apt => 'tipo' in apt && !('duracao' in apt)) as ExameCompleto[],
+    atividades: realAppointments.filter(apt => 'duracao' in apt) as AtividadeCompleta[]
+  };
+
+  // Dados de fallback caso não haja dados reais
+  const fallbackMedicacoes: MedicacaoCompleta[] = [
     {
       id: 1,
       nome: "Atorvastatina",
@@ -106,24 +172,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       proximaDose: "08:00",
       estoque: 28,
       status: "ativa"
-    },
-    {
-      id: 2,
-      nome: "Metformina",
-      dosagem: "500 mg",
-      forma: "Comprimido",
-      frequencia: "2x ao dia",
-      horarios: [
-        { hora: "08:00", status: "pendente" },
-        { hora: "20:00", status: "pendente" }
-      ],
-      proximaDose: "08:00",
-      estoque: 15,
-      status: "ativa"
     }
-  ]
+  ];
 
-  const initialConsultas: ConsultaCompleta[] = [
+  const fallbackConsultas: ConsultaCompleta[] = [
     {
       id: 3,
       especialidade: "Cardiologia",
@@ -131,35 +183,20 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       local: "Clínica Boa Saúde",
       hora: "09:30",
       status: "agendado"
-    },
-    {
-      id: 4,
-      especialidade: "Endocrinologia", 
-      profissional: "Dra. Maria Santos",
-      local: "Hospital Central",
-      hora: "14:00",
-      status: "confirmado"
     }
-  ]
+  ];
 
-  const initialExames: ExameCompleto[] = [
+  const fallbackExames: ExameCompleto[] = [
     {
       id: 5,
       tipo: "Hemograma",
       local: "Lab Central",
       hora: "07:00",
       status: "agendado"
-    },
-    {
-      id: 6,
-      tipo: "Ultrassom Abdominal",
-      local: "Centro Diagnóstico",
-      hora: "16:30",
-      status: "agendado"
     }
-  ]
+  ];
 
-  const initialAtividades: AtividadeCompleta[] = [
+  const fallbackAtividades: AtividadeCompleta[] = [
     {
       id: 7,
       tipo: "Fisioterapia",
@@ -169,23 +206,24 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       status: "pendente",
       dias: ["Seg", "Qua", "Sex"],
       repeticao: "Toda semana"
-    },
-    {
-      id: 8,
-      tipo: "Caminhada",
-      local: "Parque da Cidade",
-      hora: "18:00",
-      duracao: "30min",
-      status: "pendente",
-      dias: ["Dom"],
-      repeticao: "Não se repete"
     }
-  ]
+  ];
 
-  const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>(initialMedicacoes)
-  const [consultasList, setConsultasList] = useState<ConsultaCompleta[]>(initialConsultas)
-  const [examesList, setExamesList] = useState<ExameCompleto[]>(initialExames)
-  const [atividadesList, setAtividadesList] = useState<AtividadeCompleta[]>(initialAtividades)
+  const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>([])
+  const [consultasList, setConsultasList] = useState<ConsultaCompleta[]>([])
+  const [examesList, setExamesList] = useState<ExameCompleto[]>([])
+  const [atividadesList, setAtividadesList] = useState<AtividadeCompleta[]>([])
+
+  // Atualizar dados quando componente abrir
+  useEffect(() => {
+    if (isOpen) {
+      const realMedicacoes = convertMedicationsToModal();
+      setMedicacoesList(realMedicacoes.length > 0 ? realMedicacoes : fallbackMedicacoes);
+      setConsultasList(separatedAppointments.consultas.length > 0 ? separatedAppointments.consultas : fallbackConsultas);
+      setExamesList(separatedAppointments.exames.length > 0 ? separatedAppointments.exames : fallbackExames);
+      setAtividadesList(separatedAppointments.atividades.length > 0 ? separatedAppointments.atividades : fallbackAtividades);
+    }
+  }, [isOpen, medications, appointments]);
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRemovedExpanded, setIsRemovedExpanded] = useState(false)
@@ -902,10 +940,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setMedicacoesList(initialMedicacoes)
-      setConsultasList(initialConsultas)
-      setExamesList(initialExames)
-      setAtividadesList(initialAtividades)
+      setMedicacoesList(fallbackMedicacoes)
+      setConsultasList(fallbackConsultas)
+      setExamesList(fallbackExames)
+      setAtividadesList(fallbackAtividades)
       setLastUndoAction(null)
       setIsRemovedExpanded(false)
       if (undoTimeout) {
