@@ -35,6 +35,11 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
   const queryClient = useQueryClient();
 
   const fetchAppointments = async (): Promise<Appointment[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const { data, error } = await supabase.functions.invoke('manage-appointments', {
       body: { action: 'list', tipo }
     });

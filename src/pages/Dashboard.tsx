@@ -7,12 +7,23 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import AddMedicationDialog from "@/components/AddMedicationDialog";
 import CompromissosModal from "@/components/CompromissosModal";
+import { useMedications } from "@/hooks/useMedications";
+import { useAppointments } from "@/hooks/useAppointments";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isAddCompromissoOpen, setIsAddCompromissoOpen] = useState(false);
+  const { user } = useAuth();
+  
+  // Hooks para dados reais
+  const { medications, isLoading: medicationsLoading } = useMedications();
+  const { appointments: allAppointments, isLoading: appointmentsLoading } = useAppointments();
+  const { appointments: consultas } = useAppointments('consulta');
+  const { appointments: exames } = useAppointments('exame');
+  const { appointments: atividades } = useAppointments('atividade');
 
   // Detectar parâmetro modal=compromissos para reabrir o modal
   useEffect(() => {
@@ -24,63 +35,88 @@ const Dashboard = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const proximasMedicacoes = [{
-    nome: "Atorvastatina",
-    dosagem: "10 mg",
-    horario: "08:00",
-    status: "próximo"
-  }, {
-    nome: "Metformina",
-    dosagem: "500 mg",
-    horario: "12:00",
+  // Processar medicações ativas
+  const medicacoesAtivas = medications?.filter(med => med.ativo) || [];
+  const proximasMedicacoes = medicacoesAtivas.slice(0, 3).map(med => ({
+    nome: med.nome,
+    dosagem: med.dosagem,
+    horario: med.horarios?.[0] || "Sem horário",
     status: "pendente"
-  }, {
-    nome: "Losartana",
-    dosagem: "50 mg",
-    horario: "20:00",
-    status: "pendente"
-  }];
+  }));
 
-  const proximasConsultas = [{
-    especialidade: "Cardiologia",
-    medico: "Dr. João Silva",
-    data: "15/05/2025",
-    horario: "09:00"
-  }, {
-    especialidade: "Endocrinologia",
-    medico: "Dra. Maria Santos",
-    data: "22/05/2025",
-    horario: "14:30"
-  }];
+  // Processar próximos compromissos (próximos 7 dias)
+  const hoje = new Date();
+  const proximosDias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000);
+  
+  const compromissosProximos = allAppointments?.filter(apt => {
+    const dataApt = new Date(apt.data_agendamento);
+    return dataApt >= hoje && dataApt <= proximosDias;
+  }).slice(0, 5) || [];
+
+  // Calcular estatísticas
+  const compromissosHoje = allAppointments?.filter(apt => {
+    const dataApt = new Date(apt.data_agendamento);
+    return dataApt.toDateString() === hoje.toDateString();
+  }).length || 0;
+
+  const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hoje);
+  const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hoje);
+
+  const diasProximaConsulta = proximaConsulta ? 
+    Math.ceil((new Date(proximaConsulta.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  
+  const diasProximoExame = proximoExame ? 
+    Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   const estatisticas = [{
     titulo: "Compromissos Hoje",
-    valor: "5",
+    valor: compromissosHoje.toString(),
     icone: Pill,
     cor: "success"
   }, {
-    titulo: "Aderência Semanal",
-    valor: "92%",
+    titulo: "Medicações Ativas",
+    valor: medicacoesAtivas.length.toString(),
     icone: TrendingUp,
     cor: "primary"
   }, {
     titulo: "Próxima Consulta",
-    valor: "3 dias",
+    valor: diasProximaConsulta ? `${diasProximaConsulta} dias` : "Nenhuma",
     icone: User,
     cor: "accent"
   }, {
     titulo: "Próximo Exame",
-    valor: "5 dias",
+    valor: diasProximoExame ? `${diasProximoExame} dias` : "Nenhum",
     icone: Stethoscope,
     cor: "muted"
   }];
+
+  // Loading state
+  if (medicationsLoading || appointmentsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   return <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-primary">Bom dia, Sena!</h1>
-          <p className="text-muted-foreground">Quinta-feira, 14 de agosto de 2025</p>
+          <h1 className="text-3xl font-bold text-primary">
+            Bom dia{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+          </h1>
+          <p className="text-muted-foreground">
+            {new Date().toLocaleDateString('pt-BR', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </p>
         </div>
         <AddMedicationDialog>
           <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft h-12" aria-label="Adicionar nova medicação">
@@ -136,23 +172,33 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/app/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {proximasMedicacoes.map((med, index) => <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center">
-                    <Pill className="w-5 h-5 text-white" />
+            {proximasMedicacoes.length > 0 ? (
+              proximasMedicacoes.map((med, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center">
+                      <Pill className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-primary">{med.nome}</p>
+                      <p className="text-sm text-muted-foreground">{med.dosagem}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-primary">{med.nome}</p>
-                    <p className="text-sm text-muted-foreground">{med.dosagem}</p>
+                  <div className="text-right">
+                    <p className="font-semibold text-primary">{med.horario}</p>
+                    <Badge variant="secondary" className="bg-orange-500 text-white hover:bg-orange-600">
+                      Pendente
+                    </Badge>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-primary">{med.horario}</p>
-                  <Badge variant={med.status === "próximo" ? "default" : "destructive"} className={med.status === "pendente" ? "bg-orange-500 text-white hover:bg-orange-600" : ""}>
-                    {med.status === "próximo" ? "Próximo" : "Pendente"}
-                  </Badge>
-                </div>
-              </div>)}
+              ))
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Pill className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhuma medicação cadastrada</p>
+                <p className="text-sm">Adicione sua primeira medicação</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -166,74 +212,73 @@ const Dashboard = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/app/agenda')} aria-label="Ver agenda completa">Ver Agenda</Button>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Consultas */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-consulta/5 to-consulta/10 border border-consulta/10">
-              <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-consulta-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Cardiologia</p>
-                <p className="text-sm text-muted-foreground">Dr. João Silva • 15/05/2025 às 09:00</p>
-                <Badge variant="secondary" className="text-xs">Consulta</Badge>
-              </div>
-            </div>
+            {compromissosProximos.length > 0 ? (
+              compromissosProximos.map((apt, index) => {
+                const dataFormatada = new Date(apt.data_agendamento).toLocaleDateString('pt-BR');
+                const horaFormatada = new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', minute: '2-digit' 
+                });
+                
+                const getIconAndStyle = (tipo: string) => {
+                  switch (tipo) {
+                    case 'consulta':
+                      return {
+                        icon: User,
+                        bgClass: 'bg-gradient-to-r from-consulta/5 to-consulta/10 border border-consulta/10',
+                        iconBg: 'bg-consulta',
+                        iconText: 'text-consulta-foreground'
+                      };
+                    case 'exame':
+                      return {
+                        icon: Stethoscope,
+                        bgClass: 'bg-gradient-to-r from-exame/5 to-exame/10 border border-exame/10',
+                        iconBg: 'bg-exame',
+                        iconText: 'text-exame-foreground'
+                      };
+                    case 'atividade':
+                      return {
+                        icon: Heart,
+                        bgClass: 'bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10',
+                        iconBg: 'bg-atividade',
+                        iconText: 'text-white'
+                      };
+                    default:
+                      return {
+                        icon: Calendar,
+                        bgClass: 'bg-gradient-to-r from-muted/5 to-muted/10 border border-muted/10',
+                        iconBg: 'bg-muted',
+                        iconText: 'text-muted-foreground'
+                      };
+                  }
+                };
 
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-consulta/5 to-consulta/10 border border-consulta/10">
-              <div className="w-10 h-10 bg-consulta rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-consulta-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Endocrinologia</p>
-                <p className="text-sm text-muted-foreground">Dra. Maria Santos • 22/05/2025 às 14:30</p>
-                <Badge variant="secondary" className="text-xs">Consulta</Badge>
-              </div>
-            </div>
+                const { icon: Icon, bgClass, iconBg, iconText } = getIconAndStyle(apt.tipo);
 
-            {/* Exames */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-exame/5 to-exame/10 border border-exame/10">
-              <div className="w-10 h-10 bg-exame rounded-full flex items-center justify-center">
-                <Stethoscope className="w-5 h-5 text-exame-foreground" />
+                return (
+                  <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${bgClass}`}>
+                    <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center`}>
+                      <Icon className={`w-5 h-5 ${iconText}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-primary">{apt.titulo}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {apt.medico_profissional ? `${apt.medico_profissional} • ` : ''}
+                        {dataFormatada} às {horaFormatada}
+                      </p>
+                      <Badge variant="secondary" className="text-xs capitalize">
+                        {apt.tipo}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Nenhum compromisso próximo</p>
+                <p className="text-sm">Agende seus compromissos na agenda</p>
               </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Exame de Sangue</p>
-                <p className="text-sm text-muted-foreground">Lab. Central • 16/05/2025 às 08:00</p>
-                <Badge variant="secondary" className="text-xs">Exame</Badge>
-              </div>
-            </div>
-
-            {/* Atividades */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
-              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Fisioterapia</p>
-                <p className="text-sm text-muted-foreground">Clínica Vida • 17/05/2025 às 15:30</p>
-                <Badge variant="secondary" className="text-xs">Atividade</Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
-              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Caminhada</p>
-                <p className="text-sm text-muted-foreground">Parque Central • 18/05/2025 às 07:00</p>
-                <Badge variant="secondary" className="text-xs">Atividade</Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-atividade/5 to-atividade/10 border border-atividade/10">
-              <div className="w-10 h-10 bg-atividade rounded-full flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-primary">Hidroginástica</p>
-                <p className="text-sm text-muted-foreground">Academia Aqua • 19/05/2025 às 16:00</p>
-                <Badge variant="secondary" className="text-xs">Atividade</Badge>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

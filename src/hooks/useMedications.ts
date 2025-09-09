@@ -40,6 +40,11 @@ export const useMedications = (callbacks?: {
   const queryClient = useQueryClient();
 
   const fetchMedications = async (): Promise<Medication[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
     const { data, error } = await supabase.functions.invoke('manage-medications', {
       body: { action: 'list' }
     });
