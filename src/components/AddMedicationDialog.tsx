@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Plus, Trash2, CalendarIcon } from "lucide-react"
+import { Plus, Trash2, CalendarIcon, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
@@ -58,6 +58,8 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
     dataInicio: undefined as Date | undefined,
     dataFim: undefined as Date | undefined
   })
+
+  const [horarioError, setHorarioError] = useState("")
 
   // Atualizar dados quando medication muda
   useEffect(() => {
@@ -259,33 +261,94 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
             <div className="space-y-2">
               <Label htmlFor="inicio">Hora de Início</Label>
               <div className="flex gap-2">
-                <div className={`relative flex-1 time-input-container ${formData.horario ? 'has-value' : ''}`}>
-                  <Input 
-                    id="inicio" 
-                    type="time" 
-                    value={formData.horario}
-                    onChange={(e) => setFormData(prev => ({ ...prev, horario: e.target.value }))}
-                    className={`w-full ${!formData.horario || formData.horario === ""
-                      ? 'text-muted-foreground/50' 
-                      : ''}`}
-                    style={{
-                      WebkitAppearance: 'none',
-                      MozAppearance: 'textfield'
-                    }}
-                  />
+                <div className="relative flex-1">
+                  {isMobile ? (
+                    // Mobile: usar seletor nativo
+                    <Input 
+                      id="inicio" 
+                      type="time" 
+                      value={formData.horario}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, horario: e.target.value }))
+                        setHorarioError("")
+                      }}
+                      className={`w-full ${!formData.horario || formData.horario === ""
+                        ? 'text-muted-foreground/50' 
+                        : ''}`}
+                    />
+                  ) : (
+                    // Desktop: permitir entrada manual
+                    <div className="relative">
+                      <Input 
+                        id="inicio" 
+                        type="text"
+                        placeholder="hh:mm"
+                        value={formData.horario}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          setFormData(prev => ({ ...prev, horario: value }))
+                          
+                          // Validação em tempo real para desktop
+                          if (value && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
+                            if (value.length >= 4) {
+                              setHorarioError("Formato inválido. Use HH:mm")
+                            }
+                          } else {
+                            setHorarioError("")
+                          }
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value
+                          if (value) {
+                            // Tentar formatar automaticamente
+                            const numbers = value.replace(/\D/g, '')
+                            if (numbers.length === 3 || numbers.length === 4) {
+                              const hours = numbers.slice(0, -2).padStart(2, '0')
+                              const minutes = numbers.slice(-2)
+                              const formatted = `${hours}:${minutes}`
+                              
+                              if (/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(formatted)) {
+                                setFormData(prev => ({ ...prev, horario: formatted }))
+                                setHorarioError("")
+                              } else {
+                                setHorarioError("Formato inválido. Use HH:mm")
+                              }
+                            } else if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value)) {
+                              setHorarioError("Formato inválido. Use HH:mm")
+                            }
+                          }
+                        }}
+                        className={cn(
+                          "w-full pr-10",
+                          horarioError && "border-destructive focus-visible:ring-destructive",
+                          !formData.horario && "text-muted-foreground/50"
+                        )}
+                      />
+                      <Clock className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
+                  )}
                 </div>
                 {formData.horario && (
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, horario: "" }))}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, horario: "" }))
+                      setHorarioError("")
+                    }}
                     className="px-2"
                   >
                     ✕
                   </Button>
                 )}
               </div>
+              {horarioError && (
+                <p className="text-sm text-destructive mt-1">{horarioError}</p>
+              )}
+              {!isMobile && !horarioError && (
+                <p className="text-xs text-muted-foreground mt-1">Digite a hora no formato HH:mm</p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
