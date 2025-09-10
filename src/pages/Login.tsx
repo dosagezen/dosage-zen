@@ -186,18 +186,6 @@ const Login = () => {
 
             <Separator className="my-6" />
 
-            {/* Usuários de Demonstração */}
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground text-center">
-                Usuários de demonstração:
-              </p>
-              <div className="text-xs text-muted-foreground space-y-1 bg-muted/50 p-3 rounded-md">
-                <p><strong>Paciente:</strong> maria@email.com / senha123</p>
-                <p><strong>Acompanhante:</strong> joao@email.com / senha123</p>
-                <p><strong>Cuidador:</strong> ana@clinica.com / senha123</p>
-                <p><strong>Admin:</strong> admin@sistema.com / admin123</p>
-              </div>
-            </div>
 
             {/* Link para Criar Conta */}
             <div className="text-center">
