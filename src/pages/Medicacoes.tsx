@@ -103,8 +103,8 @@ const Medicacoes = () => {
 
   // Atualizar lista local quando medicações do backend mudarem
   useEffect(() => {
-    setMedicacoesList(medicacoes);
-  }, [medicacoes]);
+    setMedicacoesList(medications.map(convertToMedicacaoCompleta));
+  }, [medications.length]);
 
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
@@ -462,7 +462,7 @@ const Medicacoes = () => {
                         medicacao={medicacao}
                         onComplete={() => markDoseCompleted(medicacao.id)}
                         onRemove={() => {}} // Função vazia por enquanto
-                        onEdit={() => handleEditMedication(medicacao)}
+                        onEdit={(med) => handleEditMedication(med)}
                         disabled={isUpdating || isDeleting}
                       />
                     ))}

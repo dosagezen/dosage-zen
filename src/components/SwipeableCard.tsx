@@ -333,11 +333,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     size="sm"
                     onClick={(e) => { 
                       e.stopPropagation(); 
+                      e.preventDefault();
+                      console.log('Botão Alterar clicado', medicacao.nome);
                       if (onEdit) {
                         onEdit(medicacao, origin);
                       }
                     }}
-                    className="h-8 text-xs"
+                    className="h-8 text-xs hover:bg-primary hover:text-primary-foreground"
                     aria-label={`Alterar medicação ${medicacao.nome}`}
                   >
                     <Edit className="w-3 h-3 mr-1" />
