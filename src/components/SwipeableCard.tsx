@@ -331,7 +331,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={(e) => { e.stopPropagation(); onEdit?.(medicacao, origin); }}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      if (onEdit) {
+                        onEdit(medicacao, origin);
+                      }
+                    }}
                     className="h-8 text-xs"
                     aria-label={`Alterar medicação ${medicacao.nome}`}
                   >
