@@ -58,6 +58,7 @@ const Medicacoes = () => {
   const { 
     medications, 
     isLoading, 
+    isSuccess,
     error, 
     createMedication, 
     updateMedication, 
@@ -112,33 +113,49 @@ const Medicacoes = () => {
 
   // Atualizar lista local quando medicações do backend mudarem com segurança
   const convertedMedications = useMemo(() => {
+    // Só processar se os dados estão realmente prontos
+    if (!isSuccess || !medications) {
+      console.log('Data not ready yet', { isSuccess, medications: !!medications })
+      return []
+    }
+    
+    // Verificar se é um array válido
+    if (!Array.isArray(medications)) {
+      console.log('Medications is not an array', { type: typeof medications, value: medications })
+      return []
+    }
+    
     console.log('Converting medications', { 
-      medicationsExists: !!medications,
-      medicationsLength: medications?.length || 0, 
-      isMobile,
+      medicationsLength: medications.length,
+      isSuccess,
       timestamp: new Date().toISOString()
     })
     
-    if (!medications || !Array.isArray(medications) || medications.length === 0) {
-      console.log('No valid medications found, returning empty array')
+    if (medications.length === 0) {
+      console.log('No medications found, returning empty array')
       return []
     }
     
     try {
-      const converted = medications.map(convertToMedicacaoCompleta)
+      const converted = medications
+        .filter(med => med && typeof med === 'object' && med.id) // Filtrar medicações válidas
+        .map(convertToMedicacaoCompleta)
+      
       console.log('Successfully converted medications', { 
-        count: converted.length,
+        originalCount: medications.length,
+        convertedCount: converted.length,
         firstMed: converted[0]?.nome || 'N/A'
       })
       return converted
     } catch (error) {
       console.error('Erro ao converter medicações:', error, {
         medicationsType: typeof medications,
+        medicationsLength: medications?.length || 0,
         medicationsValue: medications
       })
       return []
     }
-  }, [medications, isMobile])
+  }, [medications, isSuccess])
 
   useEffect(() => {
     setMedicacoesList(convertedMedications)
@@ -159,8 +176,8 @@ const Medicacoes = () => {
     }
   }, [searchParams, medicacoesList, isEditDialogOpen])
 
-  // Loading state
-  if (isLoading) {
+  // Loading state - mais específico para evitar renderização prematura
+  if (isLoading || (!isSuccess && !error)) {
     return (
       <div className="container mx-auto p-4 flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-2">

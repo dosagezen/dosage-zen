@@ -156,8 +156,9 @@ export const useMedications = (callbacks?: {
   });
 
   return {
-    medications: query.data || [],
-    isLoading: query.isLoading,
+    medications: Array.isArray(query.data) ? query.data : [],
+    isLoading: query.isLoading || query.isFetching,
+    isSuccess: query.isSuccess,
     error: query.error,
     createMedication: createMutation.mutate,
     updateMedication: updateMutation.mutate,
