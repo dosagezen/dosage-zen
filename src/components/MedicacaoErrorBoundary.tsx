@@ -25,7 +25,22 @@ class MedicacaoErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('MedicacaoErrorBoundary caught an error:', error, errorInfo)
+    const isDataError = error.message.includes('medication') || 
+                       error.message.includes('convert') || 
+                       error.message.includes('parseInt') ||
+                       error.message.includes('NaN');
+    
+    const isMobile = /Mobile|Android|iPhone|iPad/.test(navigator.userAgent);
+    
+    console.error('MedicacaoErrorBoundary caught an error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorType: error.name,
+      isDataError,
+      isMobile,
+      timestamp: new Date().toISOString()
+    })
     
     // Log additional mobile debugging info
     if (typeof window !== 'undefined') {
@@ -34,19 +49,19 @@ class MedicacaoErrorBoundary extends Component<Props, State> {
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
         devicePixelRatio: window.devicePixelRatio,
-        timestamp: new Date().toISOString(),
         url: window.location.href,
         connectionType: (navigator as any).connection?.effectiveType || 'unknown'
       })
     }
     
-    // Additional error context
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      errorBoundary: 'MedicacaoErrorBoundary'
-    })
+    // Auto-recovery for data conversion errors
+    if (isDataError && isMobile) {
+      console.log('Attempting auto-recovery for mobile data conversion error...');
+      setTimeout(() => {
+        console.log('Auto-recovery: Resetting error boundary state');
+        this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+      }, 1500);
+    }
     
     this.setState({
       error,

@@ -80,25 +80,70 @@ const Medicacoes = () => {
     }
   });
 
-  // Converter dados do Supabase para formato da interface
-  const convertToMedicacaoCompleta = (med: Medication): MedicacaoCompleta => {
-    const horarios = Array.isArray(med.horarios) ? med.horarios : [];
-    const horariosStatus: HorarioStatus[] = horarios.map(hora => ({
-      hora: hora,
-      status: 'pendente'
-    }));
-    
-    return {
-      id: parseInt(med.id),
-      nome: med.nome,
-      dosagem: med.dosagem,
-      forma: med.forma,
-      frequencia: med.frequencia,
-      horarios: horariosStatus,
-      proximaDose: horariosStatus.length > 0 ? horariosStatus[0].hora : "-",
-      estoque: med.estoque || 0,
-      status: med.ativo ? "ativa" : "inativa"
-    };
+  // Converter dados do Supabase para formato da interface com validação robusta
+  const convertToMedicacaoCompleta = (med: Medication): MedicacaoCompleta | null => {
+    try {
+      // Validação básica da estrutura do objeto
+      if (!med || typeof med !== 'object') {
+        console.error('Invalid medication object:', med);
+        return null;
+      }
+
+      // Validação e conversão segura do ID
+      let medicationId: number;
+      if (typeof med.id === 'string') {
+        const parsedId = parseInt(med.id, 10);
+        if (isNaN(parsedId) || parsedId <= 0) {
+          console.error('Invalid medication ID:', med.id, 'for medication:', med.nome);
+          return null;
+        }
+        medicationId = parsedId;
+      } else if (typeof med.id === 'number') {
+        if (isNaN(med.id) || med.id <= 0) {
+          console.error('Invalid medication ID number:', med.id, 'for medication:', med.nome);
+          return null;
+        }
+        medicationId = med.id;
+      } else {
+        console.error('Medication ID is not string or number:', typeof med.id, med.id);
+        return null;
+      }
+
+      // Validação de campos obrigatórios
+      if (!med.nome || typeof med.nome !== 'string') {
+        console.error('Invalid medication name:', med.nome, 'for ID:', med.id);
+        return null;
+      }
+
+      if (!med.dosagem || typeof med.dosagem !== 'string') {
+        console.error('Invalid medication dosage:', med.dosagem, 'for:', med.nome);
+        return null;
+      }
+
+      // Processar horários com validação
+      const horarios = Array.isArray(med.horarios) ? med.horarios : [];
+      const horariosStatus: HorarioStatus[] = horarios
+        .filter(hora => hora && typeof hora === 'string')
+        .map(hora => ({
+          hora: hora,
+          status: 'pendente' as const
+        }));
+      
+      return {
+        id: medicationId,
+        nome: med.nome.trim(),
+        dosagem: med.dosagem.trim(),
+        forma: med.forma || '',
+        frequencia: med.frequencia || '',
+        horarios: horariosStatus,
+        proximaDose: horariosStatus.length > 0 ? horariosStatus[0].hora : "-",
+        estoque: typeof med.estoque === 'number' ? med.estoque : 0,
+        status: med.ativo ? "ativa" : "inativa"
+      };
+    } catch (error) {
+      console.error('Error converting medication:', error, 'for medication:', med);
+      return null;
+    }
   };
 
   const [searchTerm, setSearchTerm] = useState("")
@@ -138,20 +183,45 @@ const Medicacoes = () => {
     
     try {
       const converted = medications
-        .filter(med => med && typeof med === 'object' && med.id) // Filtrar medicações válidas
+        .filter(med => {
+          // Filtrar medicações válidas com logs detalhados
+          if (!med || typeof med !== 'object') {
+            console.warn('Skipping invalid medication (not object):', med);
+            return false;
+          }
+          if (!med.id) {
+            console.warn('Skipping medication without ID:', med);
+            return false;
+          }
+          if (!med.nome) {
+            console.warn('Skipping medication without name:', med);
+            return false;
+          }
+          return true;
+        })
         .map(convertToMedicacaoCompleta)
+        .filter((med): med is MedicacaoCompleta => {
+          // Filtrar medicações que falharam na conversão
+          if (med === null) {
+            console.warn('Medication conversion returned null, filtering out');
+            return false;
+          }
+          return true;
+        });
       
       console.log('Successfully converted medications', { 
         originalCount: medications.length,
+        validCount: medications.filter(med => med && med.id && med.nome).length,
         convertedCount: converted.length,
-        firstMed: converted[0]?.nome || 'N/A'
+        firstMed: converted[0]?.nome || 'N/A',
+        skippedCount: medications.length - converted.length
       })
       return converted
     } catch (error) {
-      console.error('Erro ao converter medicações:', error, {
+      console.error('Critical error converting medications:', error, {
         medicationsType: typeof medications,
         medicationsLength: medications?.length || 0,
-        medicationsValue: medications
+        sampleMedication: medications?.[0] || 'N/A'
       })
       return []
     }
