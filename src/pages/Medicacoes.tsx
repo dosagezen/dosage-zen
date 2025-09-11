@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo, memo } from "react"
 import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2, Plus, Loader2, AlertCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -41,6 +41,18 @@ const Medicacoes = () => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  
+  // Debug logging for mobile issues
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('Medicacoes component mounted', {
+        isMobile,
+        userAgent: navigator.userAgent,
+        windowSize: { width: window.innerWidth, height: window.innerHeight },
+        timestamp: new Date().toISOString()
+      })
+    }
+  }, [isMobile])
   
   // Integração com dados reais do Supabase
   const { 
@@ -103,8 +115,27 @@ const Medicacoes = () => {
 
   // Atualizar lista local quando medicações do backend mudarem
   useEffect(() => {
-    setMedicacoesList(medications.map(convertToMedicacaoCompleta));
-  }, [medications.length]);
+    console.log('Medications effect triggered', { 
+      medicationsLength: medications?.length || 0, 
+      isMobile,
+      timestamp: new Date().toISOString()
+    })
+    
+    if (!medications || medications.length === 0) {
+      console.log('No medications found, setting empty list')
+      setMedicacoesList([])
+      return
+    }
+    
+    try {
+      const converted = medications.map(convertToMedicacaoCompleta)
+      console.log('Successfully converted medications', { count: converted.length })
+      setMedicacoesList(converted)
+    } catch (error) {
+      console.error('Erro ao converter medicações:', error)
+      setMedicacoesList([])
+    }
+  }, [medications, isMobile]);
 
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
@@ -299,64 +330,90 @@ const Medicacoes = () => {
     }
   }, [undoTimeout])
 
-  // Função para aplicar filtros
-  const getFilteredMedicacoes = () => {
+  // Função para aplicar filtros - otimizada com useMemo
+  const filteredMedicacoes = useMemo(() => {
+    if (!medicacoesList || medicacoesList.length === 0) return []
+    
     let filtered = medicacoesList
     
-    switch (activeFilter) {
-      case "hoje":
-        filtered = medicacoesList.filter(med => 
-          med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
+    try {
+      switch (activeFilter) {
+        case "hoje":
+          filtered = medicacoesList.filter(med => 
+            med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
+          )
+          break
+        case "ativas":
+          filtered = medicacoesList.filter(med => med.status === "ativa" && !med.removed_from_today)
+          break
+        case "todas":
+          filtered = medicacoesList.filter(med => !med.removed_from_today)
+          break
+      }
+
+      // Aplicar filtro de busca
+      if (searchTerm) {
+        filtered = filtered.filter(med => 
+          med.nome.toLowerCase().includes(searchTerm.toLowerCase())
         )
-        break
-      case "ativas":
-        filtered = medicacoesList.filter(med => med.status === "ativa" && !med.removed_from_today)
-        break
-      case "todas":
-        filtered = medicacoesList.filter(med => !med.removed_from_today)
-        break
+      }
+
+      return filtered
+    } catch (error) {
+      console.error('Erro ao filtrar medicações:', error)
+      return []
     }
-
-    // Aplicar filtro de busca
-    if (searchTerm) {
-      filtered = filtered.filter(med => 
-        med.nome.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    return filtered
-  }
-
-  const filteredMedicacoes = getFilteredMedicacoes()
+  }, [medicacoesList, activeFilter, searchTerm])
 
   // Separar medicações concluídas das pendentes
   const medicacoesPendentes = filteredMedicacoes.filter(med => !isAllDosesCompleted(med))
   const medicacoesConcluidas = filteredMedicacoes.filter(med => isAllDosesCompleted(med))
 
-  const handleEditMedication = (medication: MedicacaoCompleta) => {
-    const originalMedication = medications.find(m => m.id === medication.id.toString())
-    if (originalMedication) {
-      setEditingMedication(medication)
-      setIsEditDialogOpen(true)
-    }
-  }
-
-  const handleAddMedication = (medicationData: any) => {
-    createMedication(medicationData)
-  }
-
-  const handleUpdateMedication = (medicationData: any) => {
-    if (editingMedication) {
-      const originalMedication = medications.find(m => m.id === editingMedication.id.toString())
+  const handleEditMedication = useCallback((medication: MedicacaoCompleta) => {
+    try {
+      const originalMedication = medications.find(m => m.id === medication.id.toString())
       if (originalMedication) {
-        updateMedication({ id: originalMedication.id, ...medicationData })
+        setEditingMedication(medication)
+        setIsEditDialogOpen(true)
       }
+    } catch (error) {
+      console.error('Erro ao editar medicação:', error)
+      toast({
+        title: "Erro",
+        description: "Não foi possível abrir a edição da medicação",
+        variant: "destructive"
+      })
     }
-  }
+  }, [medications])
 
-  const handleDeleteMedication = (id: string) => {
-    deleteMedication(id)
-  }
+  const handleAddMedication = useCallback((medicationData: any) => {
+    try {
+      createMedication(medicationData)
+    } catch (error) {
+      console.error('Erro ao adicionar medicação:', error)
+    }
+  }, [createMedication])
+
+  const handleUpdateMedication = useCallback((medicationData: any) => {
+    try {
+      if (editingMedication) {
+        const originalMedication = medications.find(m => m.id === editingMedication.id.toString())
+        if (originalMedication) {
+          updateMedication({ id: originalMedication.id, ...medicationData })
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar medicação:', error)
+    }
+  }, [editingMedication, medications, updateMedication])
+
+  const handleDeleteMedication = useCallback((id: string) => {
+    try {
+      deleteMedication(id)
+    } catch (error) {
+      console.error('Erro ao deletar medicação:', error)
+    }
+  }, [deleteMedication])
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20">
@@ -571,4 +628,5 @@ const Medicacoes = () => {
   )
 }
 
-export default Medicacoes
+// Memoize the component for better performance
+export default memo(Medicacoes)

@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -64,7 +65,11 @@ const AppLayout = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/conquistas" element={<Conquistas />} />
-              <Route path="/medicacoes" element={<Medicacoes />} />
+              <Route path="/medicacoes" element={
+                <MedicacaoErrorBoundary>
+                  <Medicacoes />
+                </MedicacaoErrorBoundary>
+              } />
               <Route path="/agenda" element={<Agenda />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               
