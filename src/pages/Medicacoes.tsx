@@ -534,17 +534,29 @@ const Medicacoes = () => {
   }, [createMedication])
 
   const handleUpdateMedication = useCallback((medicationData: any) => {
+    console.log('handleUpdateMedication called with:', medicationData)
+    console.log('editingMedication:', editingMedication)
+    
     try {
       if (editingMedication) {
-        const originalMedication = medications.find(m => m.id === editingMedication.id.toString())
-        if (originalMedication) {
-          updateMedication({ id: originalMedication.id, ...medicationData })
-        }
+        // Use the ID from editingMedication directly, ensuring it's a string
+        const medicationId = typeof editingMedication.id === 'string' 
+          ? editingMedication.id 
+          : editingMedication.id.toString()
+        
+        console.log('Updating medication with ID:', medicationId)
+        
+        updateMedication({
+          id: medicationId,
+          ...medicationData
+        })
+      } else {
+        console.error('editingMedication is null')
       }
     } catch (error) {
       console.error('Erro ao atualizar medicação:', error)
     }
-  }, [editingMedication, medications, updateMedication])
+  }, [editingMedication, updateMedication])
 
   const handleDeleteMedication = useCallback((id: string) => {
     try {

@@ -64,19 +64,21 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
   // Atualizar dados quando medication muda
   useEffect(() => {
     if (medication && isEditing) {
+      console.log('Setting form data for editing medication:', medication)
       setFormData({
-        status: medication.status === "ativa" || medication.status === "active" || !medication.status ? true : false,
+        status: medication.status === "ativa" || medication.status === "active" || medication.ativo === true || !medication.status ? true : false,
         nome: medication.nome || "",
         dosagem: medication.dosagem || "",
         forma: medication.forma || "",
         frequencia: medication.frequencia || "",
-        horario: medication.horarios?.[0]?.hora || "",
+        horario: medication.horarios?.[0]?.hora || medication.horarios?.[0] || "",
         estoque: medication.estoque?.toString() || "",
-        dataInicio: undefined,
-        dataFim: undefined
+        dataInicio: medication.data_inicio ? new Date(medication.data_inicio) : undefined,
+        dataFim: medication.data_fim ? new Date(medication.data_fim) : undefined
       })
-    } else {
+    } else if (!isEditing) {
       // Resetar formulário para nova medicação
+      console.log('Resetting form data for new medication')
       setFormData({
         status: true, // Nova medicação inicia como ativa
         nome: "",
@@ -88,6 +90,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         dataInicio: undefined,
         dataFim: undefined
       })
+      setHorarioError("")
     }
   }, [medication, isEditing])
 
@@ -133,12 +136,12 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
 
   const handleDelete = () => {
     if (medication && onDelete) {
-      onDelete(medication.id.toString())
-      toast({
-        title: "Medicação excluída",
-        description: "A medicação foi removida com sucesso.",
-        variant: "destructive"
-      })
+      const medicationId = typeof medication.id === 'string' 
+        ? medication.id 
+        : medication.id.toString()
+      
+      console.log('Deleting medication with ID:', medicationId)
+      onDelete(medicationId)
       setDialogOpen(false)
     }
   }

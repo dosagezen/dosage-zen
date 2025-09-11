@@ -83,13 +83,26 @@ serve(async (req) => {
 
       case 'create': {
         // Create new medication
-        console.log('Creating medication:', { nome, dosagem, forma, frequencia });
+        console.log('Creating medication:', { nome, dosagem, forma, frequencia, ativo });
 
         if (!nome || !dosagem || !forma || !frequencia) {
           return new Response(JSON.stringify({ error: 'Missing required fields' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+        }
+
+        // Validate horarios format if provided
+        if (horarios && Array.isArray(horarios)) {
+          for (const horario of horarios) {
+            if (typeof horario === 'string' && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horario)) {
+              console.error('Invalid horario format:', horario);
+              return new Response(JSON.stringify({ error: 'Invalid horario format. Use HH:mm' }), {
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              });
+            }
+          }
         }
 
         const { data: medication, error } = await supabaseClient
@@ -105,7 +118,7 @@ serve(async (req) => {
             data_inicio,
             data_fim,
             observacoes,
-            ativo: true
+            ativo: ativo !== undefined ? ativo : true
           })
           .select()
           .single();
@@ -126,13 +139,26 @@ serve(async (req) => {
 
       case 'update': {
         // Update existing medication
-        console.log('Updating medication:', id);
+        console.log('Updating medication:', id, { ativo });
 
         if (!id) {
           return new Response(JSON.stringify({ error: 'Medication ID required' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+        }
+
+        // Validate horarios format if provided
+        if (horarios && Array.isArray(horarios)) {
+          for (const horario of horarios) {
+            if (typeof horario === 'string' && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horario)) {
+              console.error('Invalid horario format:', horario);
+              return new Response(JSON.stringify({ error: 'Invalid horario format. Use HH:mm' }), {
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              });
+            }
+          }
         }
 
         const { data: medication, error } = await supabaseClient
