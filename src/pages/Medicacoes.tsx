@@ -510,18 +510,15 @@ const Medicacoes = () => {
 
   const handleEditMedication = useCallback((medication: MedicacaoCompleta) => {
     try {
-      const originalMedication = medications.find(m => m.id === medication.id.toString())
-      if (originalMedication) {
-        setEditingMedication(medication)
-        setIsEditDialogOpen(true)
-        // Atualizar rota para refletir o diálogo de edição
-        setSearchParams(prev => {
-          const params = new URLSearchParams(prev)
-          params.set('edit', medication.id.toString())
-          params.set('origin', 'medicacoes')
-          return params
-        })
-      }
+      setEditingMedication(medication)
+      setIsEditDialogOpen(true)
+      // Atualizar rota para refletir o diálogo de edição
+      setSearchParams(prev => {
+        const params = new URLSearchParams(prev)
+        params.set('edit', medication.id.toString())
+        params.set('origin', 'medicacoes')
+        return params
+      })
     } catch (error) {
       console.error('Erro ao editar medicação:', error)
       toast({

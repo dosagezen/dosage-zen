@@ -59,6 +59,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   })
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
+  const tapTriggeredRef = useRef(false)
   const threshold = 0.3 // 30% da largura do card
   const TAP_MAX_DISTANCE = 24
   const TAP_MAX_DURATION = 400
@@ -66,6 +67,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
     
+    tapTriggeredRef.current = false
     const touch = e.touches[0]
     setDragState({
       isDragging: true,
@@ -164,7 +166,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           onRemove(medicacao.id)
         }
       }
-    } else if (onEdit) {
+    } else if (onEdit && !tapTriggeredRef.current) {
       // Tap detection: check distance and time, not touchMoved
       const deltaX = dragState.currentX - dragState.startX
       const deltaY = dragState.currentY - dragState.startY
@@ -172,6 +174,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       const duration = Date.now() - dragState.startedAt
       
       if (distance <= TAP_MAX_DISTANCE && duration <= TAP_MAX_DURATION && !dragState.isHorizontalSwipe) {
+        tapTriggeredRef.current = true
         // Add small delay to ensure this is a deliberate tap
         setTimeout(() => {
           if (!dragState.isHorizontalSwipe) {
@@ -196,6 +199,27 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       startedAt: 0,
     })
     setShowActionHint(null)
+  }
+
+  const handleTouchCancel = (e: React.TouchEvent) => {
+    if (!isMobile || disabled) return
+    
+    // Reset state on touch cancel
+    setDragState({
+      isDragging: false,
+      startX: 0,
+      startY: 0,
+      currentX: 0,
+      currentY: 0,
+      deltaX: 0,
+      deltaY: 0,
+      isHorizontalSwipe: false,
+      touchMoved: false,
+      touchEnded: false,
+      startedAt: 0,
+    })
+    setShowActionHint(null)
+    tapTriggeredRef.current = false
   }
 
   const getTransformStyle = () => {
@@ -232,7 +256,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = () => {
-    if (!isMobile && onEdit) {
+    // Universal fallback for taps - works on both mobile and desktop
+    if (onEdit && !tapTriggeredRef.current) {
       onEdit(medicacao, origin)
     }
   }
@@ -242,7 +267,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       {getBackgroundOverlay()}
       <Card 
         ref={cardRef}
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden ${
+        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden z-10 ${
           dragState.isDragging && dragState.isHorizontalSwipe ? 'pointer-events-none' : ''
         }`}
         style={{
@@ -252,6 +277,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onClick={handleCardClick}
       >
         <CardContent className="p-4 sm:p-6 w-full">
