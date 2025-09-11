@@ -60,6 +60,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
   const threshold = 0.3 // 30% da largura do card
+  const TAP_MAX_DISTANCE = 24
+  const TAP_MAX_DURATION = 400
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
@@ -169,7 +171,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
       const duration = Date.now() - dragState.startedAt
       
-      if (distance <= 16 && duration <= 350 && !dragState.isHorizontalSwipe) {
+      if (distance <= TAP_MAX_DISTANCE && duration <= TAP_MAX_DURATION && !dragState.isHorizontalSwipe) {
         // Add small delay to ensure this is a deliberate tap
         setTimeout(() => {
           if (!dragState.isHorizontalSwipe) {

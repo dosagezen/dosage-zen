@@ -514,6 +514,13 @@ const Medicacoes = () => {
       if (originalMedication) {
         setEditingMedication(medication)
         setIsEditDialogOpen(true)
+        // Atualizar rota para refletir o diálogo de edição
+        setSearchParams(prev => {
+          const params = new URLSearchParams(prev)
+          params.set('edit', medication.id.toString())
+          params.set('origin', 'medicacoes')
+          return params
+        })
       }
     } catch (error) {
       console.error('Erro ao editar medicação:', error)
@@ -756,7 +763,15 @@ const Medicacoes = () => {
           setIsEditDialogOpen(open);
           if (!open) {
             setEditingMedication(null);
-            // Limpar parâmetros de URL se vieram de outra página
+            setModalOrigin(null);
+            // Limpar parâmetros de URL ao fechar o diálogo
+            setSearchParams(prev => {
+              const params = new URLSearchParams(prev)
+              params.delete('edit')
+              params.delete('origin')
+              return params
+            })
+            // Se veio de outra página, garantir retorno à rota base
             if (modalOrigin && modalOrigin !== 'medicacoes') {
               navigate('/app/medicacoes', { replace: true });
             }
