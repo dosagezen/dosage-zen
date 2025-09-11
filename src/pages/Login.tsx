@@ -52,14 +52,21 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    console.log('Login: Starting login process with email:', formData.email);
+    
+    if (!validateForm()) {
+      console.log('Login: Form validation failed');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
+      console.log('Login: Calling signIn function');
       const { error } = await signIn(formData.email, formData.senha);
 
       if (error) {
+        console.error('Login: signIn returned error:', error);
         toast({
           title: "Erro no login",
           description: error.message,
@@ -68,19 +75,23 @@ const Login = () => {
         return;
       }
 
+      console.log('Login: signIn successful, showing success toast');
       toast({
         title: "Login realizado",
         description: "Bem-vindo(a) de volta!",
       });
       
+      console.log('Login: Navigating to /app/');
       navigate("/app/");
     } catch (error) {
+      console.error('Login: Unexpected error during signIn:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao fazer login. Tente novamente.",
         variant: "destructive"
       });
     } finally {
+      console.log('Login: Setting isLoading to false');
       setIsLoading(false);
     }
   };

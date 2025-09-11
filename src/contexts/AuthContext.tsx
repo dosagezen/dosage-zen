@@ -62,6 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('AuthContext: Fetching profile for userId:', userId);
+      
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -70,9 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
+        setLoading(false);
         return;
       }
 
+      console.log('AuthContext: Profile fetched successfully:', profileData);
       setProfile(profileData);
 
       // Fetch user roles
@@ -84,22 +88,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (rolesError) {
         console.error('Error fetching roles:', rolesError);
-        return;
+        setUserRoles([]);
+      } else {
+        console.log('AuthContext: Roles fetched:', rolesData);
+        setUserRoles(rolesData || []);
       }
-
-      setUserRoles(rolesData || []);
 
       // Set default context (own profile if is paciente, or first available context)
       const pacienteRole = rolesData?.find(role => role.role === 'paciente');
       if (pacienteRole) {
+        console.log('AuthContext: Setting context to own profile (paciente)');
         setCurrentContext(profileData.id);
       } else if (rolesData && rolesData.length > 0) {
+        console.log('AuthContext: Setting context to first available role');
         setCurrentContext(rolesData[0].context_patient_id || profileData.id);
       } else {
+        console.log('AuthContext: Setting context to own profile (default)');
         setCurrentContext(profileData.id);
       }
+
+      // Always set loading to false after profile fetch completes
+      console.log('AuthContext: Profile fetch complete, setting loading false');
+      setLoading(false);
     } catch (error) {
       console.error('Error in fetchProfile:', error);
+      setLoading(false);
     }
   };
 
@@ -110,34 +123,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state listener
+    console.log('AuthContext: Setting up auth state listener');
+    
+    // Set up auth state listener - NEVER use async here to prevent deadlock
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('AuthContext: Auth state changed', { event, hasUser: !!session?.user });
+        
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Use setTimeout to defer async operations and prevent deadlock
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          setTimeout(() => {
+            console.log('AuthContext: Fetching profile for user', session.user.id);
+            fetchProfile(session.user.id);
+          }, 0);
         } else {
+          console.log('AuthContext: No user, clearing profile data');
           setProfile(null);
           setUserRoles([]);
           setCurrentContext(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    console.log('AuthContext: Checking for existing session');
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthContext: Initial session check', { hasUser: !!session?.user });
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        console.log('AuthContext: Found existing session, fetching profile');
+        fetchProfile(session.user.id);
+      } else {
+        console.log('AuthContext: No existing session, setting loading false');
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
