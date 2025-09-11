@@ -572,12 +572,12 @@ const Medicacoes = () => {
             aria-label="Adicionar nova medicação"
           >
             {isCreating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : isMobile ? (
-              <Plus className="h-4 w-4" />
+              <Plus className="w-4 h-4" />
             ) : (
               <>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2" />
                 Adicionar
               </>
             )}
