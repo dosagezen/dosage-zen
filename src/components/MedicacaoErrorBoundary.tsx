@@ -34,9 +34,19 @@ class MedicacaoErrorBoundary extends Component<Props, State> {
         windowWidth: window.innerWidth,
         windowHeight: window.innerHeight,
         devicePixelRatio: window.devicePixelRatio,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        url: window.location.href,
+        connectionType: (navigator as any).connection?.effectiveType || 'unknown'
       })
     }
+    
+    // Additional error context
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorBoundary: 'MedicacaoErrorBoundary'
+    })
     
     this.setState({
       error,

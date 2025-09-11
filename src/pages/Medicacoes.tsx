@@ -100,9 +100,6 @@ const Medicacoes = () => {
     };
   };
 
-  // Converter medicações do backend
-  const medicacoes: MedicacaoCompleta[] = medications.map(convertToMedicacaoCompleta);
-
   const [searchTerm, setSearchTerm] = useState("")
   const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -113,29 +110,39 @@ const Medicacoes = () => {
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
   const [modalOrigin, setModalOrigin] = useState<string | null>(null)
 
-  // Atualizar lista local quando medicações do backend mudarem
-  useEffect(() => {
-    console.log('Medications effect triggered', { 
+  // Atualizar lista local quando medicações do backend mudarem com segurança
+  const convertedMedications = useMemo(() => {
+    console.log('Converting medications', { 
+      medicationsExists: !!medications,
       medicationsLength: medications?.length || 0, 
       isMobile,
       timestamp: new Date().toISOString()
     })
     
-    if (!medications || medications.length === 0) {
-      console.log('No medications found, setting empty list')
-      setMedicacoesList([])
-      return
+    if (!medications || !Array.isArray(medications) || medications.length === 0) {
+      console.log('No valid medications found, returning empty array')
+      return []
     }
     
     try {
       const converted = medications.map(convertToMedicacaoCompleta)
-      console.log('Successfully converted medications', { count: converted.length })
-      setMedicacoesList(converted)
+      console.log('Successfully converted medications', { 
+        count: converted.length,
+        firstMed: converted[0]?.nome || 'N/A'
+      })
+      return converted
     } catch (error) {
-      console.error('Erro ao converter medicações:', error)
-      setMedicacoesList([])
+      console.error('Erro ao converter medicações:', error, {
+        medicationsType: typeof medications,
+        medicationsValue: medications
+      })
+      return []
     }
-  }, [medications, isMobile]);
+  }, [medications, isMobile])
+
+  useEffect(() => {
+    setMedicacoesList(convertedMedications)
+  }, [convertedMedications])
 
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
@@ -330,9 +337,19 @@ const Medicacoes = () => {
     }
   }, [undoTimeout])
 
-  // Função para aplicar filtros - otimizada com useMemo
+  // Função para aplicar filtros - otimizada com useMemo e segurança
   const filteredMedicacoes = useMemo(() => {
-    if (!medicacoesList || medicacoesList.length === 0) return []
+    console.log('Filtering medications', { 
+      totalMeds: medicacoesList?.length || 0, 
+      activeFilter, 
+      searchTerm,
+      isMobile 
+    })
+    
+    if (!medicacoesList || !Array.isArray(medicacoesList) || medicacoesList.length === 0) {
+      console.log('No valid medicacoesList for filtering, returning empty array')
+      return []
+    }
     
     let filtered = medicacoesList
     
@@ -340,34 +357,69 @@ const Medicacoes = () => {
       switch (activeFilter) {
         case "hoje":
           filtered = medicacoesList.filter(med => 
-            med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
+            med && med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
           )
           break
         case "ativas":
-          filtered = medicacoesList.filter(med => med.status === "ativa" && !med.removed_from_today)
+          filtered = medicacoesList.filter(med => 
+            med && med.status === "ativa" && !med.removed_from_today
+          )
+          break
+        case "concluidas":
+          filtered = medicacoesList.filter(med => 
+            med && isAllDosesCompleted(med)
+          )
           break
         case "todas":
-          filtered = medicacoesList.filter(med => !med.removed_from_today)
+          filtered = medicacoesList.filter(med => med && !med.removed_from_today)
           break
+        default:
+          filtered = medicacoesList.filter(med => med && !med.removed_from_today)
       }
 
-      // Aplicar filtro de busca
-      if (searchTerm) {
+      // Aplicar filtro de busca com segurança
+      if (searchTerm && searchTerm.trim()) {
         filtered = filtered.filter(med => 
-          med.nome.toLowerCase().includes(searchTerm.toLowerCase())
+          med && med.nome && med.nome.toLowerCase().includes(searchTerm.toLowerCase())
         )
       }
 
-      return filtered
+      console.log('Filtered medications result', { 
+        originalCount: medicacoesList.length,
+        filteredCount: filtered.length,
+        filter: activeFilter
+      })
+
+      return filtered.sort((a, b) => {
+        // Medicações pendentes primeiro
+        const aCompleted = isAllDosesCompleted(a)
+        const bCompleted = isAllDosesCompleted(b)
+        
+        if (aCompleted !== bCompleted) {
+          return aCompleted ? 1 : -1
+        }
+        
+        // Então por ordem alfabética
+        return a.nome.localeCompare(b.nome)
+      })
     } catch (error) {
-      console.error('Erro ao filtrar medicações:', error)
+      console.error('Erro ao filtrar medicações:', error, {
+        medicacoesList: medicacoesList?.length || 0,
+        activeFilter,
+        searchTerm
+      })
       return []
     }
-  }, [medicacoesList, activeFilter, searchTerm])
+  }, [medicacoesList, activeFilter, searchTerm, isMobile])
 
-  // Separar medicações concluídas das pendentes
-  const medicacoesPendentes = filteredMedicacoes.filter(med => !isAllDosesCompleted(med))
-  const medicacoesConcluidas = filteredMedicacoes.filter(med => isAllDosesCompleted(med))
+  // Separar medicações concluídas das pendentes com segurança
+  const medicacoesPendentes = useMemo(() => {
+    return filteredMedicacoes.filter(med => med && !isAllDosesCompleted(med))
+  }, [filteredMedicacoes])
+  
+  const medicacoesConcluidas = useMemo(() => {
+    return filteredMedicacoes.filter(med => med && isAllDosesCompleted(med))
+  }, [filteredMedicacoes])
 
   const handleEditMedication = useCallback((medication: MedicacaoCompleta) => {
     try {
