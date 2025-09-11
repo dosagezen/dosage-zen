@@ -101,6 +101,7 @@ const App = () => (
           <Route path="/admin/signup" element={<AdminSignup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/app/*" element={<AppLayout />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
