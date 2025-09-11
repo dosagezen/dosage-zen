@@ -501,9 +501,9 @@ const Medicacoes = () => {
             <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <div className="flex gap-2 flex-nowrap">
               {[
-                { key: "hoje", label: "Hoje", count: medicacoesList.filter(m => m.status === "ativa" && isToday(m.proximaDose) && !m.removed_from_today).length },
-                { key: "ativas", label: "Ativas", count: medicacoesList.filter(m => m.status === "ativa" && !m.removed_from_today).length },
-                { key: "todas", label: "Todas", count: medicacoesList.filter(m => !m.removed_from_today).length }
+                { key: "hoje", label: "Hoje", count: medicacoesList?.filter(m => m && m.status === "ativa" && isToday(m.proximaDose) && !m.removed_from_today).length || 0 },
+                { key: "ativas", label: "Ativas", count: medicacoesList?.filter(m => m && m.status === "ativa" && !m.removed_from_today).length || 0 },
+                { key: "todas", label: "Todas", count: medicacoesList?.filter(m => m && !m.removed_from_today).length || 0 }
               ].map((filter) => (
                 <button
                   key={filter.key}
@@ -548,15 +548,15 @@ const Medicacoes = () => {
               <CardContent className="p-8 text-center">
                 <Pill className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium mb-2">
-                  {medications.length === 0 ? "Nenhuma medicação cadastrada" : "Nenhuma medicação encontrada"}
+                  {(medications?.length || 0) === 0 ? "Nenhuma medicação cadastrada" : "Nenhuma medicação encontrada"}
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  {medications.length === 0 
+                  {(medications?.length || 0) === 0 
                     ? "Comece adicionando sua primeira medicação" 
                     : "Tente ajustar os filtros ou termo de busca"
                   }
                 </p>
-                {medications.length === 0 && (
+                {(medications?.length || 0) === 0 && (
                   <Button onClick={() => setIsEditDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Adicionar Medicação
