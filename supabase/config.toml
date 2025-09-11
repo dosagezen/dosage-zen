@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.resend-admin-invite]
 verify_jwt = false
+
+[functions.manage-medications]
+verify_jwt = true
+
+[functions.manage-appointments]
+verify_jwt = true

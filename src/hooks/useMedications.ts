@@ -60,6 +60,9 @@ export const useMedications = (callbacks?: {
   const query = useQuery({
     queryKey: ['medications'],
     queryFn: fetchMedications,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    staleTime: 30_000,
   });
 
   const createMutation = useMutation({

@@ -20,7 +20,19 @@ class MedicacaoErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    // Update state so the next render will show the fallback UI
+    // Only catch truly critical errors
+    const isCriticalError = error.message.includes('Cannot read') || 
+                           error.message.includes('undefined') ||
+                           error.name === 'ChunkLoadError' ||
+                           error.stack?.includes('convertToMedicacaoCompleta') ||
+                           error.message.includes('NetworkError') ||
+                           error.message.includes('Failed to fetch');
+    
+    if (!isCriticalError) {
+      console.warn('Non-critical error, allowing normal error handling:', error.message);
+      return { hasError: false };
+    }
+    
     return { hasError: true, error }
   }
 
