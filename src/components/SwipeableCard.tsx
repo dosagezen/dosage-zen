@@ -55,6 +55,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     isHorizontalSwipe: false,
     touchMoved: false,
     touchEnded: false,
+    startedAt: 0,
   })
   const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -75,6 +76,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       isHorizontalSwipe: false,
       touchMoved: false,
       touchEnded: false,
+      startedAt: Date.now(),
     })
   }
 
@@ -160,10 +162,14 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           onRemove(medicacao.id)
         }
       }
-    } else if (!dragState.touchMoved && onEdit) {
-      // Só executar tap se não houve movimento significativo
-      const totalMovement = Math.abs(dragState.deltaX) + Math.abs(dragState.deltaY)
-      if (totalMovement < 30) {
+    } else if (onEdit) {
+      // Tap detection: check distance and time, not touchMoved
+      const deltaX = dragState.currentX - dragState.startX
+      const deltaY = dragState.currentY - dragState.startY
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      const duration = Date.now() - dragState.startedAt
+      
+      if (distance <= 16 && duration <= 350 && !dragState.isHorizontalSwipe) {
         // Add small delay to ensure this is a deliberate tap
         setTimeout(() => {
           if (!dragState.isHorizontalSwipe) {
@@ -185,6 +191,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       isHorizontalSwipe: false,
       touchMoved: false,
       touchEnded: false,
+      startedAt: 0,
     })
     setShowActionHint(null)
   }

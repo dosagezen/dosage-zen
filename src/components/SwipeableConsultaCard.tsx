@@ -38,6 +38,7 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
   const [touchMoved, setTouchMoved] = useState(false)
   const [touchEnded, setTouchEnded] = useState(false)
   const [isHorizontalSwipe, setIsHorizontalSwipe] = useState(false)
+  const [startedAt, setStartedAt] = useState(0)
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!isMobile) return
@@ -49,6 +50,7 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     setTouchMoved(false)
     setTouchEnded(false)
     setIsHorizontalSwipe(false)
+    setStartedAt(Date.now())
   }, [isMobile])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -97,13 +99,14 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
           onRemove(consulta.id)
         }
       }
-    } else if (!touchMoved && onEdit) {
-      // Only trigger edit if there was minimal movement (tap gesture)
+    } else if (onEdit) {
+      // Tap detection: check distance and time, not touchMoved
       const deltaX = dragCurrent.x - dragStart.x
       const deltaY = dragCurrent.y - dragStart.y
-      const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      const duration = Date.now() - startedAt
       
-      if (totalMovement < 30) {
+      if (distance <= 16 && duration <= 350 && !isHorizontalSwipe) {
         // Add small delay to ensure this is a deliberate tap
         setTimeout(() => {
           if (!isHorizontalSwipe) {
@@ -118,7 +121,7 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
     setDragCurrent({ x: 0, y: 0 })
     setDragDirection(null)
     setIsHorizontalSwipe(false)
-  }, [isDragging, dragCurrent, dragStart, consulta.id, onComplete, onRemove, isMobile, touchEnded, touchMoved, onEdit, isHorizontalSwipe])
+  }, [isDragging, dragCurrent, dragStart, consulta.id, onComplete, onRemove, isMobile, touchEnded, touchMoved, onEdit, isHorizontalSwipe, startedAt])
 
   const getTransformStyle = () => {
     if (!isDragging || !isHorizontalSwipe) return {}
