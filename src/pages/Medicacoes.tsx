@@ -388,25 +388,34 @@ const Medicacoes = () => {
       <div className="flex-shrink-0 p-4 bg-background/50">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Abas de filtro */}
-          <div className="flex gap-2">
-            {[
-              { key: "hoje", label: "Para Hoje", count: medicacoesList.filter(m => m.status === "ativa" && isToday(m.proximaDose) && !m.removed_from_today).length },
-              { key: "ativas", label: "Ativas", count: medicacoesList.filter(m => m.status === "ativa" && !m.removed_from_today).length },
-              { key: "todas", label: "Todas", count: medicacoesList.filter(m => !m.removed_from_today).length }
-            ].map((filter) => (
-              <Button
-                key={filter.key}
-                variant={activeFilter === filter.key ? "default" : "outline"}
-                onClick={() => setActiveFilter(filter.key)}
-                className="gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                {filter.label}
-                <Badge variant="secondary" className="ml-1">
-                  {filter.count}
-                </Badge>
-              </Button>
-            ))}
+          <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex gap-2 flex-nowrap">
+              {[
+                { key: "hoje", label: "Hoje", count: medicacoesList.filter(m => m.status === "ativa" && isToday(m.proximaDose) && !m.removed_from_today).length },
+                { key: "ativas", label: "Ativas", count: medicacoesList.filter(m => m.status === "ativa" && !m.removed_from_today).length },
+                { key: "todas", label: "Todas", count: medicacoesList.filter(m => !m.removed_from_today).length }
+              ].map((filter) => (
+                <button
+                  key={filter.key}
+                  onClick={() => setActiveFilter(filter.key)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                    activeFilter === filter.key
+                      ? "bg-[#344E41] text-white"
+                      : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+                  }`}
+                >
+                  {filter.label}
+                  <span className={`px-1.5 py-0.5 rounded-full text-xs ${
+                    activeFilter === filter.key
+                      ? "bg-white/20 text-white"
+                      : "bg-[#344E41]/20 text-[#344E41]"
+                  }`}>
+                    {filter.count}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Barra de busca */}
