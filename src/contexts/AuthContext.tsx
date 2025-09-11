@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -60,8 +60,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentContext, setCurrentContext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const profileFetchUserIdRef = useRef<string | null>(null);
+  const isFetchingProfileRef = useRef(false);
+
   const fetchProfile = async (userId: string) => {
     try {
+      if (isFetchingProfileRef.current && profileFetchUserIdRef.current === userId) {
+        console.log('AuthContext: Skip duplicate profile fetch for userId:', userId);
+        return;
+      }
+      isFetchingProfileRef.current = true;
+      profileFetchUserIdRef.current = userId;
       console.log('AuthContext: Fetching profile for userId:', userId);
       
       const { data: profileData, error: profileError } = await supabase
@@ -113,6 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       setLoading(false);
+    } finally {
+      isFetchingProfileRef.current = false;
     }
   };
 
@@ -158,8 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        console.log('AuthContext: Found existing session, fetching profile');
-        fetchProfile(session.user.id);
+        console.log('AuthContext: Found existing session, will rely on onAuthStateChange to fetch profile');
       } else {
         console.log('AuthContext: No existing session, setting loading false');
         setLoading(false);
@@ -225,6 +235,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     setUserRoles([]);
     setCurrentContext(null);
+    profileFetchUserIdRef.current = null;
+    isFetchingProfileRef.current = false;
   };
 
   const switchContext = (contextPatientId: string) => {

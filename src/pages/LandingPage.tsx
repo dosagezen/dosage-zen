@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,9 +6,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, Calendar, Bell, Target, CheckCircle, ChevronDown, Heart, Shield, Users, Clock, Star, ArrowRight, Sparkles, Zap, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/hero-health-bg.jpg";
+import { useAuth } from "@/contexts/AuthContext";
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/app');
+    }
+  }, [user, loading, navigate]);
+
   const handleSignup = () => {
     navigate('/signup');
   };
