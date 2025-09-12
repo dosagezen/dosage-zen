@@ -6,7 +6,7 @@ import { Heart, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AtividadeCompleta {
-  id: number;
+  id: string;
   tipo: string;
   local: string;
   hora: string;
@@ -21,8 +21,8 @@ interface AtividadeCompleta {
 
 interface SwipeableAtividadeCardProps {
   atividade: AtividadeCompleta;
-  onComplete: (itemId: number) => void;
-  onRemove: (itemId: number) => void;
+  onComplete: (itemId: string) => void;
+  onRemove: (itemId: string) => void;
   onEdit?: (atividade: AtividadeCompleta) => void;
 }
 

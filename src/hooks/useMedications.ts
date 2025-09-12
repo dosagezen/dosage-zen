@@ -90,7 +90,7 @@ export const useMedications = (callbacks?: {
       console.error('Error creating medication:', error);
       toast({
         title: 'Erro',
-        description: 'Falha ao criar medicação.',
+        description: `Falha ao criar medicação: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
     },
@@ -121,7 +121,7 @@ export const useMedications = (callbacks?: {
       console.error('Error updating medication:', error);
       toast({
         title: 'Erro',
-        description: 'Falha ao atualizar medicação.',
+        description: `Falha ao atualizar medicação: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
     },
@@ -152,7 +152,7 @@ export const useMedications = (callbacks?: {
       console.error('Error deleting medication:', error);
       toast({
         title: 'Erro',
-        description: 'Falha ao remover medicação.',
+        description: `Falha ao remover medicação: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
     },

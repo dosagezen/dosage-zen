@@ -6,7 +6,7 @@ import { Stethoscope, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface ExameCompleto {
-  id: number;
+  id: string;
   tipo: string;
   local: string;
   hora: string;
@@ -18,8 +18,8 @@ interface ExameCompleto {
 
 interface SwipeableExameCardProps {
   exame: ExameCompleto;
-  onComplete: (itemId: number) => void;
-  onRemove: (itemId: number) => void;
+  onComplete: (itemId: string) => void;
+  onRemove: (itemId: string) => void;
   onEdit?: (exame: ExameCompleto) => void;
 }
 

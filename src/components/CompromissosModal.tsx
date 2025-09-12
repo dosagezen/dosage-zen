@@ -21,7 +21,7 @@ interface HorarioStatus {
 }
 
 interface MedicacaoCompleta {
-  id: number;
+  id: string;
   nome: string;
   dosagem: string;
   forma: string;
@@ -35,7 +35,7 @@ interface MedicacaoCompleta {
 }
 
 interface ConsultaCompleta {
-  id: number;
+  id: string;
   especialidade: string;
   profissional: string;
   local: string;
@@ -48,7 +48,7 @@ interface ConsultaCompleta {
 }
 
 interface ExameCompleto {
-  id: number;
+  id: string;
   tipo: string;
   local: string;
   hora: string;
@@ -62,7 +62,7 @@ interface ExameCompleto {
 }
 
 interface AtividadeCompleta {
-  id: number;
+  id: string;
   tipo: string;
   local: string;
   hora: string;
@@ -78,7 +78,7 @@ interface AtividadeCompleta {
 }
 
 interface UndoAction {
-  itemId: number;
+  itemId: string;
   itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade';
   action: 'complete' | 'remove';
   timestamp: number;
@@ -98,7 +98,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Converter dados reais para formato da interface
   const convertMedicationsToModal = (): MedicacaoCompleta[] => {
     return medications.filter(med => med.ativo).slice(0, 5).map((med, index) => ({
-      id: parseInt(med.id),
+      id: med.id, // Manter como string (UUID)
       nome: med.nome,
       dosagem: med.dosagem,
       forma: med.forma,
@@ -124,7 +124,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       if (apt.tipo === 'consulta') {
         return {
-          id: parseInt(apt.id),
+          id: apt.id, // Manter como string (UUID)
           especialidade: apt.especialidade || 'Consulta Médica',
           profissional: apt.medico_profissional || 'Médico',
           local: apt.local_endereco || 'Clínica',
@@ -133,7 +133,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         } as ConsultaCompleta;
       } else if (apt.tipo === 'exame') {
         return {
-          id: parseInt(apt.id),
+          id: apt.id, // Manter como string (UUID)
           tipo: apt.titulo || 'Exame',
           local: apt.local_endereco || 'Laboratório',
           hora: time,
@@ -141,7 +141,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         } as ExameCompleto;
       } else {
         return {
-          id: parseInt(apt.id),
+          id: apt.id, // Manter como string (UUID)
           tipo: apt.titulo || 'Atividade',
           local: apt.local_endereco || 'Local',
           hora: time,
@@ -163,7 +163,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Dados de fallback caso não haja dados reais
   const fallbackMedicacoes: MedicacaoCompleta[] = [
     {
-      id: 1,
+      id: "fallback-1",
       nome: "Atorvastatina",
       dosagem: "10 mg",
       forma: "Comprimido",
@@ -177,7 +177,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
   const fallbackConsultas: ConsultaCompleta[] = [
     {
-      id: 3,
+      id: "fallback-3",
       especialidade: "Cardiologia",
       profissional: "Dr. João Silva",
       local: "Clínica Boa Saúde",
@@ -188,7 +188,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
   const fallbackExames: ExameCompleto[] = [
     {
-      id: 5,
+      id: "fallback-5",
       tipo: "Hemograma",
       local: "Lab Central",
       hora: "07:00",
@@ -198,7 +198,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
   const fallbackAtividades: AtividadeCompleta[] = [
     {
-      id: 7,
+      id: "fallback-7",
       tipo: "Fisioterapia",
       local: "Clínica Movimento",
       hora: "07:30",
@@ -262,7 +262,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [])
 
   // Função genérica para marcar item como concluído
-  const handleComplete = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
+  const handleComplete = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
@@ -340,7 +340,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!consulta) return
 
       // Atualizar no backend - status para realizado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'consulta')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'consulta')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -396,7 +396,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!exame) return
 
       // Atualizar no backend - status para realizado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'exame')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'exame')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -452,7 +452,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!atividade) return
 
       // Atualizar no backend - status para realizado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'atividade')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'atividade')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -517,13 +517,13 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [medicacoesList, consultasList, examesList, atividadesList, calculateNextDose, undoTimeout, medications, appointments, updateMedication, updateAppointment])
 
   // Função genérica para remover da lista
-  const handleRemove = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
+  const handleRemove = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
 
       // Atualizar no backend - medicação não é excluída, apenas marcada como removida do dia
-      const medicationFromBackend = medications.find(med => med.id === itemId.toString())
+      const medicationFromBackend = medications.find(med => med.id === itemId)
       if (medicationFromBackend) {
         updateMedication({
           id: medicationFromBackend.id,
@@ -575,7 +575,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!consulta) return
 
       // Atualizar no backend - status para cancelado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'consulta')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'consulta')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -628,7 +628,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!exame) return
 
       // Atualizar no backend - status para cancelado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'exame')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'exame')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -681,7 +681,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       if (!atividade) return
 
       // Atualizar no backend - status para cancelado
-      const appointmentFromBackend = appointments.find(apt => apt.id === itemId.toString() && apt.tipo === 'atividade')
+      const appointmentFromBackend = appointments.find(apt => apt.id === itemId && apt.tipo === 'atividade')
       if (appointmentFromBackend) {
         updateAppointment({
           id: appointmentFromBackend.id,
@@ -821,7 +821,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [undoTimeout])
 
   // Função genérica para restaurar item excluído
-  const handleRestore = useCallback((itemId: number, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
+  const handleRestore = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       setMedicacoesList(prev => prev.map(med => {
         if (med.id === itemId) {

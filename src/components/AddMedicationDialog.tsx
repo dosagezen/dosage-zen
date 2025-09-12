@@ -20,7 +20,7 @@ interface HorarioStatus {
 }
 
 interface Medication {
-  id: number
+  id: string
   nome: string
   dosagem: string
   forma: string
@@ -136,12 +136,8 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
 
   const handleDelete = () => {
     if (medication && onDelete) {
-      const medicationId = typeof medication.id === 'string' 
-        ? medication.id 
-        : medication.id.toString()
-      
-      console.log('Deleting medication with ID:', medicationId)
-      onDelete(medicationId)
+      console.log('Deleting medication with ID:', medication.id)
+      onDelete(medication.id)
       setDialogOpen(false)
     }
   }

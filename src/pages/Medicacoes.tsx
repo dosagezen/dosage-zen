@@ -19,7 +19,7 @@ interface HorarioStatus {
 }
 
 interface MedicacaoCompleta {
-  id: number;
+  id: string;
   nome: string;
   dosagem: string;
   forma: string;
@@ -32,7 +32,7 @@ interface MedicacaoCompleta {
 }
 
 interface UndoAction {
-  medicacaoId: number;
+  medicacaoId: string;
   horario: string;
   timestamp: number;
 }
@@ -89,23 +89,9 @@ const Medicacoes = () => {
         return null;
       }
 
-      // Validação e conversão segura do ID
-      let medicationId: number;
-      if (typeof med.id === 'string') {
-        const parsedId = parseInt(med.id, 10);
-        if (isNaN(parsedId) || parsedId <= 0) {
-          console.error('Invalid medication ID:', med.id, 'for medication:', med.nome);
-          return null;
-        }
-        medicationId = parsedId;
-      } else if (typeof med.id === 'number') {
-        if (isNaN(med.id) || med.id <= 0) {
-          console.error('Invalid medication ID number:', med.id, 'for medication:', med.nome);
-          return null;
-        }
-        medicationId = med.id;
-      } else {
-        console.error('Medication ID is not string or number:', typeof med.id, med.id);
+      // Validação do ID como string (UUID)
+      if (!med.id || typeof med.id !== 'string') {
+        console.error('Invalid medication ID:', med.id, 'for medication:', med.nome);
         return null;
       }
 
@@ -130,7 +116,7 @@ const Medicacoes = () => {
         }));
       
       return {
-        id: medicationId,
+        id: med.id, // Manter como string (UUID)
         nome: med.nome.trim(),
         dosagem: med.dosagem.trim(),
         forma: med.forma || '',
@@ -237,7 +223,7 @@ const Medicacoes = () => {
     const origin = searchParams.get('origin')
     
     if (editId && !isEditDialogOpen) {
-      const medicacaoToEdit = medicacoesList.find(m => m.id === parseInt(editId))
+      const medicacaoToEdit = medicacoesList.find(m => m.id === editId)
       if (medicacaoToEdit) {
         setEditingMedication(medicacaoToEdit)
         setIsEditDialogOpen(true)
@@ -306,7 +292,7 @@ const Medicacoes = () => {
   }, [])
 
   // Função para marcar dose como concluída
-  const markDoseCompleted = useCallback((medicacaoId: number) => {
+  const markDoseCompleted = useCallback((medicacaoId: string) => {
     const medicacao = medicacoesList.find(m => m.id === medicacaoId)
     if (!medicacao) return
 
@@ -515,7 +501,7 @@ const Medicacoes = () => {
       // Atualizar rota para refletir o diálogo de edição
       setSearchParams(prev => {
         const params = new URLSearchParams(prev)
-        params.set('edit', medication.id.toString())
+        params.set('edit', medication.id)
         params.set('origin', 'medicacoes')
         return params
       })
@@ -543,10 +529,8 @@ const Medicacoes = () => {
     
     try {
       if (editingMedication) {
-        // Use the ID from editingMedication directly, ensuring it's a string
-        const medicationId = typeof editingMedication.id === 'string' 
-          ? editingMedication.id 
-          : editingMedication.id.toString()
+        // Use the ID from editingMedication directly (already a string)
+        const medicationId = editingMedication.id
         
         console.log('Updating medication with ID:', medicationId)
         
@@ -686,8 +670,8 @@ const Medicacoes = () => {
                       <SwipeableCard
                         key={medicacao.id}
                         medicacao={medicacao}
-                        onComplete={() => markDoseCompleted(medicacao.id)}
-                        onRemove={() => {}} // Função vazia por enquanto
+                        onComplete={(id) => markDoseCompleted(id)}
+                        onRemove={(id) => {}} // Função vazia por enquanto
                         onEdit={(med) => handleEditMedication(med)}
                         disabled={isUpdating || isDeleting}
                       />

@@ -6,7 +6,7 @@ import { User, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface ConsultaCompleta {
-  id: number;
+  id: string;
   especialidade: string;
   profissional: string;
   local: string;
@@ -19,8 +19,8 @@ interface ConsultaCompleta {
 
 interface SwipeableConsultaCardProps {
   consulta: ConsultaCompleta;
-  onComplete: (id: number) => void;
-  onRemove: (id: number) => void;
+  onComplete: (id: string) => void;
+  onRemove: (id: string) => void;
   onEdit?: (consulta: ConsultaCompleta) => void;
 }
 

@@ -13,7 +13,7 @@ interface HorarioStatus {
 }
 
 interface MedicacaoCompleta {
-  id: number;
+  id: string;
   nome: string;
   dosagem: string;
   forma: string;
@@ -27,8 +27,8 @@ interface MedicacaoCompleta {
 
 interface SwipeableCardProps {
   medicacao: MedicacaoCompleta;
-  onComplete: (id: number) => void;
-  onRemove: (id: number) => void;
+  onComplete: (id: string) => void;
+  onRemove: (id: string) => void;
   onEdit?: (medicacao: MedicacaoCompleta, origin?: 'medicacoes' | 'compromissos') => void;
   disabled?: boolean;
   origin?: 'medicacoes' | 'compromissos';
