@@ -382,12 +382,15 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleCardClick = () => {
     // Universal fallback for taps - works on both mobile and desktop
     if (onEdit && !tapTriggeredRef.current) {
-      // Ensure all data including dates are passed for editing
+      // Ensure all data including dates are passed for editing with proper fallbacks
       const medicacaoCompleta = {
         ...medicacao,
-        data_inicio: medicacao.data_inicio,
-        data_fim: medicacao.data_fim,
-        horaInicio: medicacao.horaInicio || medicacao.horarios?.[0]?.hora || '08:00'
+        // Preserve original dates or use today as fallback for data_inicio
+        data_inicio: medicacao.data_inicio || new Date().toISOString().split('T')[0],
+        data_fim: medicacao.data_fim || null,
+        // Ensure horaInicio is available
+        horaInicio: medicacao.horaInicio || 
+                  (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
       };
       onEdit(medicacaoCompleta, origin);
     }
@@ -558,13 +561,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                          status: medicacao.status
                        });
                        if (onEdit) {
-                         // Ensure all data including dates are passed for editing
+                         // Ensure all data including dates are passed for editing with proper fallbacks
                          const medicacaoCompleta = {
                            ...medicacao,
-                           data_inicio: medicacao.data_inicio,
-                           data_fim: medicacao.data_fim,
-                           horaInicio: medicacao.horaInicio || medicacao.horarios?.[0]?.hora || '08:00'
+                           // Preserve original dates or use today as fallback for data_inicio
+                           data_inicio: medicacao.data_inicio || new Date().toISOString().split('T')[0],
+                           data_fim: medicacao.data_fim || null,
+                           // Ensure horaInicio is available
+                           horaInicio: medicacao.horaInicio || 
+                                     (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
                          };
+                         console.log('Dados sendo enviados para edição:', medicacaoCompleta);
                          onEdit(medicacaoCompleta, origin);
                        }
                      }}
