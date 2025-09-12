@@ -762,7 +762,10 @@ const Medicacoes = () => {
           ativo: editingMedication.status === "ativa",
           patient_profile_id: "",
           created_at: "",
-          updated_at: ""
+          updated_at: "",
+          data_inicio: editingMedication.data_inicio,
+          data_fim: editingMedication.data_fim,
+          horaInicio: editingMedication.horaInicio
         } : null}
         isEditing={!!editingMedication}
         onDelete={editingMedication ? () => handleDeleteMedication(editingMedication.id.toString()) : undefined}

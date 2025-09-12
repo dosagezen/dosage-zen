@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils"
 
 // Utility functions for handling dates without timezone issues
 const parseLocalDate = (dateString: string): Date => {
-  const [year, month, day] = dateString.split('-').map(Number)
+  // Handle both 'YYYY-MM-DD' and ISO string formats
+  const dateOnly = dateString.split('T')[0]
+  const [year, month, day] = dateOnly.split('-').map(Number)
   return new Date(year, month - 1, day) // month is 0-indexed
 }
 
