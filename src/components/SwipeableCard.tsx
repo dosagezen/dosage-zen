@@ -124,7 +124,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const TAP_MAX_DISTANCE = 24
   const TAP_MAX_DURATION = 400
 
-  // Função para calcular horários programados baseado na frequência e hora de início
+  // Função para calcular horários programados baseado na frequência e hora de início (apenas 24h do dia atual)
   const calculateScheduledTimes = (frequencia: string, horaInicio: string): string[] => {
     if (!frequencia || !horaInicio) return [];
     
@@ -133,40 +133,39 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     
     const startMinutes = hours * 60 + minutes;
     
-    let timesPerDay = 1;
-    let intervalMinutes = 24 * 60; // Default: 24 horas
-    
+    // Mapear frequência para intervalo em minutos
+    let intervalMinutes: number;
     switch (frequencia) {
       case '4h': 
-        timesPerDay = 6; 
         intervalMinutes = 4 * 60; 
         break;
       case '6h': 
-        timesPerDay = 4; 
         intervalMinutes = 6 * 60; 
         break;
       case '8h': 
-        timesPerDay = 3; 
         intervalMinutes = 8 * 60; 
         break;
       case '12h':
       case '12h_bis': 
-        timesPerDay = 2; 
         intervalMinutes = 12 * 60; 
         break;
       case '24h': 
       default:
-        timesPerDay = 1; 
         intervalMinutes = 24 * 60; 
         break;
     }
     
     const times: string[] = [];
-    for (let i = 0; i < timesPerDay; i++) {
-      const totalMinutes = (startMinutes + i * intervalMinutes) % (24 * 60);
-      const h = Math.floor(totalMinutes / 60);
-      const m = totalMinutes % 60;
+    let currentMinutes = startMinutes;
+    
+    // Adicionar horários apenas dentro do dia atual (24h)
+    while (currentMinutes < 24 * 60) {
+      const h = Math.floor(currentMinutes / 60);
+      const m = currentMinutes % 60;
       times.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+      
+      // Próximo horário
+      currentMinutes += intervalMinutes;
     }
     
     return times;
