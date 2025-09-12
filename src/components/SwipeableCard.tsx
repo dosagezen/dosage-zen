@@ -51,6 +51,20 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 }) => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
+  
+  // Função para formatar frequência para texto amigável
+  const formatFrequencia = (frequencia: string): string => {
+    switch (frequencia) {
+      case '4h': return '4 em 4 horas';
+      case '6h': return '6 em 6 horas';
+      case '8h': return '8 em 8 horas';
+      case '12h': return '12 em 12 horas';
+      case '12h_bis': return '2 vezes ao dia';
+      case '24h': return '1 vez ao dia';
+      default: return frequencia;
+    }
+  }
+  
   const [dragState, setDragState] = useState({
     isDragging: false,
     startX: 0,
@@ -368,7 +382,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                   {medicacao.dosagem} • {medicacao.forma}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  {medicacao.frequencia}
+                  {formatFrequencia(medicacao.frequencia)}
                 </p>
               </div>
             </div>
