@@ -320,31 +320,87 @@ const Medicacoes = () => {
   }, [])
 
   // Função para marcar dose como concluída
-  const markDoseCompleted = useCallback((medicacaoId: string) => {
+  const markDoseCompleted = useCallback((medicacaoId: string, specificTime?: string) => {
     const medicacao = medicacoesList.find(m => m.id === medicacaoId)
     if (!medicacao) return
 
-    // Encontrar primeiro horário pendente
-    const primeiroHorarioPendente = medicacao.horarios
-      .filter(h => h.status === 'pendente' && h.hora !== '-')
-      .sort((a, b) => {
-        const timeA = a.hora.split(':').map(Number)
-        const timeB = b.hora.split(':').map(Number)
-        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
-      })[0]
+    // Se um horário específico foi fornecido, usar ele; caso contrário, usar o primeiro pendente
+    let horarioAlvo: HorarioStatus | undefined;
+    
+    if (specificTime) {
+      horarioAlvo = medicacao.horarios.find(h => h.hora === specificTime && h.status === 'pendente');
+    } else {
+      // Fallback para o comportamento anterior (primeiro horário pendente)
+      horarioAlvo = medicacao.horarios
+        .filter(h => h.status === 'pendente' && h.hora !== '-')
+        .sort((a, b) => {
+          const timeA = a.hora.split(':').map(Number)
+          const timeB = b.hora.split(':').map(Number)
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+        })[0];
+    }
 
-    if (!primeiroHorarioPendente?.occurrence_id) return
+    if (!horarioAlvo?.occurrence_id) return
 
     // Mark occurrence as completed
     markOccurrence({ 
-      occurrence_id: primeiroHorarioPendente.occurrence_id, 
+      occurrence_id: horarioAlvo.occurrence_id, 
       status: 'concluido' 
     });
 
     // Salvar ação para undo
     const undoAction: UndoAction = {
       medicacaoId,
-      horario: primeiroHorarioPendente.hora,
+      horario: horarioAlvo.hora,
+      timestamp: Date.now()
+    }
+    setLastUndoAction(undoAction)
+
+    // Limpar timeout anterior se existir
+    if (undoTimeout) {
+      clearTimeout(undoTimeout)
+    }
+
+    // Configurar novo timeout
+    const timeout = setTimeout(() => {
+      setLastUndoAction(null)
+    }, 5000)
+    setUndoTimeout(timeout)
+  }, [medicacoesList, markOccurrence, undoTimeout])
+
+  // Função para marcar dose como cancelada
+  const markDoseCanceled = useCallback((medicacaoId: string, specificTime?: string) => {
+    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
+    if (!medicacao) return
+
+    // Se um horário específico foi fornecido, usar ele; caso contrário, usar o primeiro pendente
+    let horarioAlvo: HorarioStatus | undefined;
+    
+    if (specificTime) {
+      horarioAlvo = medicacao.horarios.find(h => h.hora === specificTime && h.status === 'pendente');
+    } else {
+      // Fallback para o comportamento anterior (primeiro horário pendente)
+      horarioAlvo = medicacao.horarios
+        .filter(h => h.status === 'pendente' && h.hora !== '-')
+        .sort((a, b) => {
+          const timeA = a.hora.split(':').map(Number)
+          const timeB = b.hora.split(':').map(Number)
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+        })[0];
+    }
+
+    if (!horarioAlvo?.occurrence_id) return
+
+    // Mark occurrence as excluded
+    markOccurrence({ 
+      occurrence_id: horarioAlvo.occurrence_id, 
+      status: 'excluido' 
+    });
+
+    // Salvar ação para undo
+    const undoAction: UndoAction = {
+      medicacaoId,
+      horario: horarioAlvo.hora,
       timestamp: Date.now()
     }
     setLastUndoAction(undoAction)
@@ -690,16 +746,16 @@ const Medicacoes = () => {
                     Pendentes ({medicacoesPendentes.length})
                   </h3>
                   <div className="grid gap-4">
-                    {medicacoesPendentes.map((medicacao) => (
-                      <SwipeableCard
-                        key={medicacao.id}
-                        medicacao={medicacao}
-                        onComplete={(id) => markDoseCompleted(id)}
-                        onRemove={(id) => {}} // Função vazia por enquanto
-                        onEdit={(med) => handleEditMedication(med)}
-                        disabled={isUpdating || isDeleting}
-                      />
-                    ))}
+                     {medicacoesPendentes.map((medicacao) => (
+                       <SwipeableCard
+                         key={medicacao.id}
+                         medicacao={medicacao}
+                         onComplete={(id, specificTime) => markDoseCompleted(id, specificTime)}
+                         onRemove={(id, specificTime) => markDoseCanceled(id, specificTime)}
+                         onEdit={(med) => handleEditMedication(med)}
+                         disabled={isUpdating || isDeleting}
+                       />
+                     ))}
                   </div>
                 </div>
               )}
