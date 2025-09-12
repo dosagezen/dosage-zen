@@ -59,13 +59,13 @@ serve(async (req) => {
 
     switch (action) {
       case 'list': {
-        // Get medications with their occurrences for today
+        // Get ALL active medications with their occurrences (LEFT JOIN)
         const today = new Date().toISOString().split('T')[0];
         const { data: medications, error } = await supabaseClient
           .from('medications')
           .select(`
             *,
-            medication_occurrences!inner(
+            medication_occurrences(
               id,
               scheduled_at,
               status,
@@ -74,8 +74,6 @@ serve(async (req) => {
           `)
           .eq('patient_profile_id', patientProfileId)
           .eq('ativo', true)
-          .gte('medication_occurrences.scheduled_at', `${today}T00:00:00Z`)
-          .lt('medication_occurrences.scheduled_at', `${today}T23:59:59Z`)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -86,9 +84,16 @@ serve(async (req) => {
           });
         }
 
-        // Get next occurrence for each medication
+        // Process medications and filter occurrences for today
         const medicationsWithNext = await Promise.all(
           (medications || []).map(async (med) => {
+            // Filter today's occurrences
+            const todayOccurrences = (med.medication_occurrences || []).filter((occ: any) => {
+              const occDate = new Date(occ.scheduled_at).toISOString().split('T')[0];
+              return occDate === today;
+            });
+
+            // Get next occurrence for this medication
             const { data: nextOccurrence } = await supabaseClient.rpc(
               'fn_next_occurrence', 
               { p_medication_id: med.id }
@@ -97,7 +102,7 @@ serve(async (req) => {
             return {
               ...med,
               proxima: nextOccurrence,
-              horarios: med.medication_occurrences.map((occ: any) => ({
+              horarios: todayOccurrences.map((occ: any) => ({
                 hora: new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
                   hour: '2-digit', 
                   minute: '2-digit' 
@@ -186,8 +191,39 @@ serve(async (req) => {
           }
         }
 
+        // Get today's occurrences for the new medication for immediate UI update
+        const today = new Date().toISOString().split('T')[0];
+        const { data: todayOccurrences } = await supabaseClient
+          .from('medication_occurrences')
+          .select('id, scheduled_at, status, completed_at')
+          .eq('medication_id', medication.id)
+          .gte('scheduled_at', `${today}T00:00:00Z`)
+          .lt('scheduled_at', `${today}T23:59:59Z`);
+
+        // Get next occurrence
+        const { data: nextOccurrence } = await supabaseClient.rpc(
+          'fn_next_occurrence', 
+          { p_medication_id: medication.id }
+        );
+
+        // Return complete medication data with occurrences and formatted horarios
+        const completeMedication = {
+          ...medication,
+          proxima: nextOccurrence,
+          horarios: (todayOccurrences || []).map((occ: any) => ({
+            hora: new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            status: occ.status,
+            occurrence_id: occ.id,
+            scheduled_at: occ.scheduled_at,
+            completed_at: occ.completed_at
+          })).sort((a: any, b: any) => a.hora.localeCompare(b.hora))
+        };
+
         console.log('Medication created successfully:', medication.id);
-        return new Response(JSON.stringify({ medication }), {
+        return new Response(JSON.stringify({ medication: completeMedication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

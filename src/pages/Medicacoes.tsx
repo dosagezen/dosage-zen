@@ -32,6 +32,7 @@ interface MedicacaoCompleta {
   status: "ativa" | "inativa";
   removed_from_today?: boolean;
   proxima?: string;
+  isOptimistic?: boolean; // Flag for optimistic updates
 }
 
 interface UndoAction {
@@ -150,7 +151,8 @@ const Medicacoes = () => {
           (horariosStatus.length > 0 ? horariosStatus[0].hora : "-"),
         estoque: typeof med.estoque === 'number' ? med.estoque : 0,
         status: med.ativo ? "ativa" : "inativa",
-        proxima: med.proxima
+        proxima: med.proxima,
+        isOptimistic: med.isOptimistic
       };
     } catch (error) {
       console.error('Error converting medication:', error, 'for medication:', med);
@@ -422,9 +424,12 @@ const Medicacoes = () => {
     try {
       switch (activeFilter) {
         case "hoje":
-          filtered = medicacoesList.filter(med => 
-            med && med.status === "ativa" && isToday(med.proximaDose) && !med.removed_from_today
-          )
+          filtered = medicacoesList.filter(med => {
+            if (!med || med.removed_from_today) return false;
+            // Always show optimistic medications in "hoje" for immediate feedback
+            if (med.isOptimistic) return true;
+            return med.status === "ativa" && isToday(med.proximaDose);
+          })
           break
         case "ativas":
           filtered = medicacoesList.filter(med => 
@@ -457,6 +462,10 @@ const Medicacoes = () => {
       })
 
       return filtered.sort((a, b) => {
+        // Optimistic medications first for immediate visual feedback
+        if (a.isOptimistic && !b.isOptimistic) return -1;
+        if (!a.isOptimistic && b.isOptimistic) return 1;
+        
         // Medicações pendentes primeiro
         const aCompleted = isAllDosesCompleted(a)
         const bCompleted = isAllDosesCompleted(b)
@@ -486,6 +495,28 @@ const Medicacoes = () => {
   const medicacoesConcluidas = useMemo(() => {
     return filteredMedicacoes.filter(med => med && isAllDosesCompleted(med))
   }, [filteredMedicacoes])
+
+  // Calculate counters with optimistic updates
+  const counters = useMemo(() => {
+    if (!medicacoesList?.length) return { hoje: 0, ativas: 0, todas: 0 };
+
+    const hoje = medicacoesList.filter(med => {
+      if (!med || med.removed_from_today) return false;
+      // Count optimistic as "hoje"
+      if (med.isOptimistic) return true;
+      
+      const hasToday = med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-');
+      if (hasToday) return true;
+      
+      // Check if should have doses today based on schedule
+      return med.status === "ativa" && isToday(med.proximaDose);
+    }).length;
+
+    const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
+    const todas = medicacoesList.filter(med => med && !med.removed_from_today).length;
+
+    return { hoje, ativas, todas };
+  }, [medicacoesList])
 
   const handleEditMedication = useCallback((medication: MedicacaoCompleta) => {
     try {
@@ -586,9 +617,9 @@ const Medicacoes = () => {
             <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <div className="flex gap-2 flex-nowrap">
               {[
-                { key: "hoje", label: "Hoje", count: medicacoesList?.filter(m => m && m.status === "ativa" && isToday(m.proximaDose) && !m.removed_from_today).length || 0 },
-                { key: "ativas", label: "Ativas", count: medicacoesList?.filter(m => m && m.status === "ativa" && !m.removed_from_today).length || 0 },
-                { key: "todas", label: "Todas", count: medicacoesList?.filter(m => m && !m.removed_from_today).length || 0 }
+                { key: "hoje", label: "Hoje", count: counters.hoje },
+                { key: "ativas", label: "Ativas", count: counters.ativas },
+                { key: "todas", label: "Todas", count: counters.todas }
               ].map((filter) => (
                 <button
                   key={filter.key}

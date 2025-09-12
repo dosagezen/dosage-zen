@@ -26,6 +26,7 @@ export interface Medication {
   created_at: string;
   updated_at: string;
   proxima?: string;
+  isOptimistic?: boolean; // Flag for optimistic updates
 }
 
 export interface CreateMedicationData {
@@ -87,15 +88,62 @@ export const useMedications = (callbacks?: {
 
       return data.medication;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
+    onMutate: async (newMedication) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['medications'] });
+
+      // Snapshot the previous value
+      const previousMedications = queryClient.getQueryData(['medications']);
+
+      // Create optimistic medication with proper structure
+      const optimisticMedication: Medication = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        patient_profile_id: '',
+        nome: newMedication.nome,
+        dosagem: newMedication.dosagem,
+        forma: newMedication.forma,
+        frequencia: newMedication.frequencia,
+        horarios: (newMedication.horarios || []).map(hora => ({
+          hora,
+          status: 'pendente' as const
+        })),
+        estoque: newMedication.estoque || 0,
+        data_inicio: newMedication.data_inicio,
+        data_fim: newMedication.data_fim,
+        ativo: true,
+        observacoes: newMedication.observacoes,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        proxima: newMedication.horarios?.[0] || null,
+        isOptimistic: true // Flag to identify optimistic updates
+      };
+
+      queryClient.setQueryData(['medications'], (old: Medication[] = []) => [
+        optimisticMedication,
+        ...old
+      ]);
+
+      // Return a context object with the snapshotted value
+      return { previousMedications };
+    },
+    onSuccess: (realMedication) => {
+      // Replace optimistic update with real data
+      queryClient.setQueryData(['medications'], (old: Medication[] = []) => {
+        const filtered = old.filter(med => !med.isOptimistic);
+        return [realMedication, ...filtered];
+      });
+      
       toast({
         title: 'Sucesso',
         description: 'Medicação criada com sucesso!',
       });
       callbacks?.onCreateSuccess?.();
     },
-    onError: (error: any) => {
+    onError: (error: any, newMedication, context) => {
+      // Rollback on error
+      if (context?.previousMedications) {
+        queryClient.setQueryData(['medications'], context.previousMedications);
+      }
       console.error('Error creating medication:', error);
       toast({
         title: 'Erro',
@@ -103,6 +151,10 @@ export const useMedications = (callbacks?: {
         variant: 'destructive',
       });
     },
+    onSettled: () => {
+      // Always refetch after error or success to ensure sync
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+    }
   });
 
   const updateMutation = useMutation({

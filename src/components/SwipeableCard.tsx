@@ -26,6 +26,7 @@ interface MedicacaoCompleta {
   status: "ativa" | "inativa";
   removed_from_today?: boolean;
   proxima?: string;
+  isOptimistic?: boolean;
 }
 
 interface SwipeableCardProps {
@@ -285,14 +286,21 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       >
         <CardContent className="p-4 sm:p-6 w-full">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-accent">
-                <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-accent">
+              <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-semibold text-primary">
                   {medicacao.nome}
                 </h3>
+                {medicacao.isOptimistic && (
+                  <Badge variant="outline" className="text-xs opacity-70">
+                    Sincronizando...
+                  </Badge>
+                )}
+              </div>
                 <p className="text-sm sm:text-base text-muted-foreground">
                   {medicacao.dosagem} • {medicacao.forma}
                 </p>
