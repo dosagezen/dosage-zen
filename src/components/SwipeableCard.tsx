@@ -116,7 +116,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       times.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
     }
     
-    return times.sort();
+    return times;
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
