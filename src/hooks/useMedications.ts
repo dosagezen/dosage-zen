@@ -49,6 +49,37 @@ export const useMedications = (callbacks?: {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Helper function to compute daily times based on frequency (for optimistic updates)
+  const computeDailyTimes = (startTime: string, frequency: string): string[] => {
+    const times = [startTime];
+    
+    // Parse frequency to get hours interval
+    const freqMatch = frequency.match(/(\d+)h/i);
+    if (!freqMatch) return times;
+    
+    const intervalHours = parseInt(freqMatch[1]);
+    if (intervalHours <= 0 || intervalHours >= 24) return times;
+    
+    // Calculate how many doses fit in 24 hours
+    const dosesPerDay = Math.floor(24 / intervalHours);
+    
+    // Parse start time
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    if (isNaN(startHour) || isNaN(startMinute)) return times;
+    
+    // Generate additional times
+    for (let i = 1; i < dosesPerDay; i++) {
+      const totalMinutes = (startHour * 60 + startMinute) + (i * intervalHours * 60);
+      const newHour = Math.floor(totalMinutes / 60) % 24;
+      const newMinute = totalMinutes % 60;
+      
+      const timeStr = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+      times.push(timeStr);
+    }
+    
+    return times.sort();
+  };
+
   const fetchMedications = async (): Promise<Medication[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -95,6 +126,12 @@ export const useMedications = (callbacks?: {
       // Snapshot the previous value
       const previousMedications = queryClient.getQueryData(['medications']);
 
+      // Expand horarios based on frequency for optimistic update
+      let expandedHorarios = newMedication.horarios || [];
+      if (newMedication.horarios && newMedication.horarios.length === 1 && newMedication.frequencia) {
+        expandedHorarios = computeDailyTimes(newMedication.horarios[0], newMedication.frequencia);
+      }
+
       // Create optimistic medication with proper structure
       const optimisticMedication: Medication = {
         id: `temp-${Date.now()}`, // Temporary ID
@@ -103,7 +140,7 @@ export const useMedications = (callbacks?: {
         dosagem: newMedication.dosagem,
         forma: newMedication.forma,
         frequencia: newMedication.frequencia,
-        horarios: (newMedication.horarios || []).map(hora => ({
+        horarios: expandedHorarios.map(hora => ({
           hora,
           status: 'pendente' as const
         })),
@@ -114,7 +151,7 @@ export const useMedications = (callbacks?: {
         observacoes: newMedication.observacoes,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        proxima: newMedication.horarios?.[0] || null,
+        proxima: expandedHorarios[0] || null,
         isOptimistic: true // Flag to identify optimistic updates
       };
 

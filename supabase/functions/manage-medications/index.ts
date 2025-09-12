@@ -25,6 +25,37 @@ serve(async (req) => {
       }
     );
 
+    // Helper function to compute daily times based on frequency
+    const computeDailyTimes = (startTime: string, frequency: string): string[] => {
+      const times = [startTime];
+      
+      // Parse frequency to get hours interval
+      const freqMatch = frequency.match(/(\d+)h/i);
+      if (!freqMatch) return times;
+      
+      const intervalHours = parseInt(freqMatch[1]);
+      if (intervalHours <= 0 || intervalHours >= 24) return times;
+      
+      // Calculate how many doses fit in 24 hours
+      const dosesPerDay = Math.floor(24 / intervalHours);
+      
+      // Parse start time
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      if (isNaN(startHour) || isNaN(startMinute)) return times;
+      
+      // Generate additional times
+      for (let i = 1; i < dosesPerDay; i++) {
+        const totalMinutes = (startHour * 60 + startMinute) + (i * intervalHours * 60);
+        const newHour = Math.floor(totalMinutes / 60) % 24;
+        const newMinute = totalMinutes % 60;
+        
+        const timeStr = `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+        times.push(timeStr);
+      }
+      
+      return times.sort();
+    };
+
     const body = await req.json();
     const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes, occurrence_id, status } = body;
 
@@ -190,9 +221,16 @@ serve(async (req) => {
           });
         }
 
-        // Validate horarios format if provided
-        if (horarios && Array.isArray(horarios)) {
-          for (const horario of horarios) {
+        // Expand single start time into full daily schedule based on frequency
+        let expandedHorarios = horarios || [];
+        if (horarios && horarios.length === 1 && frequencia) {
+          expandedHorarios = computeDailyTimes(horarios[0], frequencia);
+          console.log(`Expanded ${horarios[0]} with frequency ${frequencia} to:`, expandedHorarios);
+        }
+
+        // Validate horarios format
+        if (expandedHorarios && Array.isArray(expandedHorarios)) {
+          for (const horario of expandedHorarios) {
             if (typeof horario === 'string' && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horario)) {
               console.error('Invalid horario format:', horario);
               return new Response(JSON.stringify({ error: 'Invalid horario format. Use HH:mm' }), {
@@ -211,7 +249,7 @@ serve(async (req) => {
             dosagem,
             forma,
             frequencia,
-            horarios: horarios || [],
+            horarios: expandedHorarios || [],
             estoque: estoque || 0,
             data_inicio,
             data_fim,
@@ -229,8 +267,8 @@ serve(async (req) => {
           });
         }
 
-        // Create occurrences for the new medication IMMEDIATELY
-        const horariosArray = horarios ? horarios.map((h: any) => typeof h === 'string' ? h : h.hora) : [];
+        // Create occurrences for the new medication IMMEDIATELY using expanded horarios
+        const horariosArray = expandedHorarios ? expandedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora) : [];
         if (horariosArray.length > 0) {
           console.log(`Generating occurrences for medication ${medication.id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
@@ -312,9 +350,16 @@ serve(async (req) => {
           });
         }
 
-        // Validate horarios format if provided
-        if (horarios && Array.isArray(horarios)) {
-          for (const horario of horarios) {
+        // Expand single start time into full daily schedule based on frequency (for updates too)
+        let expandedHorarios = horarios || [];
+        if (horarios && horarios.length === 1 && frequencia) {
+          expandedHorarios = computeDailyTimes(horarios[0], frequencia);
+          console.log(`Updated: Expanded ${horarios[0]} with frequency ${frequencia} to:`, expandedHorarios);
+        }
+
+        // Validate horarios format
+        if (expandedHorarios && Array.isArray(expandedHorarios)) {
+          for (const horario of expandedHorarios) {
             if (typeof horario === 'string' && !/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(horario)) {
               console.error('Invalid horario format:', horario);
               return new Response(JSON.stringify({ error: 'Invalid horario format. Use HH:mm' }), {
@@ -332,7 +377,7 @@ serve(async (req) => {
             dosagem,
             forma,
             frequencia,
-            horarios,
+            horarios: expandedHorarios,
             estoque,
             data_inicio,
             data_fim,
@@ -352,8 +397,8 @@ serve(async (req) => {
           });
         }
 
-        // Always regenerate occurrences when updating medication data
-        const updatedHorarios = horarios || medication.horarios || [];
+        // Always regenerate occurrences when updating medication data using expanded horarios
+        const updatedHorarios = expandedHorarios || medication.horarios || [];
         if (updatedHorarios && Array.isArray(updatedHorarios) && updatedHorarios.length > 0) {
           const horariosArray = updatedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora);
           console.log(`Regenerating occurrences for medication ${id} with horarios:`, horariosArray);
@@ -389,8 +434,8 @@ serve(async (req) => {
           { p_medication_id: id }
         );
 
-        // Create complete horarios array
-        const originalHorarios = (horarios || medication.horarios || []);
+        // Create complete horarios array using expanded horarios
+        const originalHorarios = (expandedHorarios || medication.horarios || []);
         const allHorarios = originalHorarios.map((horario: string) => {
           const todayOcc = (todayOccurrences || []).find((occ: any) => {
             const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 

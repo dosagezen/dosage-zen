@@ -42,21 +42,19 @@ interface UndoAction {
 }
 
 const Medicacoes = () => {
+  // ALL HOOKS MUST BE AT THE TOP LEVEL - FIX FOR REACT HOOKS CONDITIONAL RENDERING ISSUE
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  
-  // Debug logging for mobile issues
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log('Medicacoes component mounted', {
-        isMobile,
-        userAgent: navigator.userAgent,
-        windowSize: { width: window.innerWidth, height: window.innerHeight },
-        timestamp: new Date().toISOString()
-      })
-    }
-  }, [isMobile])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>([])
+  const [activeFilter, setActiveFilter] = useState("hoje")
+  const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
+  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
+  const [modalOrigin, setModalOrigin] = useState<string | null>(null)
   
   // Integração com dados reais do Supabase
   const { 
@@ -86,6 +84,18 @@ const Medicacoes = () => {
       setEditingMedication(null);
     }
   });
+  
+  // Debug logging for mobile issues
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('Medicacoes component mounted', {
+        isMobile,
+        userAgent: navigator.userAgent,
+        windowSize: { width: window.innerWidth, height: window.innerHeight },
+        timestamp: new Date().toISOString()
+      })
+    }
+  }, [isMobile])
 
   // Converter dados do Supabase para formato da interface com validação robusta
   const convertToMedicacaoCompleta = (med: Medication): MedicacaoCompleta | null => {
@@ -162,15 +172,6 @@ const Medicacoes = () => {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [editingMedication, setEditingMedication] = useState<MedicacaoCompleta | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>([])
-  const [activeFilter, setActiveFilter] = useState("hoje")
-  const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
-  const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
-  const [modalOrigin, setModalOrigin] = useState<string | null>(null)
 
   // Atualizar lista local quando medicações do backend mudarem com segurança
   const convertedMedications = useMemo(() => {
@@ -262,34 +263,33 @@ const Medicacoes = () => {
     }
   }, [searchParams, medicacoesList, isEditDialogOpen])
 
-  const renderContent = () => {
-    // Loading state - mais específico para evitar renderização prematura
-    if (isLoading || (!isSuccess && !error)) {
-      return (
-        <div className="container mx-auto p-4 flex items-center justify-center min-h-[400px]">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Carregando medicações...</span>
-          </div>
+  // Loading state - mais específico para evitar renderização prematura
+  if (isLoading || (!isSuccess && !error)) {
+    return (
+      <div className="container mx-auto p-4 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Carregando medicações...</span>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    // Error state
-    if (error) {
-      return (
-        <div className="container mx-auto p-4">
-          <Card className="border-destructive">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 text-destructive">
-                <AlertCircle className="h-5 w-5" />
-                <span>Erro ao carregar medicações: {error.message}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      );
-    }
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <Card className="border-destructive">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <span>Erro ao carregar medicações: {error.message}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {
@@ -764,10 +764,7 @@ const Medicacoes = () => {
         onUpdate={handleUpdateMedication}
       />
     </div>
-    );
-  };
-
-  return renderContent();
+  );
 }
 
 // Memoize the component for better performance
