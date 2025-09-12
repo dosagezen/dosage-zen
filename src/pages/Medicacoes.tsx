@@ -319,6 +319,38 @@ const Medicacoes = () => {
     return pendentes[0].hora
   }, [])
 
+  // Função auxiliar para encontrar horário mais próximo
+  const getClosestTime = useCallback((scheduledTimes: string[], currentTime: Date): string => {
+    if (scheduledTimes.length === 0) return '';
+    
+    const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+    
+    let minDistance = Infinity;
+    let closestTime = '';
+    
+    scheduledTimes.forEach(time => {
+      const [hours, minutes] = time.split(':').map(Number);
+      if (isNaN(hours) || isNaN(minutes)) return;
+      
+      const scheduleMinutes = hours * 60 + minutes;
+      
+      // Calcular distância considerando ciclo de 24h
+      let distance = Math.abs(currentMinutes - scheduleMinutes);
+      
+      // Se a distância for maior que 12h, considerar o dia seguinte/anterior
+      if (distance > 720) { // 12 horas em minutos
+        distance = 1440 - distance; // 24 horas - distância atual
+      }
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestTime = time;
+      }
+    });
+    
+    return closestTime;
+  }, []);
+
   // Função para marcar dose como concluída
   const markDoseCompleted = useCallback((medicacaoId: string, specificTime?: string) => {
     const medicacao = medicacoesList.find(m => m.id === medicacaoId)
@@ -329,6 +361,17 @@ const Medicacoes = () => {
     
     if (specificTime) {
       horarioAlvo = medicacao.horarios.find(h => h.hora === specificTime && h.status === 'pendente');
+      
+      // Fallback: se não encontrar horário exato, buscar o mais próximo
+      if (!horarioAlvo) {
+        const pendingTimes = medicacao.horarios
+          .filter(h => h.status === 'pendente' && h.hora !== '-')
+          .map(h => h.hora);
+        const closestTime = getClosestTime(pendingTimes, new Date());
+        horarioAlvo = medicacao.horarios.find(h => 
+          h.hora === closestTime && h.status === 'pendente'
+        );
+      }
     } else {
       // Fallback para o comportamento anterior (primeiro horário pendente)
       horarioAlvo = medicacao.horarios
@@ -366,7 +409,7 @@ const Medicacoes = () => {
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, markOccurrence, undoTimeout])
+  }, [medicacoesList, markOccurrence, undoTimeout, getClosestTime])
 
   // Função para marcar dose como cancelada
   const markDoseCanceled = useCallback((medicacaoId: string, specificTime?: string) => {
@@ -378,6 +421,17 @@ const Medicacoes = () => {
     
     if (specificTime) {
       horarioAlvo = medicacao.horarios.find(h => h.hora === specificTime && h.status === 'pendente');
+      
+      // Fallback: se não encontrar horário exato, buscar o mais próximo
+      if (!horarioAlvo) {
+        const pendingTimes = medicacao.horarios
+          .filter(h => h.status === 'pendente' && h.hora !== '-')
+          .map(h => h.hora);
+        const closestTime = getClosestTime(pendingTimes, new Date());
+        horarioAlvo = medicacao.horarios.find(h => 
+          h.hora === closestTime && h.status === 'pendente'
+        );
+      }
     } else {
       // Fallback para o comportamento anterior (primeiro horário pendente)
       horarioAlvo = medicacao.horarios

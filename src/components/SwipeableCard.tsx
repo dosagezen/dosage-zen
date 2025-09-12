@@ -347,17 +347,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     )
   }
 
-  // Calcular horários programados baseado na frequência
-  const scheduledTimes = calculateScheduledTimes(medicacao.frequencia, medicacao.horaInicio || '08:00');
-  
-  // Usar horários calculados ou fallback para horários existentes
-  const displayTimes = scheduledTimes.length > 0 ? scheduledTimes : medicacao.horarios.map(h => h.hora).filter(h => h !== '-');
-  
-  // Combinar horários calculados com status das ocorrências existentes
-  const combinedSchedule = displayTimes.map(time => {
-    const existingHorario = medicacao.horarios.find(h => h.hora === time);
-    return existingHorario || { hora: time, status: 'pendente' as const };
-  });
+  // Usar diretamente os horários do backend
+  const combinedSchedule = medicacao.horarios.filter(h => h.hora !== '-');
 
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 
