@@ -34,6 +34,9 @@ interface MedicacaoCompleta {
   status: "ativa" | "inativa";
   removed_from_today?: boolean;
   removal_reason?: 'completed' | 'excluded';
+  data_inicio?: string;
+  data_fim?: string;
+  horaInicio?: string;
 }
 
 interface ConsultaCompleta {
@@ -108,7 +111,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       horarios: Array.isArray(med.horarios) ? med.horarios.map(hora => typeof hora === 'string' ? { hora, status: 'pendente' as const } : hora) : [{ hora: "08:00", status: 'pendente' as const }],
       proximaDose: Array.isArray(med.horarios) && med.horarios.length > 0 ? (typeof med.horarios[0] === 'string' ? med.horarios[0] : med.horarios[0].hora) : "08:00",
       estoque: med.estoque || 0,
-      status: "ativa" as const
+      status: "ativa" as const,
+      data_inicio: med.data_inicio,
+      data_fim: med.data_fim,
+      horaInicio: Array.isArray(med.horarios) && med.horarios.length > 0 ? (typeof med.horarios[0] === 'string' ? med.horarios[0] : med.horarios[0].hora) : undefined
     }));
   };
 

@@ -13,6 +13,19 @@ import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 
+// Utility functions for handling dates without timezone issues
+const parseLocalDate = (dateString: string): Date => {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day) // month is 0-indexed
+}
+
+const toYMD = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 interface HorarioStatus {
   hora: string;
   status: 'pendente' | 'concluido';
@@ -75,10 +88,10 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
         dosagem: medication.dosagem || "",
         forma: medication.forma || "",
         frequencia: medication.frequencia || "",
-        horario: medication.horarios?.[0]?.hora || medication.horarios?.[0] || "",
+        horario: medication.horaInicio || medication.horarios?.[0]?.hora || medication.horarios?.[0] || "",
         estoque: medication.estoque?.toString() || "",
-        dataInicio: medication.data_inicio ? new Date(medication.data_inicio) : undefined,
-        dataFim: medication.data_fim ? new Date(medication.data_fim) : undefined
+        dataInicio: medication.data_inicio ? parseLocalDate(medication.data_inicio) : undefined,
+        dataFim: medication.data_fim ? parseLocalDate(medication.data_fim) : undefined
       })
     } else if (!isEditing) {
       // Resetar formulário para nova medicação
@@ -151,8 +164,8 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       horarios: formData.horario ? [formData.horario] : [],
       estoque: parseInt(formData.estoque) || 0,
       ativo: formData.status,
-      data_inicio: formData.dataInicio.toISOString().split('T')[0], // Normalize to ISO date
-      data_fim: formData.dataFim ? formData.dataFim.toISOString().split('T')[0] : null,
+      data_inicio: toYMD(formData.dataInicio), // Use timezone-safe conversion
+      data_fim: formData.dataFim ? toYMD(formData.dataFim) : null,
       observacoes: null
     }
 

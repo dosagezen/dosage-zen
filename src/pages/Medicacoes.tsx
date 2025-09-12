@@ -33,6 +33,9 @@ interface MedicacaoCompleta {
   removed_from_today?: boolean;
   proxima?: string;
   isOptimistic?: boolean; // Flag for optimistic updates
+  data_inicio?: string;
+  data_fim?: string;
+  horaInicio?: string;
 }
 
 interface UndoAction {
@@ -164,7 +167,10 @@ const Medicacoes = () => {
         estoque: typeof med.estoque === 'number' ? med.estoque : 0,
         status: med.ativo ? "ativa" : "inativa",
         proxima: med.proxima,
-        isOptimistic: med.isOptimistic
+        isOptimistic: med.isOptimistic,
+        data_inicio: med.data_inicio,
+        data_fim: med.data_fim,
+        horaInicio: horariosStatus.length > 0 ? horariosStatus[0].hora : undefined
       };
     } catch (error) {
       console.error('Error converting medication:', error, 'for medication:', med);
