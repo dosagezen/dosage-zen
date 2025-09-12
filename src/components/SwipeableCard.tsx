@@ -422,7 +422,15 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 )}
               </div>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  {medicacao.dosagem} • {medicacao.forma}
+                  {(() => {
+                    // Extract quantity from dosagem and add proper unit
+                    const dosagem = medicacao.dosagem || "";
+                    const quantityMatch = dosagem.match(/^(\d+)/);
+                    const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 1;
+                    const unit = quantity === 1 ? "comprimido" : "comprimidos";
+                    
+                    return `[${quantity}] ${unit} • ${medicacao.forma}`;
+                  })()}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {formatFrequencia(medicacao.frequencia)}
