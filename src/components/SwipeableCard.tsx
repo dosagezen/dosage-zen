@@ -382,7 +382,14 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleCardClick = () => {
     // Universal fallback for taps - works on both mobile and desktop
     if (onEdit && !tapTriggeredRef.current) {
-      onEdit(medicacao, origin)
+      // Ensure all data including dates are passed for editing
+      const medicacaoCompleta = {
+        ...medicacao,
+        data_inicio: medicacao.data_inicio,
+        data_fim: medicacao.data_fim,
+        horaInicio: medicacao.horaInicio || medicacao.horarios?.[0]?.hora || '08:00'
+      };
+      onEdit(medicacaoCompleta, origin);
     }
   }
 
@@ -534,14 +541,33 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
-                      e.preventDefault();
-                      console.log('Botão Alterar clicado', medicacao.nome);
-                      if (onEdit) {
-                        onEdit(medicacao, origin);
-                      }
-                    }}
+                     onClick={(e) => { 
+                       e.stopPropagation(); 
+                       e.preventDefault();
+                       console.log('Botão Alterar clicado - dados completos:', {
+                         id: medicacao.id,
+                         nome: medicacao.nome,
+                         dosagem: medicacao.dosagem,
+                         forma: medicacao.forma,
+                         frequencia: medicacao.frequencia,
+                         estoque: medicacao.estoque,
+                         data_inicio: medicacao.data_inicio,
+                         data_fim: medicacao.data_fim,
+                         horaInicio: medicacao.horaInicio,
+                         horarios: medicacao.horarios,
+                         status: medicacao.status
+                       });
+                       if (onEdit) {
+                         // Ensure all data including dates are passed for editing
+                         const medicacaoCompleta = {
+                           ...medicacao,
+                           data_inicio: medicacao.data_inicio,
+                           data_fim: medicacao.data_fim,
+                           horaInicio: medicacao.horaInicio || medicacao.horarios?.[0]?.hora || '08:00'
+                         };
+                         onEdit(medicacaoCompleta, origin);
+                       }
+                     }}
                     className="h-8 text-xs hover:bg-primary hover:text-primary-foreground"
                     aria-label={`Alterar medicação ${medicacao.nome}`}
                   >
