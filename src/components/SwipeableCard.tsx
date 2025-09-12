@@ -291,7 +291,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     
     const isComplete = showActionHint === 'complete'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
-    const text = isComplete ? 'Concluir' : 'Excluir'
+    const text = isComplete ? 'Concluir' : 'Cancelar'
     const delta = Math.abs(dragState.deltaX)
     const opacity = Math.min(1, delta / 100)
     
