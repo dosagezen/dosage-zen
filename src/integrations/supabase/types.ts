@@ -529,6 +529,15 @@ export type Database = {
         Args: { p_patient_profile_id: string }
         Returns: Json
       }
+      fn_mark_nearest_med_occurrence: {
+        Args: {
+          p_action: string
+          p_med_id: string
+          p_now: string
+          p_tz: string
+        }
+        Returns: Json
+      }
       fn_mark_occurrence: {
         Args: {
           p_occurrence_id: string

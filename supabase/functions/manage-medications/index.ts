@@ -58,6 +58,41 @@ serve(async (req) => {
     const patientProfileId = profile.id;
 
     switch (action) {
+      case 'mark_nearest': {
+        const { nearestAction, currentTime, timezone } = body;
+        
+        console.log(`Processing mark_nearest request: medication_id=${id}, action=${nearestAction}`);
+        
+        if (!id || !nearestAction) {
+          return new Response(
+            JSON.stringify({ error: 'Missing medication_id or nearestAction' }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const { data: nearestResult, error: nearestError } = await supabaseClient
+          .rpc('fn_mark_nearest_med_occurrence', {
+            p_med_id: id,
+            p_action: nearestAction,
+            p_now: currentTime || new Date().toISOString(),
+            p_tz: timezone || 'UTC'
+          });
+
+        if (nearestError) {
+          console.error('Error marking nearest occurrence:', nearestError);
+          return new Response(
+            JSON.stringify({ error: nearestError.message }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log('Nearest occurrence marked:', nearestResult);
+        return new Response(
+          JSON.stringify(nearestResult),
+          { headers: corsHeaders }
+        );
+      }
+
       case 'list': {
         // Get ALL active medications with their occurrences
         const today = new Date().toISOString().split('T')[0];

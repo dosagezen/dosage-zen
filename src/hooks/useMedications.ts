@@ -316,6 +316,26 @@ export const useMedications = (callbacks?: {
     },
   });
 
+  const markNearestOccurrenceMutation = useMutation({
+    mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: {
+          action: 'mark_nearest',
+          id: medicationId,
+          nearestAction: action,
+          currentTime: new Date().toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+    }
+  });
+
   return {
     medications: Array.isArray(query.data) ? query.data : [],
     isLoading: query.isLoading || query.isFetching,
@@ -325,9 +345,11 @@ export const useMedications = (callbacks?: {
     updateMedication: updateMutation.mutate,
     deleteMedication: deleteMutation.mutate,
     markOccurrence: markOccurrenceMutation.mutate,
+    markNearestOccurrence: markNearestOccurrenceMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isMarkingOccurrence: markOccurrenceMutation.isPending,
+    isMarkingNearest: markNearestOccurrenceMutation.isPending
   };
 };

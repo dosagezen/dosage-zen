@@ -68,9 +68,11 @@ const Medicacoes = () => {
     updateMedication, 
     deleteMedication,
     markOccurrence,
+    markNearestOccurrence,
     isCreating,
     isUpdating,
-    isDeleting
+    isDeleting,
+    isMarkingNearest
   } = useMedications({
     onCreateSuccess: () => {
       setIsEditDialogOpen(false);
@@ -260,33 +262,34 @@ const Medicacoes = () => {
     }
   }, [searchParams, medicacoesList, isEditDialogOpen])
 
-  // Loading state - mais específico para evitar renderização prematura
-  if (isLoading || (!isSuccess && !error)) {
-    return (
-      <div className="container mx-auto p-4 flex items-center justify-center min-h-[400px]">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Carregando medicações...</span>
+  const renderContent = () => {
+    // Loading state - mais específico para evitar renderização prematura
+    if (isLoading || (!isSuccess && !error)) {
+      return (
+        <div className="container mx-auto p-4 flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Carregando medicações...</span>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // Error state
-  if (error) {
-    return (
-      <div className="container mx-auto p-4">
-        <Card className="border-destructive">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-              <span>Erro ao carregar medicações: {error.message}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    // Error state
+    if (error) {
+      return (
+        <div className="container mx-auto p-4">
+          <Card className="border-destructive">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-5 w-5" />
+                <span>Erro ao carregar medicações: {error.message}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
 
   // Função para verificar se uma medicação tem dose hoje
   const isToday = (proximaDose: string) => {
@@ -295,11 +298,9 @@ const Medicacoes = () => {
 
   // Função para verificar se uma medicação tem todos os horários do dia checados (concluído OU cancelado)
   const isAllDosesCompleted = useCallback((medicacao: MedicacaoCompleta) => {
-    if (medicacao.status === "inativa") return false
-    if (!isToday(medicacao.proximaDose)) return false
-    
-    const horariosDoHoje = medicacao.horarios.filter(h => h.hora !== '-')
-    return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status === 'concluido' || h.status === 'excluido')
+    // Only consider today's occurrences (those with occurrence_id)
+    const todayHorarios = medicacao.horarios.filter(h => h.occurrence_id);
+    return todayHorarios.length > 0 && todayHorarios.every(h => h.status === 'concluido' || h.status === 'excluido');
   }, [])
 
   // Função para calcular próximo horário pendente
@@ -360,80 +361,19 @@ const Medicacoes = () => {
 
   // Função para marcar dose como concluída (usando horário da vez)
   const markDoseCompleted = useCallback((medicacaoId: string) => {
-    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
-    if (!medicacao) return
-
-    // Encontrar horário da vez (mais próximo ao momento atual)
-    const horarioDaVez = getNearestScheduledTime(medicacao.horarios)
-
-    if (!horarioDaVez?.occurrence_id) return
-
-    // Mark occurrence as completed
-    markOccurrence({ 
-      occurrence_id: horarioDaVez.occurrence_id, 
-      status: 'concluido' 
+    markNearestOccurrence({ 
+      medicationId: medicacaoId, 
+      action: 'concluir' 
     });
-
-    // Salvar ação para undo
-    const undoAction: UndoAction = {
-      medicacaoId,
-      horario: horarioDaVez.hora,
-      timestamp: Date.now()
-    }
-    setLastUndoAction(undoAction)
-
-    // Limpar timeout anterior se existir
-    if (undoTimeout) {
-      clearTimeout(undoTimeout)
-    }
-
-    // Configurar novo timeout
-    const timeout = setTimeout(() => {
-      setLastUndoAction(null)
-    }, 5000)
-    setUndoTimeout(timeout)
-  }, [medicacoesList, markOccurrence, undoTimeout, getNearestScheduledTime])
+  }, [markNearestOccurrence])
 
   // Função para marcar dose como cancelada/excluída (usando horário da vez)
   const markDoseCanceled = useCallback((medicacaoId: string) => {
-    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
-    if (!medicacao) return
-
-    // Encontrar horário da vez (mais próximo ao momento atual)
-    const horarioDaVez = getNearestScheduledTime(medicacao.horarios)
-
-    if (!horarioDaVez?.occurrence_id) return
-
-    // Mark occurrence as excluded/canceled
-    markOccurrence({ 
-      occurrence_id: horarioDaVez.occurrence_id, 
-      status: 'excluido' 
+    markNearestOccurrence({ 
+      medicationId: medicacaoId, 
+      action: 'cancelar' 
     });
-
-    // Salvar ação para undo (mesmo sistema que concluir)
-    const undoAction: UndoAction = {
-      medicacaoId,
-      horario: horarioDaVez.hora,
-      timestamp: Date.now()
-    }
-    setLastUndoAction(undoAction)
-
-    // Limpar timeout anterior se existir
-    if (undoTimeout) {
-      clearTimeout(undoTimeout)
-    }
-
-    // Configurar novo timeout
-    const timeout = setTimeout(() => {
-      setLastUndoAction(null)
-    }, 5000)
-    setUndoTimeout(timeout)
-
-    toast({
-      title: "Dose cancelada",
-      description: `Dose de ${horarioDaVez.hora} foi cancelada`,
-    })
-  }, [medicacoesList, markOccurrence, getNearestScheduledTime, undoTimeout])
+  }, [markNearestOccurrence])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
@@ -462,6 +402,26 @@ const Medicacoes = () => {
       description: `Dose de ${undoAction.horario} foi desmarcada`,
     })
   }, [medicacoesList, markOccurrence, undoTimeout])
+
+  // Handler functions for dialog operations  
+  const handleEditMedication = useCallback((medicacao: MedicacaoCompleta) => {
+    setEditingMedication(medicacao);
+    setIsEditDialogOpen(true);
+  }, []);
+
+  const handleAddMedication = useCallback((medicationData: any) => {
+    createMedication(medicationData);
+  }, [createMedication]);
+
+  const handleUpdateMedication = useCallback((medicationData: any) => {
+    if (editingMedication) {
+      updateMedication({ id: editingMedication.id, ...medicationData });
+    }
+  }, [editingMedication, updateMedication]);
+
+  const handleDeleteMedication = useCallback((medicationId: string) => {
+    deleteMedication(medicationId);
+  }, [deleteMedication]);
 
   // Limpar timeout quando componente desmontar
   useEffect(() => {
@@ -495,8 +455,8 @@ const Medicacoes = () => {
             if (!med || med.removed_from_today) return false;
             // Always show optimistic medications in "hoje" for immediate feedback
             if (med.isOptimistic) return true;
-            // Check if has pending doses today (real occurrences)
-            const hasPendingToday = med.horarios.some(h => h.status === 'pendente' && h.hora !== '-');
+            // Only show medications with pending occurrences today (with occurrence_id)
+            const hasPendingToday = med.horarios.some(h => h.occurrence_id && h.status === 'pendente');
             return med.status === "ativa" && hasPendingToday;
           })
           break
@@ -585,65 +545,6 @@ const Medicacoes = () => {
     return { hoje, ativas, todas };
   }, [medicacoesList])
 
-  const handleEditMedication = useCallback((medication: MedicacaoCompleta) => {
-    try {
-      setEditingMedication(medication)
-      setIsEditDialogOpen(true)
-      // Atualizar rota para refletir o diálogo de edição
-      setSearchParams(prev => {
-        const params = new URLSearchParams(prev)
-        params.set('edit', medication.id)
-        params.set('origin', 'medicacoes')
-        return params
-      })
-    } catch (error) {
-      console.error('Erro ao editar medicação:', error)
-      toast({
-        title: "Erro",
-        description: "Não foi possível abrir a edição da medicação",
-        variant: "destructive"
-      })
-    }
-  }, [medications])
-
-  const handleAddMedication = useCallback((medicationData: any) => {
-    try {
-      createMedication(medicationData)
-    } catch (error) {
-      console.error('Erro ao adicionar medicação:', error)
-    }
-  }, [createMedication])
-
-  const handleUpdateMedication = useCallback((medicationData: any) => {
-    console.log('handleUpdateMedication called with:', medicationData)
-    console.log('editingMedication:', editingMedication)
-    
-    try {
-      if (editingMedication) {
-        // Use the ID from editingMedication directly (already a string)
-        const medicationId = editingMedication.id
-        
-        console.log('Updating medication with ID:', medicationId)
-        
-        updateMedication({
-          id: medicationId,
-          ...medicationData
-        })
-      } else {
-        console.error('editingMedication is null')
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar medicação:', error)
-    }
-  }, [editingMedication, updateMedication])
-
-  const handleDeleteMedication = useCallback((id: string) => {
-    try {
-      deleteMedication(id)
-    } catch (error) {
-      console.error('Erro ao deletar medicação:', error)
-    }
-  }, [deleteMedication])
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20">
@@ -761,10 +662,10 @@ const Medicacoes = () => {
                       <SwipeableCard
                         key={medicacao.id}
                         medicacao={medicacao}
-                        onComplete={(id) => markDoseCompleted(id)}
-                        onRemove={(id) => markDoseCanceled(id)}
-                        onEdit={(med) => handleEditMedication(med)}
-                        disabled={isUpdating || isDeleting}
+                         onComplete={(id) => markDoseCompleted(id)}
+                         onRemove={(id) => markDoseCanceled(id)}
+                         onEdit={(med) => handleEditMedication(med)}
+                         disabled={isUpdating || isDeleting || isMarkingNearest}
                       />
                     ))}
                   </div>
@@ -863,8 +764,11 @@ const Medicacoes = () => {
         onUpdate={handleUpdateMedication}
       />
     </div>
-  )
+    );
+  };
+
+  return renderContent();
 }
 
 // Memoize the component for better performance
-export default memo(Medicacoes)
+export default memo(Medicacoes);
