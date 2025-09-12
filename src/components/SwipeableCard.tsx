@@ -69,6 +69,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }
 
   // Função para determinar o próximo horário baseado nos horários programados
+  // Segue a estratégia: (a) hoje >= agora, (b) próximos dias, (c) hoje < agora
   const getNextScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): string => {
     const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
     
@@ -76,28 +77,38 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
     const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
     
-    // Converter horários para minutos e adicionar informação de distância
-    const timesWithDistance = pendingTimes.map(horario => {
+    // (a) Horários pendentes hoje >= agora
+    const todayFuture = pendingTimes.filter(horario => {
       const [hours, minutes] = horario.hora.split(':').map(Number);
       const timeMinutes = hours * 60 + minutes;
-      
-      let distance;
-      if (timeMinutes >= currentTimeMinutes) {
-        // Horário futuro no mesmo dia
-        distance = timeMinutes - currentTimeMinutes;
-      } else {
-        // Horário no próximo dia (24h + timeMinutes - currentTimeMinutes)
-        distance = (24 * 60) + timeMinutes - currentTimeMinutes;
-      }
-      
-      return { ...horario, timeMinutes, distance };
+      return timeMinutes >= currentTimeMinutes;
+    }).sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
     });
 
-    // Ordenar por distância (menor distância primeiro)
-    timesWithDistance.sort((a, b) => a.distance - b.distance);
-    
-    // Retornar o horário mais próximo
-    return timesWithDistance[0]?.hora || 'Não definido';
+    if (todayFuture.length > 0) {
+      return todayFuture[0].hora;
+    }
+
+    // (c) Fallback: horários pendentes hoje < agora (mais recente)
+    const todayPast = pendingTimes.filter(horario => {
+      const [hours, minutes] = horario.hora.split(':').map(Number);
+      const timeMinutes = hours * 60 + minutes;
+      return timeMinutes < currentTimeMinutes;
+    }).sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeB[0] * 60 + timeB[1]) - (timeA[0] * 60 + timeA[1]); // Descendente
+    });
+
+    if (todayPast.length > 0) {
+      return todayPast[0].hora;
+    }
+
+    // (b) Se não houver horários hoje, mostrar próximo dia (visual apenas)
+    return pendingTimes[0]?.hora || 'Não definido';
   }
   
   const [dragState, setDragState] = useState({
@@ -359,14 +370,23 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }
 
   // Calcular horários programados baseado na hora inicial e frequência
-  const calculatedTimes = medicacao.horaInicio && medicacao.frequencia 
-    ? calculateScheduledTimes(medicacao.frequencia, medicacao.horaInicio)
+  // Garantir que sempre temos horaInicio disponível
+  const horaInicial = medicacao.horaInicio || 
+                     (medicacao.horarios && medicacao.horarios.length > 0 ? 
+                      medicacao.horarios.sort((a, b) => {
+                        const timeA = a.hora.split(':').map(Number);
+                        const timeB = b.hora.split(':').map(Number);
+                        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+                      })[0]?.hora : '08:00');
+
+  const calculatedTimes = horaInicial && medicacao.frequencia 
+    ? calculateScheduledTimes(medicacao.frequencia, horaInicial)
     : [];
   
   // Get only today's scheduled times (with occurrence_id) from backend
   const scheduledTimes = medicacao.horarios.filter(h => h.occurrence_id);
   
-  // Use calculated times with status from backend data
+  // Use calculated times with status from backend data (ordem crescente garantida pelo calculateScheduledTimes)
   const combinedSchedule = calculatedTimes.length > 0 
     ? calculatedTimes.map(hora => {
         // Find matching backend data for this time
@@ -380,7 +400,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           completed_at: backendData?.completed_at
         };
       })
-    : (scheduledTimes.length > 0 ? scheduledTimes : medicacao.horarios);
+    : (scheduledTimes.length > 0 ? 
+       scheduledTimes.sort((a, b) => {
+         const timeA = a.hora.split(':').map(Number);
+         const timeB = b.hora.split(':').map(Number);
+         return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+       }) : 
+       medicacao.horarios.sort((a, b) => {
+         const timeA = a.hora.split(':').map(Number);
+         const timeB = b.hora.split(':').map(Number);
+         return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+       }));
 
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 

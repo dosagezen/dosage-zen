@@ -377,6 +377,44 @@ export const useMedications = (callbacks?: {
     },
     onSuccess: (data) => {
       console.log('markNearestOccurrenceMutation success:', data);
+      
+      // Update local cache optimistically for immediate visual feedback
+      if (data?.success && data?.scheduled_at) {
+        queryClient.setQueryData(['medications'], (oldData: any[]) => {
+          if (!Array.isArray(oldData)) return oldData;
+          
+          return oldData.map(med => {
+            if (med.id === data.medication_id) {
+              // Find and update the specific time tag that was marked
+              const scheduledTime = new Date(data.scheduled_at).toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+              });
+              
+              // Update the medication occurrences
+              const updatedOccurrences = med.medication_occurrences?.map((occ: any) => {
+                if (occ.id === data.occ_id) {
+                  return {
+                    ...occ,
+                    status: data.new_status,
+                    completed_at: new Date().toISOString(),
+                    completed_by: 'current_user'
+                  };
+                }
+                return occ;
+              }) || [];
+              
+              return {
+                ...med,
+                medication_occurrences: updatedOccurrences
+              };
+            }
+            return med;
+          });
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['medications'] });
       toast({
         title: 'Sucesso',

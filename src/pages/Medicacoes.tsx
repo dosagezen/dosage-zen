@@ -328,6 +328,7 @@ const Medicacoes = () => {
   }, [])
 
   // Função para determinar o "horário da vez" baseado no momento atual
+  // Segue a estratégia: (a) hoje >= agora, (b) próximos dias, (c) hoje < agora
   const getNearestScheduledTime = useCallback((horarios: HorarioStatus[], now: Date = new Date()): HorarioStatus | null => {
     const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
     
@@ -335,35 +336,38 @@ const Medicacoes = () => {
 
     const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
     
-    // Converter horários para minutos e adicionar informação de distância
-    const timesWithDistance = pendingTimes.map(horario => {
+    // (a) Horários pendentes hoje >= agora
+    const todayFuture = pendingTimes.filter(horario => {
       const [hours, minutes] = horario.hora.split(':').map(Number);
       const timeMinutes = hours * 60 + minutes;
-      
-      let distance;
-      if (timeMinutes >= currentTimeMinutes) {
-        // Horário futuro no mesmo dia
-        distance = timeMinutes - currentTimeMinutes;
-      } else {
-        // Horário no próximo dia (24h + timeMinutes - currentTimeMinutes)
-        distance = (24 * 60) + timeMinutes - currentTimeMinutes;
-      }
-      
-      return { ...horario, timeMinutes, distance };
+      return timeMinutes >= currentTimeMinutes;
+    }).sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
     });
 
-    // Ordenar por distância (menor distância primeiro)
-    timesWithDistance.sort((a, b) => a.distance - b.distance);
-    
-    // Retornar o horário mais próximo
-    const nearest = timesWithDistance[0];
-    return {
-      hora: nearest.hora,
-      status: nearest.status,
-      occurrence_id: nearest.occurrence_id,
-      scheduled_at: nearest.scheduled_at,
-      completed_at: nearest.completed_at
-    };
+    if (todayFuture.length > 0) {
+      return todayFuture[0];
+    }
+
+    // (c) Fallback: horários pendentes hoje < agora (mais recente)
+    const todayPast = pendingTimes.filter(horario => {
+      const [hours, minutes] = horario.hora.split(':').map(Number);
+      const timeMinutes = hours * 60 + minutes;
+      return timeMinutes < currentTimeMinutes;
+    }).sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeB[0] * 60 + timeB[1]) - (timeA[0] * 60 + timeA[1]); // Descendente
+    });
+
+    if (todayPast.length > 0) {
+      return todayPast[0];
+    }
+
+    // (b) Se não houver horários hoje, retornar primeiro pendente (próximo dia)
+    return pendingTimes[0] || null;
   }, [])
 
   // Função para marcar dose como concluída (usando horário da vez)
