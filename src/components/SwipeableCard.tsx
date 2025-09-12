@@ -422,20 +422,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 )}
               </div>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  {(() => {
-                    const quantidade = medicacao.estoque || 1;
-                    const unit = quantidade === 1 ? "comprimido" : "comprimidos";
-                    
-                    // Check if dosagem already contains "comprimido"
-                    const dosagem = medicacao.dosagem || "";
-                    const hasComprimido = dosagem.toLowerCase().includes("comprimido");
-                    
-                    if (hasComprimido) {
-                      return `${dosagem} • ${quantidade} • ${medicacao.forma}`;
-                    } else {
-                      return `${dosagem} • ${quantidade} ${unit} • ${medicacao.forma}`;
-                    }
-                  })()}
+                  {medicacao.dosagem} • {medicacao.estoque || 1} • {medicacao.forma}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {formatFrequencia(medicacao.frequencia)}
