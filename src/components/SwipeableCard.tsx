@@ -27,6 +27,9 @@ interface MedicacaoCompleta {
   removed_from_today?: boolean;
   proxima?: string;
   isOptimistic?: boolean;
+  horaInicio?: string;
+  data_inicio?: string;
+  data_fim?: string;
 }
 
 interface SwipeableCardProps {
@@ -67,6 +70,54 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const threshold = 0.3 // 30% da largura do card
   const TAP_MAX_DISTANCE = 24
   const TAP_MAX_DURATION = 400
+
+  // Função para calcular horários programados baseado na frequência e hora de início
+  const calculateScheduledTimes = (frequencia: string, horaInicio: string): string[] => {
+    if (!frequencia || !horaInicio) return [];
+    
+    const [hours, minutes] = horaInicio.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return [];
+    
+    const startMinutes = hours * 60 + minutes;
+    
+    let timesPerDay = 1;
+    let intervalMinutes = 24 * 60; // Default: 24 horas
+    
+    switch (frequencia) {
+      case '4h': 
+        timesPerDay = 6; 
+        intervalMinutes = 4 * 60; 
+        break;
+      case '6h': 
+        timesPerDay = 4; 
+        intervalMinutes = 6 * 60; 
+        break;
+      case '8h': 
+        timesPerDay = 3; 
+        intervalMinutes = 8 * 60; 
+        break;
+      case '12h':
+      case '12h_bis': 
+        timesPerDay = 2; 
+        intervalMinutes = 12 * 60; 
+        break;
+      case '24h': 
+      default:
+        timesPerDay = 1; 
+        intervalMinutes = 24 * 60; 
+        break;
+    }
+    
+    const times: string[] = [];
+    for (let i = 0; i < timesPerDay; i++) {
+      const totalMinutes = (startMinutes + i * intervalMinutes) % (24 * 60);
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+      times.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+    }
+    
+    return times.sort();
+  }
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || disabled) return
@@ -257,7 +308,19 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     )
   }
 
-  const hasPendingDoses = medicacao.horarios.some(h => h.status === 'pendente' && h.hora !== '-')
+  // Calcular horários programados baseado na frequência
+  const scheduledTimes = calculateScheduledTimes(medicacao.frequencia, medicacao.horaInicio || '08:00');
+  
+  // Usar horários calculados ou fallback para horários existentes
+  const displayTimes = scheduledTimes.length > 0 ? scheduledTimes : medicacao.horarios.map(h => h.hora).filter(h => h !== '-');
+  
+  // Combinar horários calculados com status das ocorrências existentes
+  const combinedSchedule = displayTimes.map(time => {
+    const existingHorario = medicacao.horarios.find(h => h.hora === time);
+    return existingHorario || { hora: time, status: 'pendente' as const };
+  });
+
+  const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = () => {
     // Universal fallback for taps - works on both mobile and desktop
@@ -337,7 +400,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                   Horários programados:
                 </p>
                 <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
-                  {medicacao.horarios.map((horario, index) => (
+                  {combinedSchedule.map((horario, index) => (
                     <Badge 
                       key={index} 
                       variant="secondary" 
