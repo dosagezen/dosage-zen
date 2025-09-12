@@ -422,7 +422,11 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 )}
               </div>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  {medicacao.dosagem} • {medicacao.estoque || 1} • {medicacao.forma}
+                  {(() => {
+                    const quantidade = medicacao.estoque || 1;
+                    const unit = quantidade === 1 ? "comprimido" : "comprimidos";
+                    return `${medicacao.dosagem} • ${quantidade} ${unit} • ${medicacao.forma}`;
+                  })()}
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {formatFrequencia(medicacao.frequencia)}
