@@ -2,6 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface HorarioStatus {
+  hora: string;
+  status: 'pendente' | 'concluido' | 'excluido';
+  occurrence_id?: string;
+  scheduled_at?: string;
+  completed_at?: string;
+}
+
 export interface Medication {
   id: string;
   patient_profile_id: string;
@@ -9,7 +17,7 @@ export interface Medication {
   dosagem: string;
   forma: string;
   frequencia: string;
-  horarios: string[];
+  horarios: HorarioStatus[];
   estoque: number;
   data_inicio?: string;
   data_fim?: string;
@@ -17,6 +25,7 @@ export interface Medication {
   observacoes?: string;
   created_at: string;
   updated_at: string;
+  proxima?: string;
 }
 
 export interface CreateMedicationData {
@@ -158,6 +167,42 @@ export const useMedications = (callbacks?: {
     },
   });
 
+  const markOccurrenceMutation = useMutation({
+    mutationFn: async ({ occurrence_id, status }: { occurrence_id: string, status: 'pendente' | 'concluido' | 'excluido' }) => {
+      console.log('Marking occurrence:', occurrence_id, 'as', status);
+      
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: {
+          action: 'mark_occurrence',
+          occurrence_id,
+          status
+        }
+      });
+
+      if (error) {
+        console.error('Error marking occurrence:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+      toast({
+        title: 'Sucesso',
+        description: 'Status da medicação atualizado.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error marking occurrence:', error);
+      toast({
+        title: 'Erro',
+        description: `Falha ao atualizar status: ${error?.message || 'Erro desconhecido'}`,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     medications: Array.isArray(query.data) ? query.data : [],
     isLoading: query.isLoading || query.isFetching,
@@ -166,8 +211,10 @@ export const useMedications = (callbacks?: {
     createMedication: createMutation.mutate,
     updateMedication: updateMutation.mutate,
     deleteMedication: deleteMutation.mutate,
+    markOccurrence: markOccurrenceMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isMarkingOccurrence: markOccurrenceMutation.isPending,
   };
 };

@@ -8,7 +8,9 @@ import { useNavigate } from "react-router-dom"
 
 interface HorarioStatus {
   hora: string;
-  status: 'pendente' | 'concluido';
+  status: 'pendente' | 'concluido' | 'excluido';
+  occurrence_id?: string;
+  scheduled_at?: string;
   completed_at?: string;
 }
 
@@ -23,6 +25,7 @@ interface MedicacaoCompleta {
   estoque: number;
   status: "ativa" | "inativa";
   removed_from_today?: boolean;
+  proxima?: string;
 }
 
 interface SwipeableCardProps {
@@ -302,7 +305,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  Próxima: {medicacao.proximaDose}
+                  Próxima: {medicacao.proxima ? 
+                    new Date(medicacao.proxima).toLocaleTimeString('pt-BR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    }) : 
+                    medicacao.proximaDose
+                  }
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end">
@@ -325,19 +334,25 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       key={index} 
                       variant="secondary" 
                       className={`
-                        relative text-xs sm:text-sm transition-all duration-200
-                        ${horario.status === 'concluido'
+                        relative text-xs sm:text-sm transition-all duration-200 cursor-pointer
+                        ${horario.status === 'concluido' || horario.status === 'excluido'
                           ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through"
-                          : "bg-accent/20"
+                          : "bg-accent/20 hover:bg-primary/20"
                         }
                       `}
-                      style={horario.status === 'concluido' ? {
+                      style={horario.status === 'concluido' || horario.status === 'excluido' ? {
                         textDecoration: 'line-through',
                         textDecorationColor: '#588157',
                         textDecorationThickness: '2px'
                       } : {}}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (horario.occurrence_id && horario.status === 'pendente') {
+                          onComplete?.(medicacao.id);
+                        }
+                      }}
                       aria-label={
-                        horario.status === 'concluido' 
+                        horario.status === 'concluido' || horario.status === 'excluido'
                           ? `Dose das ${horario.hora} registrada` 
                           : `Dose das ${horario.hora} pendente`
                       }

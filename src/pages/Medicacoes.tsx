@@ -14,7 +14,9 @@ import { useMedications, type Medication } from "@/hooks/useMedications"
 // Tipos para sistema de horários
 interface HorarioStatus {
   hora: string;
-  status: 'pendente' | 'concluido';
+  status: 'pendente' | 'concluido' | 'excluido';
+  occurrence_id?: string;
+  scheduled_at?: string;
   completed_at?: string;
 }
 
@@ -29,6 +31,7 @@ interface MedicacaoCompleta {
   estoque: number;
   status: "ativa" | "inativa";
   removed_from_today?: boolean;
+  proxima?: string;
 }
 
 interface UndoAction {
@@ -63,6 +66,7 @@ const Medicacoes = () => {
     createMedication, 
     updateMedication, 
     deleteMedication,
+    markOccurrence,
     isCreating,
     isUpdating,
     isDeleting
@@ -106,14 +110,30 @@ const Medicacoes = () => {
         return null;
       }
 
-      // Processar horários com validação
+      // Processar horários com validação - agora recebemos objetos HorarioStatus
       const horarios = Array.isArray(med.horarios) ? med.horarios : [];
       const horariosStatus: HorarioStatus[] = horarios
-        .filter(hora => hora && typeof hora === 'string')
-        .map(hora => ({
-          hora: hora,
-          status: 'pendente' as const
-        }));
+        .filter(horario => {
+          // Se for string (formato antigo), converter
+          if (typeof horario === 'string') return true;
+          // Se for objeto, validar estrutura
+          return horario && typeof horario === 'object' && horario.hora;
+        })
+        .map(horario => {
+          if (typeof horario === 'string') {
+            return {
+              hora: horario,
+              status: 'pendente' as const
+            };
+          }
+          return {
+            hora: horario.hora,
+            status: horario.status || 'pendente',
+            occurrence_id: horario.occurrence_id,
+            scheduled_at: horario.scheduled_at,
+            completed_at: horario.completed_at
+          };
+        });
       
       return {
         id: med.id, // Manter como string (UUID)
@@ -122,9 +142,15 @@ const Medicacoes = () => {
         forma: med.forma || '',
         frequencia: med.frequencia || '',
         horarios: horariosStatus,
-        proximaDose: horariosStatus.length > 0 ? horariosStatus[0].hora : "-",
+        proximaDose: med.proxima ? 
+          new Date(med.proxima).toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }) : 
+          (horariosStatus.length > 0 ? horariosStatus[0].hora : "-"),
         estoque: typeof med.estoque === 'number' ? med.estoque : 0,
-        status: med.ativo ? "ativa" : "inativa"
+        status: med.ativo ? "ativa" : "inativa",
+        proxima: med.proxima
       };
     } catch (error) {
       console.error('Error converting medication:', error, 'for medication:', med);
@@ -305,34 +331,18 @@ const Medicacoes = () => {
         return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
       })[0]
 
-    if (!primeiroHorarioPendente) return
+    if (!primeiroHorarioPendente?.occurrence_id) return
 
-    const horarioMarcado = primeiroHorarioPendente.hora
-
-    // Atualizar medicação
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === medicacaoId) {
-        const novosHorarios = med.horarios.map(h => 
-          h.hora === horarioMarcado && h.status === 'pendente'
-            ? { ...h, status: 'concluido' as const, completed_at: new Date().toISOString() }
-            : h
-        )
-        
-        const novaProximaDose = calculateNextDose(novosHorarios)
-        
-        return {
-          ...med,
-          horarios: novosHorarios,
-          proximaDose: novaProximaDose
-        }
-      }
-      return med
-    }))
+    // Mark occurrence as completed
+    markOccurrence({ 
+      occurrence_id: primeiroHorarioPendente.occurrence_id, 
+      status: 'concluido' 
+    });
 
     // Salvar ação para undo
     const undoAction: UndoAction = {
       medicacaoId,
-      horario: horarioMarcado,
+      horario: primeiroHorarioPendente.hora,
       timestamp: Date.now()
     }
     setLastUndoAction(undoAction)
@@ -347,24 +357,7 @@ const Medicacoes = () => {
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-
-    // Exibir toast com opção de desfazer
-    toast({
-      title: `Dose de ${horarioMarcado} registrada`,
-      description: "A dose foi marcada como concluída.",
-      action: (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleUndo(undoAction)}
-          className="bg-[#344E41] text-white border-[#344E41] hover:bg-[#3A5A40]"
-        >
-          <Undo2 className="w-4 h-4 mr-1" />
-          Desfazer
-        </Button>
-      ),
-    })
-  }, [medicacoesList, calculateNextDose, undoTimeout])
+  }, [medicacoesList, markOccurrence, undoTimeout])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {

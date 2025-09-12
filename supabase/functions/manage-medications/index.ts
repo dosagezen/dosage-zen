@@ -26,7 +26,7 @@ serve(async (req) => {
     );
 
     const body = await req.json();
-    const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes } = body;
+    const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes, occurrence_id, status } = body;
 
     console.log('Processing medication request:', { action, id });
 
@@ -59,12 +59,23 @@ serve(async (req) => {
 
     switch (action) {
       case 'list': {
-        // List all medications for the user
-        console.log('Fetching medications for profile:', patientProfileId);
+        // Get medications with their occurrences for today
+        const today = new Date().toISOString().split('T')[0];
         const { data: medications, error } = await supabaseClient
           .from('medications')
-          .select('*')
+          .select(`
+            *,
+            medication_occurrences!inner(
+              id,
+              scheduled_at,
+              status,
+              completed_at
+            )
+          `)
           .eq('patient_profile_id', patientProfileId)
+          .eq('ativo', true)
+          .gte('medication_occurrences.scheduled_at', `${today}T00:00:00Z`)
+          .lt('medication_occurrences.scheduled_at', `${today}T23:59:59Z`)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -75,8 +86,33 @@ serve(async (req) => {
           });
         }
 
-        console.log('Medications found:', medications?.length || 0);
-        return new Response(JSON.stringify({ medications }), {
+        // Get next occurrence for each medication
+        const medicationsWithNext = await Promise.all(
+          (medications || []).map(async (med) => {
+            const { data: nextOccurrence } = await supabaseClient.rpc(
+              'fn_next_occurrence', 
+              { p_medication_id: med.id }
+            );
+            
+            return {
+              ...med,
+              proxima: nextOccurrence,
+              horarios: med.medication_occurrences.map((occ: any) => ({
+                hora: new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                }),
+                status: occ.status,
+                occurrence_id: occ.id,
+                scheduled_at: occ.scheduled_at,
+                completed_at: occ.completed_at
+              })).sort((a: any, b: any) => a.hora.localeCompare(b.hora))
+            };
+          })
+        );
+
+        console.log('Medications found:', medicationsWithNext?.length || 0);
+        return new Response(JSON.stringify({ medications: medicationsWithNext }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -129,6 +165,25 @@ serve(async (req) => {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
+        }
+
+        // Create occurrences for the new medication
+        const horariosArray = horarios ? horarios.map((h: any) => typeof h === 'string' ? h : h.hora) : [];
+        if (horariosArray.length > 0) {
+          const { error: occurrenceError } = await supabaseClient.rpc(
+            'fn_upsert_medication_occurrences',
+            {
+              p_medication_id: medication.id,
+              p_patient_profile_id: patientProfileId,
+              p_horarios: horariosArray,
+              p_data_inicio: data_inicio || null,
+              p_data_fim: data_fim || null
+            }
+          );
+
+          if (occurrenceError) {
+            console.error('Error creating occurrences:', occurrenceError);
+          }
         }
 
         console.log('Medication created successfully:', medication.id);
@@ -188,6 +243,25 @@ serve(async (req) => {
           });
         }
 
+        // Update occurrences if horarios were modified
+        if (horarios && Array.isArray(horarios)) {
+          const horariosArray = horarios.map((h: any) => typeof h === 'string' ? h : h.hora);
+          const { error: occurrenceError } = await supabaseClient.rpc(
+            'fn_upsert_medication_occurrences',
+            {
+              p_medication_id: id,
+              p_patient_profile_id: patientProfileId,
+              p_horarios: horariosArray,
+              p_data_inicio: data_inicio || medication.data_inicio,
+              p_data_fim: data_fim || medication.data_fim
+            }
+          );
+
+          if (occurrenceError) {
+            console.error('Error updating occurrences:', occurrenceError);
+          }
+        }
+
         console.log('Medication updated successfully:', id);
         return new Response(JSON.stringify({ medication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -221,6 +295,37 @@ serve(async (req) => {
 
         console.log('Medication deleted successfully:', id);
         return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      case 'mark_occurrence': {
+        const { occurrence_id, status: occurrenceStatus } = body;
+
+        if (!occurrence_id || !occurrenceStatus) {
+          return new Response(JSON.stringify({ error: 'Occurrence ID and status are required' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const { data: markedOccurrence, error: markError } = await supabaseClient.rpc(
+          'fn_mark_occurrence',
+          {
+            p_occurrence_id: occurrence_id,
+            p_status: occurrenceStatus
+          }
+        );
+
+        if (markError) {
+          console.error('Error marking occurrence:', markError);
+          return new Response(JSON.stringify({ error: markError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        return new Response(JSON.stringify({ occurrence: markedOccurrence }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

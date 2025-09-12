@@ -229,6 +229,70 @@ export type Database = {
           },
         ]
       }
+      medication_occurrences: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          id: string
+          medication_id: string
+          patient_profile_id: string
+          scheduled_at: string
+          status:
+            | Database["public"]["Enums"]["medication_occurrence_status"]
+            | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          medication_id: string
+          patient_profile_id: string
+          scheduled_at: string
+          status?:
+            | Database["public"]["Enums"]["medication_occurrence_status"]
+            | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          id?: string
+          medication_id?: string
+          patient_profile_id?: string
+          scheduled_at?: string
+          status?:
+            | Database["public"]["Enums"]["medication_occurrence_status"]
+            | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_occurrences_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_occurrences_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medication_occurrences_patient_profile_id_fkey"
+            columns: ["patient_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medication_schedules: {
         Row: {
           created_at: string
@@ -461,6 +525,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fn_mark_occurrence: {
+        Args: {
+          p_occurrence_id: string
+          p_status: Database["public"]["Enums"]["medication_occurrence_status"]
+        }
+        Returns: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          id: string
+          medication_id: string
+          patient_profile_id: string
+          scheduled_at: string
+          status:
+            | Database["public"]["Enums"]["medication_occurrence_status"]
+            | null
+          updated_at: string | null
+        }
+      }
+      fn_next_occurrence: {
+        Args: { p_medication_id: string }
+        Returns: string
+      }
+      fn_upsert_medication_occurrences: {
+        Args: {
+          p_data_fim: string
+          p_data_inicio: string
+          p_horarios: string[]
+          p_medication_id: string
+          p_patient_profile_id: string
+        }
+        Returns: undefined
+      }
       generate_invite_token: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -498,6 +595,7 @@ export type Database = {
     Enums: {
       app_role: "paciente" | "acompanhante" | "cuidador" | "admin" | "gestor"
       invitation_status: "pendente" | "aceito" | "recusado"
+      medication_occurrence_status: "pendente" | "concluido" | "excluido"
       subscription_status: "ativo" | "inativo" | "cancelado"
     }
     CompositeTypes: {
@@ -628,6 +726,7 @@ export const Constants = {
     Enums: {
       app_role: ["paciente", "acompanhante", "cuidador", "admin", "gestor"],
       invitation_status: ["pendente", "aceito", "recusado"],
+      medication_occurrence_status: ["pendente", "concluido", "excluido"],
       subscription_status: ["ativo", "inativo", "cancelado"],
     },
   },

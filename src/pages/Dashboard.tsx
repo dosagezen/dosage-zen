@@ -185,7 +185,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-primary">{med.horario}</p>
+                    <p className="font-semibold text-primary">{typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A'}</p>
                     <Badge variant="secondary" className="bg-orange-500 text-white hover:bg-orange-600">
                       Pendente
                     </Badge>
