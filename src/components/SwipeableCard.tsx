@@ -34,8 +34,8 @@ interface MedicacaoCompleta {
 
 interface SwipeableCardProps {
   medicacao: MedicacaoCompleta;
-  onComplete: (id: string, specificTime?: string) => void;
-  onRemove: (id: string, specificTime?: string) => void;
+  onComplete: (id: string) => void;
+  onRemove: (id: string) => void;
   onEdit?: (medicacao: MedicacaoCompleta, origin?: 'medicacoes' | 'compromissos') => void;
   disabled?: boolean;
   origin?: 'medicacoes' | 'compromissos';
@@ -70,38 +70,6 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const threshold = 0.3 // 30% da largura do card
   const TAP_MAX_DISTANCE = 24
   const TAP_MAX_DURATION = 400
-
-  // Função para calcular horário mais próximo do horário atual
-  const getClosestTime = (scheduledTimes: string[], currentTime: Date): string => {
-    if (scheduledTimes.length === 0) return '';
-    
-    const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-    
-    let minDistance = Infinity;
-    let closestTime = '';
-    
-    scheduledTimes.forEach(time => {
-      const [hours, minutes] = time.split(':').map(Number);
-      if (isNaN(hours) || isNaN(minutes)) return;
-      
-      const scheduleMinutes = hours * 60 + minutes;
-      
-      // Calcular distância considerando ciclo de 24h
-      let distance = Math.abs(currentMinutes - scheduleMinutes);
-      
-      // Se a distância for maior que 12h, considerar o dia seguinte/anterior
-      if (distance > 720) { // 12 horas em minutos
-        distance = 1440 - distance; // 24 horas - distância atual
-      }
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestTime = time;
-      }
-    });
-    
-    return closestTime;
-  };
 
   // Função para calcular horários programados baseado na frequência e hora de início
   const calculateScheduledTimes = (frequencia: string, horaInicio: string): string[] => {
@@ -247,17 +215,10 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
 
       if (shouldTriggerAction) {
-        // Calcular horário mais próximo antes de executar ação
-        const currentTime = new Date();
-        const pendingTimes = combinedSchedule
-          .filter(h => h.status === 'pendente' && h.hora !== '-')
-          .map(h => h.hora);
-        const closestTime = getClosestTime(pendingTimes, currentTime);
-        
         if (dragState.deltaX > 0) {
-          onComplete(medicacao.id, closestTime)
+          onComplete(medicacao.id)
         } else {
-          onRemove(medicacao.id, closestTime)
+          onRemove(medicacao.id)
         }
       }
     } else if (onEdit && !tapTriggeredRef.current) {
@@ -347,8 +308,17 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     )
   }
 
-  // Usar diretamente os horários do backend
-  const combinedSchedule = medicacao.horarios.filter(h => h.hora !== '-');
+  // Calcular horários programados baseado na frequência
+  const scheduledTimes = calculateScheduledTimes(medicacao.frequencia, medicacao.horaInicio || '08:00');
+  
+  // Usar horários calculados ou fallback para horários existentes
+  const displayTimes = scheduledTimes.length > 0 ? scheduledTimes : medicacao.horarios.map(h => h.hora).filter(h => h !== '-');
+  
+  // Combinar horários calculados com status das ocorrências existentes
+  const combinedSchedule = displayTimes.map(time => {
+    const existingHorario = medicacao.horarios.find(h => h.hora === time);
+    return existingHorario || { hora: time, status: 'pendente' as const };
+  });
 
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 
@@ -449,7 +419,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         if (horario.occurrence_id && horario.status === 'pendente') {
-                          onComplete?.(medicacao.id, horario.hora);
+                          onComplete?.(medicacao.id);
                         }
                       }}
                       aria-label={
@@ -471,15 +441,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        const currentTime = new Date();
-                        const pendingTimes = combinedSchedule
-                          .filter(h => h.status === 'pendente' && h.hora !== '-')
-                          .map(h => h.hora);
-                        const closestTime = getClosestTime(pendingTimes, currentTime);
-                        onRemove(medicacao.id, closestTime); 
-                      }}
+                      onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
                       className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                       aria-label={`Excluir medicação ${medicacao.nome}`}
                     >
@@ -508,15 +470,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     <Button 
                       variant="default" 
                       size="sm"
-                      onClick={(e) => { 
-                        e.stopPropagation(); 
-                        const currentTime = new Date();
-                        const pendingTimes = combinedSchedule
-                          .filter(h => h.status === 'pendente' && h.hora !== '-')
-                          .map(h => h.hora);
-                        const closestTime = getClosestTime(pendingTimes, currentTime);
-                        onComplete(medicacao.id, closestTime); 
-                      }}
+                      onClick={(e) => { e.stopPropagation(); onComplete(medicacao.id); }}
                       className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
                       aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
                     >

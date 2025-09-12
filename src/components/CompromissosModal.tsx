@@ -264,30 +264,23 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [])
 
   // Função genérica para marcar item como concluído
-  const handleComplete = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade', specificTime?: string) => {
+  const handleComplete = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
 
-      // Se um horário específico foi fornecido, usar ele; caso contrário, usar o primeiro pendente
-      let horarioAlvo: HorarioStatus | undefined;
-      
-      if (specificTime) {
-        horarioAlvo = medicacao.horarios.find(h => h.hora === specificTime && h.status === 'pendente');
-      } else {
-        // Fallback para o comportamento anterior (primeiro horário pendente)
-        horarioAlvo = medicacao.horarios
-          .filter(h => h.status === 'pendente' && h.hora !== '-')
-          .sort((a, b) => {
-            const timeA = a.hora.split(':').map(Number)
-            const timeB = b.hora.split(':').map(Number)
-            return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
-          })[0];
-      }
+      // Encontrar primeiro horário pendente
+      const primeiroHorarioPendente = medicacao.horarios
+        .filter(h => h.status === 'pendente' && h.hora !== '-')
+        .sort((a, b) => {
+          const timeA = a.hora.split(':').map(Number)
+          const timeB = b.hora.split(':').map(Number)
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+        })[0]
 
-      if (!horarioAlvo) return
+      if (!primeiroHorarioPendente) return
 
-      const horarioMarcado = horarioAlvo.hora
+      const horarioMarcado = primeiroHorarioPendente.hora
 
       // Salvar estado anterior para undo
       const undoAction: UndoAction = {
@@ -526,7 +519,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   }, [medicacoesList, consultasList, examesList, atividadesList, calculateNextDose, undoTimeout, medications, appointments, updateMedication, updateAppointment])
 
   // Função genérica para remover da lista
-  const handleRemove = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade', specificTime?: string) => {
+  const handleRemove = useCallback((itemId: string, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (itemType === 'medicacao') {
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
@@ -995,8 +988,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                   <SwipeableCard
                     key={medicacao.id}
                     medicacao={medicacao}
-                    onComplete={(id, specificTime) => handleComplete(id, 'medicacao', specificTime)}
-                    onRemove={(id, specificTime) => handleRemove(id, 'medicacao', specificTime)}
+                    onComplete={(id) => handleComplete(id, 'medicacao')}
+                    onRemove={(id) => handleRemove(id, 'medicacao')}
                     onEdit={(med, origin) => {
                       setEditingMedication(med)
                       setIsEditDialogOpen(true)
