@@ -133,9 +133,15 @@ export const useMedications = (callbacks?: {
         return [realMedication, ...filtered];
       });
       
+      // Diagnóstico para verificar se as ocorrências foram geradas
+      const todayOccurrences = realMedication?.horarios?.filter(h => h.status === 'pendente')?.length || 0;
+      console.log(`Medicação criada: ${realMedication?.nome}, ocorrências hoje: ${todayOccurrences}`);
+      
       toast({
         title: 'Sucesso',
-        description: 'Medicação criada com sucesso!',
+        description: todayOccurrences > 0 
+          ? `Medicação criada com ${todayOccurrences} dose(s) para hoje!` 
+          : 'Medicação criada com sucesso!',
       });
       callbacks?.onCreateSuccess?.();
     },
@@ -170,7 +176,20 @@ export const useMedications = (callbacks?: {
 
       return data.medication;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Update response:', data);
+      
+      // Update the query cache with the new medication data
+      if (data) {
+        queryClient.setQueryData(['medications'], (old: Medication[] = []) => {
+          return old.map(med => 
+            med.id === data.id 
+              ? { ...data, isOptimistic: false }
+              : med
+          );
+        });
+      }
+      
       queryClient.invalidateQueries({ queryKey: ['medications'] });
       toast({
         title: 'Sucesso',

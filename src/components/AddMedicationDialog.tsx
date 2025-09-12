@@ -109,19 +109,50 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       return
     }
 
-    // Preparar dados para envio
+    // Validação adicional para campos críticos
+    if (!formData.horario) {
+      toast({
+        title: "Hora de início obrigatória",
+        description: "Por favor, defina a hora de início da medicação.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!formData.dataInicio) {
+      toast({
+        title: "Data de início obrigatória",
+        description: "Por favor, defina quando a medicação deve começar.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    // Preparar dados para envio com diagnóstico
     const medicationData = {
-      nome: formData.nome,
-      dosagem: formData.dosagem,
+      nome: formData.nome.trim(),
+      dosagem: formData.dosagem.trim(),
       forma: formData.forma,
       frequencia: formData.frequencia,
       horarios: formData.horario ? [formData.horario] : [],
       estoque: parseInt(formData.estoque) || 0,
       ativo: formData.status,
-      data_inicio: formData.dataInicio ? formData.dataInicio.toISOString().split('T')[0] : null,
+      data_inicio: formData.dataInicio.toISOString().split('T')[0],
       data_fim: formData.dataFim ? formData.dataFim.toISOString().split('T')[0] : null,
       observacoes: null
     }
+
+    // Log para diagnóstico
+    console.log('Salvando medicação:', {
+      med_id: isEditing ? medication?.id : 'novo',
+      nome: medicationData.nome,
+      start_date: medicationData.data_inicio,
+      end_date: medicationData.data_fim,
+      start_time: medicationData.horarios[0],
+      frequency: medicationData.frequencia,
+      tz_user: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      today_local: new Date().toLocaleDateString()
+    })
 
     // Chamar a função apropriada
     if (isEditing && onUpdate) {

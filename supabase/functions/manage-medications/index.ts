@@ -59,8 +59,10 @@ serve(async (req) => {
 
     switch (action) {
       case 'list': {
-        // Get ALL active medications with their occurrences (LEFT JOIN)
+        // Get ALL active medications with their occurrences
         const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
         const { data: medications, error } = await supabaseClient
           .from('medications')
           .select(`
@@ -84,13 +86,36 @@ serve(async (req) => {
           });
         }
 
-        // Process medications and filter occurrences for today
-        const medicationsWithNext = await Promise.all(
+        // Process medications with complete horarios and today's filter
+        const medicationsWithComplete = await Promise.all(
           (medications || []).map(async (med) => {
-            // Filter today's occurrences
+            // All scheduled times from medication.horarios (original schedule)
+            const originalHorarios = Array.isArray(med.horarios) ? med.horarios : [];
+            
+            // Today's occurrences from database
             const todayOccurrences = (med.medication_occurrences || []).filter((occ: any) => {
               const occDate = new Date(occ.scheduled_at).toISOString().split('T')[0];
               return occDate === today;
+            });
+
+            // Create complete horarios array with status
+            const allHorarios = originalHorarios.map((horario: string) => {
+              // Find matching occurrence for today
+              const todayOcc = todayOccurrences.find((occ: any) => {
+                const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                });
+                return occTime === horario;
+              });
+
+              return {
+                hora: horario,
+                status: todayOcc ? todayOcc.status : 'pendente',
+                occurrence_id: todayOcc?.id,
+                scheduled_at: todayOcc?.scheduled_at,
+                completed_at: todayOcc?.completed_at
+              };
             });
 
             // Get next occurrence for this medication
@@ -99,25 +124,22 @@ serve(async (req) => {
               { p_medication_id: med.id }
             );
             
+            // Calculate if has pending doses today for "hoje" filter
+            const hasPendingToday = allHorarios.some(h => h.status === 'pendente');
+            
+            console.log(`Med ${med.nome}: originalHorarios=${originalHorarios.length}, todayOccs=${todayOccurrences.length}, pendingToday=${hasPendingToday}`);
+            
             return {
               ...med,
               proxima: nextOccurrence,
-              horarios: todayOccurrences.map((occ: any) => ({
-                hora: new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                }),
-                status: occ.status,
-                occurrence_id: occ.id,
-                scheduled_at: occ.scheduled_at,
-                completed_at: occ.completed_at
-              })).sort((a: any, b: any) => a.hora.localeCompare(b.hora))
+              horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
+              hasPendingToday // Helper for frontend filtering
             };
           })
         );
 
-        console.log('Medications found:', medicationsWithNext?.length || 0);
-        return new Response(JSON.stringify({ medications: medicationsWithNext }), {
+        console.log('Medications found:', medicationsWithComplete?.length || 0);
+        return new Response(JSON.stringify({ medications: medicationsWithComplete }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -206,20 +228,33 @@ serve(async (req) => {
           { p_medication_id: medication.id }
         );
 
-        // Return complete medication data with occurrences and formatted horarios
+        // Create complete horarios array with all scheduled times and their status
+        const originalHorarios = horariosArray || [];
+        const allHorarios = originalHorarios.map((horario: string) => {
+          // Find matching occurrence for today
+          const todayOcc = (todayOccurrences || []).find((occ: any) => {
+            const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            return occTime === horario;
+          });
+
+          return {
+            hora: horario,
+            status: todayOcc ? todayOcc.status : 'pendente',
+            occurrence_id: todayOcc?.id,
+            scheduled_at: todayOcc?.scheduled_at,
+            completed_at: todayOcc?.completed_at
+          };
+        });
+
+        // Return complete medication data with all horarios
         const completeMedication = {
           ...medication,
           proxima: nextOccurrence,
-          horarios: (todayOccurrences || []).map((occ: any) => ({
-            hora: new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            }),
-            status: occ.status,
-            occurrence_id: occ.id,
-            scheduled_at: occ.scheduled_at,
-            completed_at: occ.completed_at
-          })).sort((a: any, b: any) => a.hora.localeCompare(b.hora))
+          horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
+          hasPendingToday: allHorarios.some(h => h.status === 'pendente')
         };
 
         console.log('Medication created successfully:', medication.id);
@@ -298,8 +333,49 @@ serve(async (req) => {
           }
         }
 
+        // Get updated data with complete horarios like in create
+        const today = new Date().toISOString().split('T')[0];
+        const { data: todayOccurrences } = await supabaseClient
+          .from('medication_occurrences')
+          .select('id, scheduled_at, status, completed_at')
+          .eq('medication_id', id)
+          .gte('scheduled_at', `${today}T00:00:00Z`)
+          .lt('scheduled_at', `${today}T23:59:59Z`);
+
+        const { data: nextOccurrence } = await supabaseClient.rpc(
+          'fn_next_occurrence', 
+          { p_medication_id: id }
+        );
+
+        // Create complete horarios array
+        const originalHorarios = (horarios || medication.horarios || []);
+        const allHorarios = originalHorarios.map((horario: string) => {
+          const todayOcc = (todayOccurrences || []).find((occ: any) => {
+            const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+            return occTime === horario;
+          });
+
+          return {
+            hora: horario,
+            status: todayOcc ? todayOcc.status : 'pendente',
+            occurrence_id: todayOcc?.id,
+            scheduled_at: todayOcc?.scheduled_at,
+            completed_at: todayOcc?.completed_at
+          };
+        });
+
+        const completeMedication = {
+          ...medication,
+          proxima: nextOccurrence,
+          horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
+          hasPendingToday: allHorarios.some(h => h.status === 'pendente')
+        };
+
         console.log('Medication updated successfully:', id);
-        return new Response(JSON.stringify({ medication }), {
+        return new Response(JSON.stringify({ medication: completeMedication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

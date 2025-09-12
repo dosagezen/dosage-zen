@@ -428,7 +428,9 @@ const Medicacoes = () => {
             if (!med || med.removed_from_today) return false;
             // Always show optimistic medications in "hoje" for immediate feedback
             if (med.isOptimistic) return true;
-            return med.status === "ativa" && isToday(med.proximaDose);
+            // Check if has pending doses today (real occurrences)
+            const hasPendingToday = med.horarios.some(h => h.status === 'pendente' && h.hora !== '-');
+            return med.status === "ativa" && hasPendingToday;
           })
           break
         case "ativas":
@@ -496,7 +498,7 @@ const Medicacoes = () => {
     return filteredMedicacoes.filter(med => med && isAllDosesCompleted(med))
   }, [filteredMedicacoes])
 
-  // Calculate counters with optimistic updates
+  // Calculate counters based on real occurrences
   const counters = useMemo(() => {
     if (!medicacoesList?.length) return { hoje: 0, ativas: 0, todas: 0 };
 
@@ -505,11 +507,9 @@ const Medicacoes = () => {
       // Count optimistic as "hoje"
       if (med.isOptimistic) return true;
       
-      const hasToday = med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-');
-      if (hasToday) return true;
-      
-      // Check if should have doses today based on schedule
-      return med.status === "ativa" && isToday(med.proximaDose);
+      // Check if has pending doses today (real occurrences)
+      const hasPendingToday = med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-');
+      return med.status === "ativa" && hasPendingToday;
     }).length;
 
     const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
