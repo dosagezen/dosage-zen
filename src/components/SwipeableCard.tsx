@@ -361,15 +361,20 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   // Get only today's scheduled times (with occurrence_id) from backend
   const scheduledTimes = medicacao.horarios.filter(h => h.occurrence_id);
   
-  // Use calculated times if available, otherwise fallback to backend data
+  // Use calculated times with status from backend data
   const combinedSchedule = calculatedTimes.length > 0 
-    ? calculatedTimes.map(hora => ({
-        hora,
-        status: 'pendente' as const,
-        occurrence_id: scheduledTimes.find(s => s.hora === hora)?.occurrence_id,
-        scheduled_at: scheduledTimes.find(s => s.hora === hora)?.scheduled_at,
-        completed_at: scheduledTimes.find(s => s.hora === hora)?.completed_at
-      }))
+    ? calculatedTimes.map(hora => {
+        // Find matching backend data for this time
+        const backendData = scheduledTimes.find(s => s.hora === hora) || 
+                           medicacao.horarios.find(h => h.hora === hora);
+        return {
+          hora,
+          status: backendData?.status || 'pendente' as const,
+          occurrence_id: backendData?.occurrence_id,
+          scheduled_at: backendData?.scheduled_at,
+          completed_at: backendData?.completed_at
+        };
+      })
     : (scheduledTimes.length > 0 ? scheduledTimes : medicacao.horarios);
 
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
@@ -464,7 +469,20 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       } : {}}
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (horario.occurrence_id && horario.status === 'pendente') {
+                        // Only allow clicking on the first pending dose in chronological order
+                        const pendingHorarios = combinedSchedule
+                          .filter(h => h.status === 'pendente' && h.hora !== '-')
+                          .sort((a, b) => {
+                            const [aHours, aMinutes] = a.hora.split(':').map(Number);
+                            const [bHours, bMinutes] = b.hora.split(':').map(Number);
+                            const aTime = aHours * 60 + aMinutes;
+                            const bTime = bHours * 60 + bMinutes;
+                            return aTime - bTime;
+                          });
+                        
+                        // Allow clicking only on the first pending dose
+                        const nextDose = pendingHorarios[0];
+                        if (nextDose && horario.hora === nextDose.hora) {
                           onComplete?.(medicacao.id);
                         }
                       }}
