@@ -742,11 +742,6 @@ const Medicacoes = () => {
                               </div>
 
                               <div className="text-right">
-                                <div className="flex items-center gap-1 text-sm">
-                                   <span className="font-medium text-muted-foreground">
-                                     {medicacao.estoque}
-                                   </span>
-                                 </div>
                               </div>
                             </div>
                           </CardContent>
