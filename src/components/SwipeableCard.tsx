@@ -65,11 +65,11 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     }
   }
 
-  // Função para determinar o "horário da vez" baseado no momento atual
-  const getNearestScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): HorarioStatus | null => {
+  // Função para determinar o próximo horário baseado nos horários programados
+  const getNextScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): string => {
     const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
     
-    if (pendingTimes.length === 0) return null;
+    if (pendingTimes.length === 0) return 'Concluído hoje';
 
     const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
     
@@ -94,14 +94,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     timesWithDistance.sort((a, b) => a.distance - b.distance);
     
     // Retornar o horário mais próximo
-    const nearest = timesWithDistance[0];
-    return {
-      hora: nearest.hora,
-      status: nearest.status,
-      occurrence_id: nearest.occurrence_id,
-      scheduled_at: nearest.scheduled_at,
-      completed_at: nearest.completed_at
-    };
+    return timesWithDistance[0]?.hora || 'Não definido';
   }
   
   const [dragState, setDragState] = useState({
@@ -435,13 +428,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  Próxima: {(medicacao.proxima || medicacao.proximaDose) ? 
-                    new Date(medicacao.proxima || medicacao.proximaDose).toLocaleTimeString('pt-BR', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    }) : 
-                    'Não definido'
-                  }
+                  Próxima: {getNextScheduledTime(combinedSchedule)}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end">
