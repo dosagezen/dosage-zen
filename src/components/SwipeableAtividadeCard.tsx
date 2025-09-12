@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { formatTime24h } from "@/lib/utils"
 
 interface AtividadeCompleta {
   id: string;
@@ -213,7 +214,7 @@ const SwipeableAtividadeCard: React.FC<SwipeableAtividadeCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  {atividade.hora}
+                  {formatTime24h(atividade.hora)}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end gap-2">

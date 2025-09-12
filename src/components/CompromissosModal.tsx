@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2, Heart } from "lucide-react"
+import { formatTime24h } from "@/lib/utils"
 import SwipeableCard from './SwipeableCard'
 import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
@@ -125,10 +126,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     ).slice(0, 6);
 
     return todayAppointments.map((apt, index) => {
-      const time = new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
+      const time = formatTime24h(new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
         hour: '2-digit', 
         minute: '2-digit' 
-      });
+      }));
 
       if (apt.tipo === 'consulta') {
         return {
@@ -176,8 +177,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       dosagem: "10 mg",
       forma: "Comprimido",
       frequencia: "1x ao dia",
-      horarios: [{ hora: "08:00", status: "pendente" }],
-      proximaDose: "08:00",
+        horarios: [{ hora: "08:00", status: "pendente" }],
+        proximaDose: "08:00",
       estoque: 28,
       status: "ativa"
     }
@@ -329,7 +330,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       // Exibir toast
       toast({
-        title: `Dose de ${horarioMarcado} registrada`,
+        title: `Dose de ${formatTime24h(horarioMarcado)} registrada`,
         description: "A dose foi marcada como concluída.",
         action: (
           <Button

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Stethoscope, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { formatTime24h } from "@/lib/utils"
 
 interface ExameCompleto {
   id: string;
@@ -200,7 +201,7 @@ const SwipeableExameCard: React.FC<SwipeableExameCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  {exame.hora}
+                  {formatTime24h(exame.hora)}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end gap-2">

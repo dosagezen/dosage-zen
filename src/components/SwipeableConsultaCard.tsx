@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { User, MapPin, Clock, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { formatTime24h } from "@/lib/utils"
 
 interface ConsultaCompleta {
   id: string;
@@ -204,7 +205,7 @@ const SwipeableConsultaCard: React.FC<SwipeableConsultaCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  {consulta.hora}
+                  {formatTime24h(consulta.hora)}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end gap-2">

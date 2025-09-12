@@ -231,11 +231,11 @@ const LandingPage = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-success" />
-                    <span className="text-sm text-foreground">Omeprazol - 8:00</span>
+                    <span className="text-sm text-foreground">Omeprazol - 08h00</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Losartana - 20:00</span>
+                    <span className="text-sm text-muted-foreground">Losartana - 20h00</span>
                   </div>
                 </div>
               </div>

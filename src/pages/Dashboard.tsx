@@ -10,6 +10,7 @@ import CompromissosModal from "@/components/CompromissosModal";
 import { useMedications } from "@/hooks/useMedications";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatTime24h } from "@/lib/utils";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -185,7 +186,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-primary">{typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A'}</p>
+                    <p className="font-semibold text-primary">{formatTime24h(typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A')}</p>
                     <Badge variant="secondary" className="bg-orange-500 text-white hover:bg-orange-600">
                       Pendente
                     </Badge>
@@ -215,9 +216,9 @@ const Dashboard = () => {
             {compromissosProximos.length > 0 ? (
               compromissosProximos.map((apt, index) => {
                 const dataFormatada = new Date(apt.data_agendamento).toLocaleDateString('pt-BR');
-                const horaFormatada = new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
+                const horaFormatada = formatTime24h(new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
                   hour: '2-digit', minute: '2-digit' 
-                });
+                }));
                 
                 const getIconAndStyle = (tipo: string) => {
                   switch (tipo) {

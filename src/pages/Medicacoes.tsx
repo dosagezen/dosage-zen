@@ -10,6 +10,7 @@ import SwipeableCard from "@/components/SwipeableCard"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { useMedications, type Medication } from "@/hooks/useMedications"
+import { formatTime24h } from "@/lib/utils"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -159,11 +160,11 @@ const Medicacoes = () => {
         frequencia: med.frequencia || '',
         horarios: horariosStatus,
         proximaDose: med.proxima ? 
-          new Date(med.proxima).toLocaleTimeString('pt-BR', { 
+          formatTime24h(new Date(med.proxima).toLocaleTimeString('pt-BR', { 
             hour: '2-digit', 
             minute: '2-digit' 
-          }) : 
-          (horariosStatus.length > 0 ? horariosStatus[0].hora : "-"),
+          })) : 
+          (horariosStatus.length > 0 ? formatTime24h(horariosStatus[0].hora) : "-"),
         estoque: typeof med.estoque === 'number' ? med.estoque : 0,
         status: med.ativo ? "ativa" : "inativa",
         proxima: med.proxima,

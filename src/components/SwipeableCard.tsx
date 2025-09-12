@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Clock, Pill, Check, Trash2, Edit } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNavigate } from "react-router-dom"
+import { formatTime24h } from "@/lib/utils"
 
 interface HorarioStatus {
   hora: string;
@@ -465,7 +466,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  Próxima: {getNextScheduledTime(combinedSchedule)}
+                  Próxima: {formatTime24h(getNextScheduledTime(combinedSchedule))}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end">
@@ -509,14 +510,14 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                           onComplete(medicacao.id);
                         }
                       }}
-                      aria-label={
-                        horario.status === 'concluido' || horario.status === 'excluido'
-                          ? `Dose das ${horario.hora} registrada` 
-                          : `Dose das ${horario.hora} pendente`
-                      }
-                    >
-                      {horario.hora}
-                    </Badge>
+                       aria-label={
+                         horario.status === 'concluido' || horario.status === 'excluido'
+                           ? `Dose das ${formatTime24h(horario.hora)} registrada` 
+                           : `Dose das ${formatTime24h(horario.hora)} pendente`
+                       }
+                     >
+                       {formatTime24h(horario.hora)}
+                     </Badge>
                   ))}
                 </div>
               </div>
