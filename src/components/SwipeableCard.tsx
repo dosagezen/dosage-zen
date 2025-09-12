@@ -482,7 +482,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Horários programados:
                 </p>
-                <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
+                <div className="flex gap-2 md:gap-4 lg:gap-4 mt-1 flex-wrap">
                   {combinedSchedule.map((horario, index) => (
                      <Badge 
                        key={index} 
