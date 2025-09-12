@@ -367,19 +367,25 @@ const Medicacoes = () => {
 
   // Função para marcar dose como concluída (usando horário da vez)
   const markDoseCompleted = useCallback((medicacaoId: string) => {
+    console.log('markDoseCompleted called for:', medicacaoId);
+    console.log('isMarkingNearest:', isMarkingNearest);
+    
     markNearestOccurrence({ 
       medicationId: medicacaoId, 
       action: 'concluir' 
     });
-  }, [markNearestOccurrence])
+  }, [markNearestOccurrence, isMarkingNearest])
 
   // Função para marcar dose como cancelada/excluída (usando horário da vez)
   const markDoseCanceled = useCallback((medicacaoId: string) => {
+    console.log('markDoseCanceled called for:', medicacaoId);
+    console.log('isMarkingNearest:', isMarkingNearest);
+    
     markNearestOccurrence({ 
       medicationId: medicacaoId, 
       action: 'cancelar' 
     });
-  }, [markNearestOccurrence])
+  }, [markNearestOccurrence, isMarkingNearest])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
@@ -665,14 +671,15 @@ const Medicacoes = () => {
                   </h3>
                   <div className="grid gap-4">
                     {medicacoesPendentes.map((medicacao) => (
-                      <SwipeableCard
-                        key={medicacao.id}
-                        medicacao={medicacao}
-                         onComplete={(id) => markDoseCompleted(id)}
-                         onRemove={(id) => markDoseCanceled(id)}
-                         onEdit={(med) => handleEditMedication(med)}
-                         disabled={isUpdating || isDeleting || isMarkingNearest}
-                      />
+                       <SwipeableCard
+                         key={medicacao.id}
+                         medicacao={medicacao}
+                          onComplete={(id) => markDoseCompleted(id)}
+                          onRemove={(id) => markDoseCanceled(id)}
+                          onEdit={(med) => handleEditMedication(med)}
+                          disabled={isUpdating || isDeleting || isMarkingNearest}
+                          isLoading={isMarkingNearest}
+                       />
                     ))}
                   </div>
                 </div>

@@ -39,6 +39,7 @@ interface SwipeableCardProps {
   onEdit?: (medicacao: MedicacaoCompleta, origin?: 'medicacoes' | 'compromissos') => void;
   disabled?: boolean;
   origin?: 'medicacoes' | 'compromissos';
+  isLoading?: boolean;
 }
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
@@ -47,7 +48,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   onRemove, 
   onEdit,
   disabled = false,
-  origin = 'medicacoes'
+  origin = 'medicacoes',
+  isLoading = false
 }) => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
@@ -250,7 +252,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   }
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isMobile || disabled || !dragState.isDragging || dragState.touchEnded) return
+    if (!isMobile || disabled || !dragState.isDragging || dragState.touchEnded || isLoading) return
     
     setDragState(prev => ({ ...prev, touchEnded: true }))
     
@@ -261,8 +263,10 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
       if (shouldTriggerAction) {
         if (dragState.deltaX > 0) {
+          console.log('Mobile swipe complete for:', medicacao.id);
           onComplete(medicacao.id)
         } else {
+          console.log('Mobile swipe cancel for:', medicacao.id);
           onRemove(medicacao.id)
         }
       }
@@ -480,16 +484,18 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 </p>
                 <div className="flex gap-1 sm:gap-2 mt-1 flex-wrap">
                   {combinedSchedule.map((horario, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary" 
-                      className={`
-                        relative text-xs sm:text-sm transition-all duration-200 cursor-pointer
-                        ${horario.status === 'concluido' || horario.status === 'excluido'
-                          ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through"
-                          : "bg-accent/20 hover:bg-primary/20"
-                        }
-                      `}
+                     <Badge 
+                       key={index} 
+                       variant="secondary" 
+                       className={`
+                         relative text-xs sm:text-sm transition-all duration-200
+                         ${horario.status === 'concluido' || horario.status === 'excluido'
+                           ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through cursor-default"
+                           : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
+                           ? "bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ring-primary/30 hover:ring-primary/50"
+                           : "bg-accent/20 cursor-default opacity-50"
+                         }
+                       `}
                       style={horario.status === 'concluido' || horario.status === 'excluido' ? {
                         textDecoration: 'line-through',
                         textDecorationColor: '#588157',
@@ -497,21 +503,10 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                       } : {}}
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Only allow clicking on the first pending dose in chronological order
-                        const pendingHorarios = combinedSchedule
-                          .filter(h => h.status === 'pendente' && h.hora !== '-')
-                          .sort((a, b) => {
-                            const [aHours, aMinutes] = a.hora.split(':').map(Number);
-                            const [bHours, bMinutes] = b.hora.split(':').map(Number);
-                            const aTime = aHours * 60 + aMinutes;
-                            const bTime = bHours * 60 + bMinutes;
-                            return aTime - bTime;
-                          });
-                        
-                        // Allow clicking only on the first pending dose
-                        const nextDose = pendingHorarios[0];
-                        if (nextDose && horario.hora === nextDose.hora) {
-                          onComplete?.(medicacao.id);
+                        // Allow clicking on any pending dose
+                        if (horario.status === 'pendente' && horario.hora !== '-' && !isLoading) {
+                          console.log('Badge clicked - marking complete:', medicacao.id);
+                          onComplete(medicacao.id);
                         }
                       }}
                       aria-label={
@@ -531,15 +526,20 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                 <div className="flex gap-2 justify-start sm:justify-end mt-2">
                   {hasPendingDoses && (
                      <Button 
-                       variant="outline" 
-                       size="sm"
-                       onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
-                       className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                       aria-label={`Cancelar dose de ${medicacao.nome}`}
-                     >
-                       <Trash2 className="w-3 h-3 mr-1" />
-                       Cancelar
-                     </Button>
+                        variant="outline" 
+                        size="sm"
+                        disabled={isLoading}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          console.log('Desktop Cancel button clicked for:', medicacao.id);
+                          onRemove(medicacao.id); 
+                        }}
+                        className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
+                        aria-label={`Cancelar dose de ${medicacao.nome}`}
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        {isLoading ? 'Processando...' : 'Cancelar'}
+                      </Button>
                   )}
                   <Button 
                     variant="outline" 
@@ -586,16 +586,21 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                     Alterar
                   </Button>
                   {hasPendingDoses && (
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); onComplete(medicacao.id); }}
-                      className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
-                      aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
-                    >
-                      <Check className="w-3 h-3 mr-1" />
-                      Concluir
-                    </Button>
+                     <Button 
+                       variant="default" 
+                       size="sm"
+                       disabled={isLoading}
+                       onClick={(e) => { 
+                         e.stopPropagation(); 
+                         console.log('Desktop Complete button clicked for:', medicacao.id);
+                         onComplete(medicacao.id); 
+                       }}
+                       className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
+                       aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
+                     >
+                       <Check className="w-3 h-3 mr-1" />
+                       {isLoading ? 'Processando...' : 'Concluir'}
+                     </Button>
                   )}
                 </div>
               )}

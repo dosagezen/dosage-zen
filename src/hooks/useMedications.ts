@@ -355,6 +355,8 @@ export const useMedications = (callbacks?: {
 
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
+      console.log('markNearestOccurrenceMutation called with:', { medicationId, action });
+      
       const { data, error } = await supabase.functions.invoke('manage-medications', {
         body: {
           action: 'mark_nearest',
@@ -365,11 +367,29 @@ export const useMedications = (callbacks?: {
         }
       });
       
-      if (error) throw error;
+      console.log('Supabase function response:', { data, error });
+      
+      if (error) {
+        console.error('Error in markNearestOccurrenceMutation:', error);
+        throw error;
+      }
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('markNearestOccurrenceMutation success:', data);
       queryClient.invalidateQueries({ queryKey: ['medications'] });
+      toast({
+        title: 'Sucesso',
+        description: 'Medicação atualizada com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      console.error('markNearestOccurrenceMutation error:', error);
+      toast({
+        title: 'Erro',
+        description: `Falha ao atualizar medicação: ${error?.message || 'Erro desconhecido'}`,
+        variant: 'destructive',
+      });
     }
   });
 
