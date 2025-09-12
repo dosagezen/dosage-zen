@@ -313,12 +313,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  Próxima: {medicacao.proxima ? 
-                    new Date(medicacao.proxima).toLocaleTimeString('pt-BR', { 
+                  Próxima: {(medicacao.proxima || medicacao.proximaDose) ? 
+                    new Date(medicacao.proxima || medicacao.proximaDose).toLocaleTimeString('pt-BR', { 
                       hour: '2-digit', 
                       minute: '2-digit' 
                     }) : 
-                    medicacao.proximaDose
+                    'Não definido'
                   }
                 </span>
               </div>

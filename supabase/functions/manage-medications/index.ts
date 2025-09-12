@@ -194,9 +194,10 @@ serve(async (req) => {
           });
         }
 
-        // Create occurrences for the new medication
+        // Create occurrences for the new medication IMMEDIATELY
         const horariosArray = horarios ? horarios.map((h: any) => typeof h === 'string' ? h : h.hora) : [];
         if (horariosArray.length > 0) {
+          console.log(`Generating occurrences for medication ${medication.id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
             'fn_upsert_medication_occurrences',
             {
@@ -210,6 +211,8 @@ serve(async (req) => {
 
           if (occurrenceError) {
             console.error('Error creating occurrences:', occurrenceError);
+          } else {
+            console.log('Occurrences generated successfully for medication:', medication.id);
           }
         }
 
@@ -314,9 +317,11 @@ serve(async (req) => {
           });
         }
 
-        // Update occurrences if horarios were modified
-        if (horarios && Array.isArray(horarios)) {
-          const horariosArray = horarios.map((h: any) => typeof h === 'string' ? h : h.hora);
+        // Always regenerate occurrences when updating medication data
+        const updatedHorarios = horarios || medication.horarios || [];
+        if (updatedHorarios && Array.isArray(updatedHorarios) && updatedHorarios.length > 0) {
+          const horariosArray = updatedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora);
+          console.log(`Regenerating occurrences for medication ${id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
             'fn_upsert_medication_occurrences',
             {
@@ -330,6 +335,8 @@ serve(async (req) => {
 
           if (occurrenceError) {
             console.error('Error updating occurrences:', occurrenceError);
+          } else {
+            console.log('Occurrences regenerated successfully for medication:', id);
           }
         }
 

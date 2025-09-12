@@ -133,9 +133,16 @@ export const useMedications = (callbacks?: {
         return [realMedication, ...filtered];
       });
       
-      // Diagnóstico para verificar se as ocorrências foram geradas
+      // Diagnóstico com dados persistidos
       const todayOccurrences = realMedication?.horarios?.filter(h => h.status === 'pendente')?.length || 0;
-      console.log(`Medicação criada: ${realMedication?.nome}, ocorrências hoje: ${todayOccurrences}`);
+      console.log('Medicação criada com dados completos:', {
+        id: realMedication?.id,
+        nome: realMedication?.nome,
+        data_inicio: realMedication?.data_inicio,
+        data_fim: realMedication?.data_fim,
+        horarios: realMedication?.horarios?.length,
+        todayOccurrences
+      });
       
       toast({
         title: 'Sucesso',
@@ -176,8 +183,37 @@ export const useMedications = (callbacks?: {
 
       return data.medication;
     },
+    onMutate: async ({ id, ...medicationData }) => {
+      // Optimistic update with date preservation
+      await queryClient.cancelQueries({ queryKey: ['medications'] });
+      
+      const previousMedications = queryClient.getQueryData(['medications']);
+      
+      queryClient.setQueryData(['medications'], (old: Medication[] = []) => {
+        return old.map(med => 
+          med.id === id 
+            ? { 
+                ...med, 
+                ...medicationData,
+                data_inicio: medicationData.data_inicio || med.data_inicio,
+                data_fim: medicationData.data_fim || med.data_fim,
+                isOptimistic: true
+              }
+            : med
+        );
+      });
+      
+      return { previousMedications };
+    },
     onSuccess: (data) => {
-      console.log('Update response:', data);
+      console.log('Medicação atualizada com dados completos:', {
+        id: data?.id,
+        nome: data?.nome,
+        data_inicio: data?.data_inicio,
+        data_fim: data?.data_fim,
+        horarios: data?.horarios?.length,
+        proxima: data?.proxima
+      });
       
       // Update the query cache with the new medication data
       if (data) {
@@ -190,20 +226,26 @@ export const useMedications = (callbacks?: {
         });
       }
       
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
       toast({
         title: 'Sucesso',
         description: 'Medicação atualizada com sucesso!',
       });
       callbacks?.onUpdateSuccess?.();
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      if (context?.previousMedications) {
+        queryClient.setQueryData(['medications'], context.previousMedications);
+      }
       console.error('Error updating medication:', error);
       toast({
         title: 'Erro',
         description: `Falha ao atualizar medicação: ${error?.message || 'Erro desconhecido'}`,
         variant: 'destructive',
       });
+    },
+    onSettled: () => {
+      // Always refetch to ensure consistency after optimistic update
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
     },
   });
 

@@ -59,6 +59,10 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
     dataFim: undefined as Date | undefined
   })
 
+  // State for controlling date popover visibility (mobile auto-close)
+  const [isStartDateOpen, setIsStartDateOpen] = useState(false)
+  const [isEndDateOpen, setIsEndDateOpen] = useState(false)
+
   const [horarioError, setHorarioError] = useState("")
 
   // Atualizar dados quando medication muda
@@ -128,6 +132,16 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       return
     }
 
+    // Validação de datas
+    if (formData.dataFim && formData.dataInicio && formData.dataFim < formData.dataInicio) {
+      toast({
+        title: "Data inválida",
+        description: "A data de término não pode ser anterior à data de início.",
+        variant: "destructive"
+      })
+      return
+    }
+
     // Preparar dados para envio com diagnóstico
     const medicationData = {
       nome: formData.nome.trim(),
@@ -137,7 +151,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       horarios: formData.horario ? [formData.horario] : [],
       estoque: parseInt(formData.estoque) || 0,
       ativo: formData.status,
-      data_inicio: formData.dataInicio.toISOString().split('T')[0],
+      data_inicio: formData.dataInicio.toISOString().split('T')[0], // Normalize to ISO date
       data_fim: formData.dataFim ? formData.dataFim.toISOString().split('T')[0] : null,
       observacoes: null
     }
@@ -384,7 +398,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="data-inicio">Data de Início</Label>
-              <Popover>
+              <Popover open={isStartDateOpen} onOpenChange={setIsStartDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -401,7 +415,13 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                   <Calendar
                     mode="single"
                     selected={formData.dataInicio}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, dataInicio: date }))}
+                    onSelect={(date) => {
+                      setFormData(prev => ({ ...prev, dataInicio: date }))
+                      // Auto-close on mobile
+                      if (isMobile) {
+                        setIsStartDateOpen(false)
+                      }
+                    }}
                     initialFocus
                     locale={ptBR}
                     weekStartsOn={1}
@@ -412,7 +432,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
             </div>
             <div className="space-y-2">
               <Label htmlFor="data-fim">Data do Término</Label>
-              <Popover>
+              <Popover open={isEndDateOpen} onOpenChange={setIsEndDateOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -429,7 +449,13 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
                   <Calendar
                     mode="single"
                     selected={formData.dataFim}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, dataFim: date }))}
+                    onSelect={(date) => {
+                      setFormData(prev => ({ ...prev, dataFim: date }))
+                      // Auto-close on mobile
+                      if (isMobile) {
+                        setIsEndDateOpen(false)
+                      }
+                    }}
                     initialFocus
                     locale={ptBR}
                     weekStartsOn={1}
