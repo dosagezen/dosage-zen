@@ -382,13 +382,13 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const handleCardClick = () => {
     // Universal fallback for taps - works on both mobile and desktop
     if (onEdit && !tapTriggeredRef.current) {
-      // Ensure all data including dates are passed for editing with proper fallbacks
+      // Pass the original medication data exactly as stored, preserving the original creation date
       const medicacaoCompleta = {
         ...medicacao,
-        // Preserve original dates or use today as fallback for data_inicio
-        data_inicio: medicacao.data_inicio || new Date().toISOString().split('T')[0],
-        data_fim: medicacao.data_fim || null,
-        // Ensure horaInicio is available
+        // Keep the original data_inicio from when the card was created - DO NOT override
+        data_inicio: medicacao.data_inicio,
+        data_fim: medicacao.data_fim,
+        // Ensure horaInicio is available with proper fallback
         horaInicio: medicacao.horaInicio || 
                   (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
       };
@@ -561,17 +561,21 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                          status: medicacao.status
                        });
                        if (onEdit) {
-                         // Ensure all data including dates are passed for editing with proper fallbacks
+                         // Pass the original medication data exactly as stored, preserving the original creation date
                          const medicacaoCompleta = {
                            ...medicacao,
-                           // Preserve original dates or use today as fallback for data_inicio
-                           data_inicio: medicacao.data_inicio || new Date().toISOString().split('T')[0],
-                           data_fim: medicacao.data_fim || null,
-                           // Ensure horaInicio is available
+                           // Keep the original data_inicio from when the card was created - DO NOT override
+                           data_inicio: medicacao.data_inicio,
+                           data_fim: medicacao.data_fim,
+                           // Ensure horaInicio is available with proper fallback
                            horaInicio: medicacao.horaInicio || 
                                      (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
                          };
-                         console.log('Dados sendo enviados para edição:', medicacaoCompleta);
+                         console.log('Dados originais preservados para edição:', {
+                           data_inicio_original: medicacao.data_inicio,
+                           data_fim_original: medicacao.data_fim,
+                           horaInicio: medicacaoCompleta.horaInicio
+                         });
                          onEdit(medicacaoCompleta, origin);
                        }
                      }}
