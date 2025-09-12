@@ -525,6 +525,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fn_count_medications: {
+        Args: { p_patient_profile_id: string }
+        Returns: Json
+      }
       fn_mark_occurrence: {
         Args: {
           p_occurrence_id: string
