@@ -293,13 +293,13 @@ const Medicacoes = () => {
     return !proximaDose.includes("(amanhã)") && proximaDose !== "-"
   }
 
-  // Função para verificar se uma medicação tem todos os horários concluídos
+  // Função para verificar se uma medicação tem todos os horários do dia checados (concluído OU cancelado)
   const isAllDosesCompleted = useCallback((medicacao: MedicacaoCompleta) => {
     if (medicacao.status === "inativa") return false
     if (!isToday(medicacao.proximaDose)) return false
     
     const horariosDoHoje = medicacao.horarios.filter(h => h.hora !== '-')
-    return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status === 'concluido')
+    return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status === 'concluido' || h.status === 'excluido')
   }, [])
 
   // Função para calcular próximo horário pendente
@@ -319,32 +319,65 @@ const Medicacoes = () => {
     return pendentes[0].hora
   }, [])
 
-  // Função para marcar dose como concluída
+  // Função para determinar o "horário da vez" baseado no momento atual
+  const getNearestScheduledTime = useCallback((horarios: HorarioStatus[], now: Date = new Date()): HorarioStatus | null => {
+    const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
+    
+    if (pendingTimes.length === 0) return null;
+
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Converter horários para minutos e adicionar informação de distância
+    const timesWithDistance = pendingTimes.map(horario => {
+      const [hours, minutes] = horario.hora.split(':').map(Number);
+      const timeMinutes = hours * 60 + minutes;
+      
+      let distance;
+      if (timeMinutes >= currentTimeMinutes) {
+        // Horário futuro no mesmo dia
+        distance = timeMinutes - currentTimeMinutes;
+      } else {
+        // Horário no próximo dia (24h + timeMinutes - currentTimeMinutes)
+        distance = (24 * 60) + timeMinutes - currentTimeMinutes;
+      }
+      
+      return { ...horario, timeMinutes, distance };
+    });
+
+    // Ordenar por distância (menor distância primeiro)
+    timesWithDistance.sort((a, b) => a.distance - b.distance);
+    
+    // Retornar o horário mais próximo
+    const nearest = timesWithDistance[0];
+    return {
+      hora: nearest.hora,
+      status: nearest.status,
+      occurrence_id: nearest.occurrence_id,
+      scheduled_at: nearest.scheduled_at,
+      completed_at: nearest.completed_at
+    };
+  }, [])
+
+  // Função para marcar dose como concluída (usando horário da vez)
   const markDoseCompleted = useCallback((medicacaoId: string) => {
     const medicacao = medicacoesList.find(m => m.id === medicacaoId)
     if (!medicacao) return
 
-    // Encontrar primeiro horário pendente
-    const primeiroHorarioPendente = medicacao.horarios
-      .filter(h => h.status === 'pendente' && h.hora !== '-')
-      .sort((a, b) => {
-        const timeA = a.hora.split(':').map(Number)
-        const timeB = b.hora.split(':').map(Number)
-        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
-      })[0]
+    // Encontrar horário da vez (mais próximo ao momento atual)
+    const horarioDaVez = getNearestScheduledTime(medicacao.horarios)
 
-    if (!primeiroHorarioPendente?.occurrence_id) return
+    if (!horarioDaVez?.occurrence_id) return
 
     // Mark occurrence as completed
     markOccurrence({ 
-      occurrence_id: primeiroHorarioPendente.occurrence_id, 
+      occurrence_id: horarioDaVez.occurrence_id, 
       status: 'concluido' 
     });
 
     // Salvar ação para undo
     const undoAction: UndoAction = {
       medicacaoId,
-      horario: primeiroHorarioPendente.hora,
+      horario: horarioDaVez.hora,
       timestamp: Date.now()
     }
     setLastUndoAction(undoAction)
@@ -359,29 +392,63 @@ const Medicacoes = () => {
       setLastUndoAction(null)
     }, 5000)
     setUndoTimeout(timeout)
-  }, [medicacoesList, markOccurrence, undoTimeout])
+  }, [medicacoesList, markOccurrence, undoTimeout, getNearestScheduledTime])
+
+  // Função para marcar dose como cancelada/excluída (usando horário da vez)
+  const markDoseCanceled = useCallback((medicacaoId: string) => {
+    const medicacao = medicacoesList.find(m => m.id === medicacaoId)
+    if (!medicacao) return
+
+    // Encontrar horário da vez (mais próximo ao momento atual)
+    const horarioDaVez = getNearestScheduledTime(medicacao.horarios)
+
+    if (!horarioDaVez?.occurrence_id) return
+
+    // Mark occurrence as excluded/canceled
+    markOccurrence({ 
+      occurrence_id: horarioDaVez.occurrence_id, 
+      status: 'excluido' 
+    });
+
+    // Salvar ação para undo (mesmo sistema que concluir)
+    const undoAction: UndoAction = {
+      medicacaoId,
+      horario: horarioDaVez.hora,
+      timestamp: Date.now()
+    }
+    setLastUndoAction(undoAction)
+
+    // Limpar timeout anterior se existir
+    if (undoTimeout) {
+      clearTimeout(undoTimeout)
+    }
+
+    // Configurar novo timeout
+    const timeout = setTimeout(() => {
+      setLastUndoAction(null)
+    }, 5000)
+    setUndoTimeout(timeout)
+
+    toast({
+      title: "Dose cancelada",
+      description: `Dose de ${horarioDaVez.hora} foi cancelada`,
+    })
+  }, [medicacoesList, markOccurrence, getNearestScheduledTime, undoTimeout])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {
-    // Desfazer marcação de dose
-    setMedicacoesList(prev => prev.map(med => {
-      if (med.id === undoAction.medicacaoId) {
-        const novosHorarios = med.horarios.map(h => 
-          h.hora === undoAction.horario && h.status === 'concluido'
-            ? { ...h, status: 'pendente' as const, completed_at: undefined }
-            : h
-        )
-        
-        const novaProximaDose = calculateNextDose(novosHorarios)
-        
-        return {
-          ...med,
-          horarios: novosHorarios,
-          proximaDose: novaProximaDose
-        }
-      }
-      return med
-    }))
+    // Encontrar a medicação e horário para desfazer
+    const medicacao = medicacoesList.find(m => m.id === undoAction.medicacaoId)
+    if (!medicacao) return
+
+    const horarioAlterado = medicacao.horarios.find(h => h.hora === undoAction.horario)
+    if (!horarioAlterado?.occurrence_id) return
+
+    // Desfazer usando a API do backend
+    markOccurrence({ 
+      occurrence_id: horarioAlterado.occurrence_id, 
+      status: 'pendente' 
+    });
 
     // Limpar undo action e timeout
     setLastUndoAction(null)
@@ -394,7 +461,7 @@ const Medicacoes = () => {
       title: "Ação desfeita",
       description: `Dose de ${undoAction.horario} foi desmarcada`,
     })
-  }, [undoTimeout, calculateNextDose])
+  }, [medicacoesList, markOccurrence, undoTimeout])
 
   // Limpar timeout quando componente desmontar
   useEffect(() => {
@@ -695,7 +762,7 @@ const Medicacoes = () => {
                         key={medicacao.id}
                         medicacao={medicacao}
                         onComplete={(id) => markDoseCompleted(id)}
-                        onRemove={(id) => {}} // Função vazia por enquanto
+                        onRemove={(id) => markDoseCanceled(id)}
                         onEdit={(med) => handleEditMedication(med)}
                         disabled={isUpdating || isDeleting}
                       />
@@ -713,9 +780,9 @@ const Medicacoes = () => {
                     className="flex items-center gap-2 p-0 h-auto"
                   >
                     <Check className="w-5 h-5 text-green-600" />
-                    <h3 className="text-lg font-semibold">
-                      Concluídas hoje ({medicacoesConcluidas.length})
-                    </h3>
+                     <h3 className="text-lg font-semibold">
+                       Finalizadas hoje ({medicacoesConcluidas.length})
+                     </h3>
                     {isCompletedExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </Button>
                   
@@ -729,9 +796,9 @@ const Medicacoes = () => {
                                 <div className="flex items-center gap-2 mb-2">
                                   <Pill className="h-5 w-5 text-green-600" />
                                   <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                  <Badge variant="outline" className="text-green-600 border-green-600">
-                                    Concluída
-                                  </Badge>
+                                   <Badge variant="outline" className="text-green-600 border-green-600">
+                                     Finalizada
+                                   </Badge>
                                 </div>
                                 
                                 <div className="space-y-2 text-sm text-muted-foreground">

@@ -64,6 +64,45 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
       default: return frequencia;
     }
   }
+
+  // Função para determinar o "horário da vez" baseado no momento atual
+  const getNearestScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): HorarioStatus | null => {
+    const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
+    
+    if (pendingTimes.length === 0) return null;
+
+    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    // Converter horários para minutos e adicionar informação de distância
+    const timesWithDistance = pendingTimes.map(horario => {
+      const [hours, minutes] = horario.hora.split(':').map(Number);
+      const timeMinutes = hours * 60 + minutes;
+      
+      let distance;
+      if (timeMinutes >= currentTimeMinutes) {
+        // Horário futuro no mesmo dia
+        distance = timeMinutes - currentTimeMinutes;
+      } else {
+        // Horário no próximo dia (24h + timeMinutes - currentTimeMinutes)
+        distance = (24 * 60) + timeMinutes - currentTimeMinutes;
+      }
+      
+      return { ...horario, timeMinutes, distance };
+    });
+
+    // Ordenar por distância (menor distância primeiro)
+    timesWithDistance.sort((a, b) => a.distance - b.distance);
+    
+    // Retornar o horário mais próximo
+    const nearest = timesWithDistance[0];
+    return {
+      hora: nearest.hora,
+      status: nearest.status,
+      occurrence_id: nearest.occurrence_id,
+      scheduled_at: nearest.scheduled_at,
+      completed_at: nearest.completed_at
+    };
+  }
   
   const [dragState, setDragState] = useState({
     isDragging: false,
@@ -452,16 +491,16 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               {!isMobile && (
                 <div className="flex gap-2 justify-start sm:justify-end mt-2">
                   {hasPendingDoses && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
-                      className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                      aria-label={`Excluir medicação ${medicacao.nome}`}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Excluir
-                    </Button>
+                     <Button 
+                       variant="outline" 
+                       size="sm"
+                       onClick={(e) => { e.stopPropagation(); onRemove(medicacao.id); }}
+                       className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
+                       aria-label={`Cancelar dose de ${medicacao.nome}`}
+                     >
+                       <Trash2 className="w-3 h-3 mr-1" />
+                       Cancelar
+                     </Button>
                   )}
                   <Button 
                     variant="outline" 
