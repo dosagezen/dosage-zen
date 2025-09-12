@@ -425,17 +425,20 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                   {(() => {
                     const quantidade = medicacao.estoque || 1;
                     const dosagem = medicacao.dosagem || "";
+                    const forma = medicacao.forma || "";
                     
-                    // Check if dosagem already contains unit words
-                    const hasUnit = /comprimido|capsula|gota|ml|mg/i.test(dosagem);
+                    // Make concordance with quantity using the "forma" field
+                    const formaPlural = quantidade === 1 ? forma : forma + "s";
                     
-                    if (hasUnit) {
-                      // If dosagem already has unit, just show dosagem • quantity
+                    // Check if dosagem already contains the forma word
+                    const formaInDosagem = dosagem.toLowerCase().includes(forma.toLowerCase());
+                    
+                    if (formaInDosagem) {
+                      // If forma is already in dosagem, just show dosagem • quantity
                       return `${dosagem} • ${quantidade}`;
                     } else {
-                      // If no unit in dosagem, add proper concordance
-                      const unit = quantidade === 1 ? "comprimido" : "comprimidos";
-                      return `${dosagem} • ${quantidade} ${unit}`;
+                      // If forma not in dosagem, show dosagem • quantity + forma with concordance
+                      return `${dosagem} • ${quantidade} ${formaPlural}`;
                     }
                   })()}
                 </p>
