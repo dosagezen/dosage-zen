@@ -20,11 +20,10 @@ const Dashboard = () => {
   const { user } = useAuth();
   
   // Hooks para dados reais
-  const { medications, isLoading: medicationsLoading } = useMedications();
-  const { appointments: allAppointments, isLoading: appointmentsLoading } = useAppointments();
+  const { medications, isLoading: medicationsLoading, refetchMedications } = useMedications();
+  const { appointments: allAppointments, isLoading: appointmentsLoading, refetchAppointments } = useAppointments();
   const { appointments: consultas } = useAppointments('consulta');
   const { appointments: exames } = useAppointments('exame');
-  const { appointments: atividades } = useAppointments('atividade');
 
   // Detectar parâmetro modal=compromissos para reabrir o modal
   useEffect(() => {
@@ -91,13 +90,56 @@ const Dashboard = () => {
     cor: "muted"
   }];
 
-  // Loading state
-  if (medicationsLoading || appointmentsLoading) {
+  // Loading state with timeout
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  
+  useEffect(() => {
+    if (medicationsLoading || appointmentsLoading) {
+      const timer = setTimeout(() => {
+        setLoadingTimeout(true);
+      }, 8000); // 8 seconds timeout
+      
+      return () => clearTimeout(timer);
+    } else {
+      setLoadingTimeout(false);
+    }
+  }, [medicationsLoading, appointmentsLoading]);
+
+  if ((medicationsLoading || appointmentsLoading) && !loadingTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           <p className="mt-4 text-muted-foreground">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingTimeout && (medicationsLoading || appointmentsLoading)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="text-destructive text-lg font-semibold">Conexão lenta detectada</div>
+          <p className="text-muted-foreground">Os dados estão demorando para carregar</p>
+          <div className="space-x-4">
+            <Button 
+              onClick={() => {
+                setLoadingTimeout(false);
+                refetchMedications?.();
+                refetchAppointments?.();
+              }}
+              variant="outline"
+            >
+              Tentar Novamente
+            </Button>
+            <Button 
+              onClick={() => setLoadingTimeout(false)}
+              variant="ghost"
+            >
+              Continuar Mesmo Assim
+            </Button>
+          </div>
         </div>
       </div>
     );

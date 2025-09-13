@@ -55,6 +55,11 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
   const query = useQuery({
     queryKey: ['appointments', tipo],
     queryFn: fetchAppointments,
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
+    staleTime: 60_000, // 1 minute
+    gcTime: 300_000, // 5 minutes
   });
 
   const createMutation = useMutation({
@@ -150,7 +155,9 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
   return {
     appointments: query.data || [],
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     error: query.error,
+    refetchAppointments: query.refetch,
     createAppointment: createMutation.mutate,
     updateAppointment: updateMutation.mutate,
     deleteAppointment: deleteMutation.mutate,

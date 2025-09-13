@@ -111,9 +111,11 @@ export const useMedications = (callbacks?: {
   const query = useQuery({
     queryKey: ['medications'],
     queryFn: fetchMedications,
-    retry: 1,
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
     staleTime: 30_000,
+    gcTime: 300_000, // 5 minutes
   });
 
   const createMutation = useMutation({
@@ -634,8 +636,10 @@ export const useMedications = (callbacks?: {
   return {
     medications: Array.isArray(query.data) ? query.data : [],
     isLoading: query.isLoading || query.isFetching,
+    isFetching: query.isFetching,
     isSuccess: query.isSuccess,
     error: query.error,
+    refetchMedications: query.refetch,
     createMedication: createMutation.mutate,
     updateMedication: updateMutation.mutate,
     deleteMedication: deleteMutation.mutate,
