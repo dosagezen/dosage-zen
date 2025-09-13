@@ -19,6 +19,7 @@ interface HorarioStatus {
   occurrence_id?: string;
   scheduled_at?: string;
   completed_at?: string;
+  onTime?: boolean;
 }
 
 interface MedicacaoCompleta {
@@ -147,12 +148,21 @@ const Medicacoes = () => {
               status: 'pendente' as const
             };
           }
+          // Calcular onTime quando possível com base em scheduled_at e completed_at
+          const scheduledAt = horario.scheduled_at ? new Date(horario.scheduled_at).getTime() : undefined;
+          const completedAt = horario.completed_at ? new Date(horario.completed_at).getTime() : undefined;
+          const deltaMinutes = (scheduledAt !== undefined && completedAt !== undefined)
+            ? Math.abs((completedAt - scheduledAt) / (1000 * 60))
+            : undefined;
+          const onTimeComputed = horario.status === 'concluido' && deltaMinutes !== undefined && deltaMinutes <= 5;
           return {
             hora: horario.hora,
             status: horario.status || 'pendente',
             occurrence_id: horario.occurrence_id,
             scheduled_at: horario.scheduled_at,
-            completed_at: horario.completed_at
+            completed_at: horario.completed_at,
+            // Preserva onTime vindo do cache local ou calcula a partir das datas
+            onTime: horario.onTime ?? onTimeComputed
           };
         });
       
@@ -477,9 +487,8 @@ const Medicacoes = () => {
             if (!med || med.removed_from_today) return false;
             if (med.isOptimistic) return true; // Optimistic feedback
             // Prefer backend flags, fallback to local inference
-            const hasPendingToday = (med as any).has_pending_today ?? ((med.horarios || []).some(h => h.status === 'pendente' && h.hora && h.hora !== '-'));
-            const hasToday = (med as any).has_today ?? true;
-            return med.status === "ativa" && hasToday && hasPendingToday;
+            const hasToday = (med as any).has_today ?? ((med.horarios || []).length > 0);
+            return med.status === "ativa" && hasToday;
           })
           break
         case "ativas":
@@ -554,9 +563,8 @@ const Medicacoes = () => {
     const hoje = medicacoesList.filter(med => {
       if (!med || med.removed_from_today) return false;
       if (med.isOptimistic) return true; // count optimistic
-      const hasPendingToday = (med as any).has_pending_today ?? (med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-'));
-      const hasToday = (med as any).has_today ?? true;
-      return med.status === "ativa" && hasToday && hasPendingToday;
+      const hasToday = (med as any).has_today ?? ((med.horarios || []).length > 0);
+      return med.status === "ativa" && hasToday;
     }).length;
 
     const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
@@ -744,7 +752,7 @@ const Medicacoes = () => {
                                              : "bg-blue-100 text-blue-800"
                                          )}
                                        >
-                                         {horario.hora}
+                                         {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
                                        </span>
                                      ))}
                                    </div>
