@@ -275,12 +275,14 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
       if (shouldTriggerAction) {
         if (dragState.deltaX > 0) {
-          console.log('Mobile swipe complete for:', medicacao.id);
+          console.log('Mobile swipe complete triggered for:', medicacao.id, 'card width:', cardWidth, 'deltaX:', dragState.deltaX);
           onComplete(medicacao.id)
         } else {
-          console.log('Mobile swipe cancel for:', medicacao.id);
+          console.log('Mobile swipe cancel triggered for:', medicacao.id, 'card width:', cardWidth, 'deltaX:', dragState.deltaX);
           onRemove(medicacao.id)
         }
+      } else {
+        console.log('Mobile swipe below threshold:', Math.abs(dragState.deltaX), 'threshold:', cardWidth * threshold);
       }
     } else if (onEdit && !tapTriggeredRef.current) {
       // Tap detection: check distance and time, not touchMoved

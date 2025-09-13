@@ -92,7 +92,7 @@ serve(async (req) => {
       case 'mark_nearest': {
         const { nearestAction, currentTime, timezone } = body;
         
-        console.log(`Processing mark_nearest request: medication_id=${id}, action=${nearestAction}`);
+        console.log(`Mobile check detected: Processing mark_nearest request: medication_id=${id}, action=${nearestAction}`);
         
         if (!id || !nearestAction) {
           return new Response(
@@ -105,21 +105,87 @@ serve(async (req) => {
           .rpc('fn_mark_nearest_med_occurrence', {
             p_med_id: id,
             p_action: nearestAction,
-            p_now: currentTime || new Date().toISOString(),
+            p_now_utc: currentTime || new Date().toISOString(),
             p_tz: timezone || 'UTC'
           });
 
         if (nearestError) {
-          console.error('Error marking nearest occurrence:', nearestError);
+          console.error('Mobile check error marking nearest occurrence:', nearestError);
           return new Response(
             JSON.stringify({ error: nearestError.message }),
             { status: 500, headers: corsHeaders }
           );
         }
 
-        console.log('Nearest occurrence marked:', nearestResult);
+        console.log('Mobile check success - Nearest occurrence marked:', nearestResult);
         return new Response(
           JSON.stringify(nearestResult),
+          { headers: corsHeaders }
+        );
+      }
+
+      case 'undo_occurrence': {
+        const { occurrence_id } = body;
+        
+        console.log(`Processing undo request: occurrence_id=${occurrence_id}`);
+        
+        if (!occurrence_id) {
+          return new Response(
+            JSON.stringify({ error: 'Missing occurrence_id' }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const { data: undoResult, error: undoError } = await supabaseClient
+          .rpc('fn_undo_last_occurrence', {
+            p_occ_id: occurrence_id
+          });
+
+        if (undoError) {
+          console.error('Error undoing occurrence:', undoError);
+          return new Response(
+            JSON.stringify({ error: undoError.message }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log('Occurrence undone:', undoResult);
+        return new Response(
+          JSON.stringify(undoResult),
+          { headers: corsHeaders }
+        );
+      }
+
+      case 'restore_card': {
+        const { medication_id, day_local, timezone } = body;
+        
+        console.log(`Processing restore request: medication_id=${medication_id}, day=${day_local}`);
+        
+        if (!medication_id || !day_local) {
+          return new Response(
+            JSON.stringify({ error: 'Missing medication_id or day_local' }),
+            { status: 400, headers: corsHeaders }
+          );
+        }
+
+        const { data: restoreResult, error: restoreError } = await supabaseClient
+          .rpc('fn_restore_card_for_today', {
+            p_med_id: medication_id,
+            p_day_local: day_local,
+            p_tz: timezone || 'UTC'
+          });
+
+        if (restoreError) {
+          console.error('Error restoring card:', restoreError);
+          return new Response(
+            JSON.stringify({ error: restoreError.message }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log('Card restored:', restoreResult);
+        return new Response(
+          JSON.stringify({ restored_count: restoreResult }),
           { headers: corsHeaders }
         );
       }

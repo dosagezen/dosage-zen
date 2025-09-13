@@ -366,18 +366,21 @@ export const useMedications = (callbacks?: {
       const currentTime = new Date().toISOString();
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      console.log('Calling fn_mark_nearest_med_occurrence with:', {
-        p_med_id: medicationId,
-        p_action: action,
-        p_now_utc: currentTime,
-        p_tz: timezone
+      console.log('Mobile check: Calling manage-medications with mark_nearest:', {
+        medication_id: medicationId,
+        nearestAction: action,
+        currentTime,
+        timezone
       });
 
-      const { data, error } = await supabase.rpc('fn_mark_nearest_med_occurrence', {
-        p_med_id: medicationId,
-        p_action: action,
-        p_now_utc: currentTime,
-        p_tz: timezone
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: {
+          action: 'mark_nearest',
+          id: medicationId,
+          nearestAction: action,
+          currentTime,
+          timezone
+        }
       });
 
       if (error) {
@@ -385,10 +388,10 @@ export const useMedications = (callbacks?: {
         throw error;
       }
 
-      console.log('fn_mark_nearest_med_occurrence result:', data);
+      console.log('mark_nearest result:', data);
       
-      if (!(data as any)?.success) {
-        throw new Error((data as any)?.message || 'Failed to mark occurrence');
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to mark occurrence');
       }
 
       return data;
@@ -450,8 +453,13 @@ export const useMedications = (callbacks?: {
   // Undo functionality
   const undoMutation = useMutation({
     mutationFn: async (undoContext: UndoContext) => {
-      const { data, error } = await supabase.rpc('fn_undo_last_occurrence', {
-        p_occ_id: undoContext.occurrenceId
+      console.log('Undo: calling manage-medications with undo action:', undoContext.occurrenceId);
+
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: {
+          action: 'undo_occurrence',
+          occurrence_id: undoContext.occurrenceId
+        }
       });
 
       if (error) {
@@ -459,8 +467,8 @@ export const useMedications = (callbacks?: {
         throw error;
       }
 
-      if (!(data as any)?.success) {
-        throw new Error((data as any)?.message || 'Failed to undo occurrence');
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to undo occurrence');
       }
 
       return data;
@@ -512,13 +520,18 @@ export const useMedications = (callbacks?: {
   // Restore card functionality
   const restoreCardMutation = useMutation({
     mutationFn: async (medicationId: string) => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD format
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      const { data, error } = await supabase.rpc('fn_restore_card_for_today', {
-        p_med_id: medicationId,
-        p_day_local: today,
-        p_tz: timezone
+      console.log('Restore: calling manage-medications with restore action:', medicationId);
+
+      const { data, error } = await supabase.functions.invoke('manage-medications', {
+        body: {
+          action: 'restore_card',
+          medication_id: medicationId,
+          day_local: today,
+          timezone
+        }
       });
 
       if (error) {
@@ -526,7 +539,7 @@ export const useMedications = (callbacks?: {
         throw error;
       }
 
-      return { restoredCount: data };
+      return { restoredCount: data?.restored_count || 0 };
     },
     onSuccess: (data, medicationId) => {
       queryClient.invalidateQueries({ queryKey: ['medications'] });
