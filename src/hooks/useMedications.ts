@@ -365,13 +365,13 @@ export const useMedications = (callbacks?: {
     },
   });
 
-  // Mark nearest occurrence - with optimistic update aligned to UI logic
+  // Mark oldest pending occurrence - with optimistic update aligned to UI logic
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
       const currentTime = new Date().toISOString();
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
       
-      console.log('Mobile check - mark_nearest request:', {
+      console.log('Mobile check - mark_oldest request:', {
         medication_id: medicationId,
         action,
         currentTime,
@@ -380,7 +380,7 @@ export const useMedications = (callbacks?: {
 
       const { data, error } = await supabase.functions.invoke('manage-medications', {
         body: {
-          action: 'mark_nearest',
+          action: 'mark_oldest',
           id: medicationId,
           nearestAction: action,
           currentTime,
@@ -397,7 +397,7 @@ export const useMedications = (callbacks?: {
         throw new Error(`Falha na comunicação: ${error.message || 'Erro de rede'}`);
       }
 
-      console.log('mark_nearest response:', data);
+      console.log('mark_oldest response:', data);
       
       // Standardized response checking - Edge Function now returns { success: boolean }
       if (!data?.success) {
@@ -417,28 +417,20 @@ export const useMedications = (callbacks?: {
       const newStatus = action === 'concluir' ? 'concluido' : 'excluido' as const;
       const now = new Date();
 
-      const getNearestPendingIndex = (horarios: any[]): number => {
+      const getOldestPendingIndex = (horarios: any[]): number => {
         const pendentes = (horarios || []).map((h: any, i: number) => ({...h, _idx: i}))
           .filter((h: any) => h.status === 'pendente' && h.hora && h.hora !== '-');
         if (pendentes.length === 0) return -1;
-        const cur = now.getHours() * 60 + now.getMinutes();
-        const sortAsc = (a: any, b: any) => {
-          const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
+        
+        // Sort by time (ascending) to get the oldest first
+        const sortedByTime = pendentes.sort((a: any, b: any) => {
+          const [ah, am] = a.hora.split(':').map(Number); 
+          const [bh, bm] = b.hora.split(':').map(Number);
           return (ah*60+am) - (bh*60+bm);
-        };
-        const future = pendentes.filter((h: any) => {
-          const [hH, hM] = h.hora.split(':').map(Number);
-          return (hH*60 + hM) >= cur;
-        }).sort(sortAsc);
-        if (future.length > 0) return future[0]._idx;
-        const past = pendentes.filter((h: any) => {
-          const [hH, hM] = h.hora.split(':').map(Number);
-          return (hH*60 + hM) < cur;
-        }).sort((a: any, b: any) => {
-          const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
-          return (bh*60+bm) - (ah*60+am);
         });
-        return past.length > 0 ? past[0]._idx : pendentes[0]._idx;
+        
+        // Return the index of the oldest pending time
+        return sortedByTime[0]._idx;
       };
 
       // Apply optimistic update on the specific medication and its nearest time
@@ -447,7 +439,7 @@ export const useMedications = (callbacks?: {
         return old.map(med => {
           if (med.id !== medicationId) return med;
           const horarios = Array.isArray(med.horarios) ? [...med.horarios] : [];
-          const idx = getNearestPendingIndex(horarios);
+          const idx = getOldestPendingIndex(horarios);
           if (idx >= 0) {
             horarios[idx] = { ...horarios[idx], status: newStatus } as any;
           }
@@ -484,23 +476,15 @@ export const useMedications = (callbacks?: {
                 };
               }
               
-              // If no occurrence_id match, match by time using scheduled_at from response
-              if (!matched && (data as any).scheduled_at && horario.scheduled_at) {
-                const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
-                const responseTime = new Date((data as any).scheduled_at).toLocaleTimeString('pt-BR', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  hour12: false,
-                  timeZone: userTz
-                });
-                const horarioTime = new Date(horario.scheduled_at).toLocaleTimeString('pt-BR', { 
-                  hour: '2-digit', 
-                  minute: '2-digit',
-                  hour12: false,
-                  timeZone: userTz
-                });
+              // If no occurrence_id match, fallback to oldest pending time logic
+              if (!matched && horario.status === 'pendente' && horario.hora && horario.hora !== '-') {
+                // Find if this is the oldest pending time among all pending times
+                const allPendingTimes = (medication.horarios || [])
+                  .filter(h => h.status === 'pendente' && h.hora && h.hora !== '-')
+                  .map(h => h.hora)
+                  .sort();
                 
-                if (responseTime === horarioTime) {
+                if (allPendingTimes[0] === horario.hora) {
                   matched = true;
                   return {
                     ...horario,
@@ -703,7 +687,7 @@ export const useMedications = (callbacks?: {
 
   return {
     medications: Array.isArray(query.data) ? query.data : [],
-    isLoading: query.isLoading || query.isFetching,
+    isLoading: query.isLoading,
     isFetching: query.isFetching,
     isSuccess: query.isSuccess,
     error: query.error,

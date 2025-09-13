@@ -89,11 +89,11 @@ serve(async (req) => {
     const patientProfileId = profile.id;
 
     switch (action) {
-      case 'mark_nearest': {
+      case 'mark_oldest': {
         const { nearestAction, currentTime, timezone } = body;
         
         // Enhanced logging for debugging
-        console.log('mark_nearest request details:', {
+        console.log('mark_oldest request details:', {
           user_id: user.id,
           profile_id: patientProfileId,
           medication_id: id,
@@ -158,37 +158,48 @@ serve(async (req) => {
         console.log('RPC function success:', nearestResult);
         
         
-        // FALLBACK: If RPC fails, try direct Supabase operations
+        // FALLBACK: If RPC fails, try direct Supabase operations with oldest-first logic
         if (!nearestResult || nearestResult.success === false) {
-          console.log('RPC failed, attempting direct fallback for:', id);
+          console.log('RPC failed, attempting direct oldest-first fallback for:', id);
           
           try {
-            // Get pending occurrences for today
-            const today = new Date(validCurrentTime).toISOString().split('T')[0];
+            // Calculate today in user's local timezone
+            const userTz = validTimezone;
+            const nowLocal = new Date(validCurrentTime).toLocaleDateString('en-CA', { timeZone: userTz });
+            
+            // Get pending occurrences for today (in user's timezone), ordered by time (oldest first)
             const { data: occurrences, error: fetchError } = await supabaseClient
               .from('medication_occurrences')
               .select('id, scheduled_at')
               .eq('medication_id', id)
               .eq('status', 'pendente')
-              .gte('scheduled_at', `${today}T00:00:00Z`)
-              .lt('scheduled_at', `${today}T23:59:59Z`)
-              .order('scheduled_at', { ascending: true })
-              .limit(1);
+              .order('scheduled_at', { ascending: true });
             
-            if (fetchError || !occurrences || occurrences.length === 0) {
-              console.log('Fallback: No pending occurrences found');
+            if (fetchError) {
+              console.error('Fallback fetch error:', fetchError);
+              throw fetchError;
+            }
+            
+            // Filter to today's occurrences in user's timezone
+            const todayOccurrences = (occurrences || []).filter(occ => {
+              const occDateLocal = new Date(occ.scheduled_at).toLocaleDateString('en-CA', { timeZone: userTz });
+              return occDateLocal === nowLocal;
+            });
+            
+            if (!todayOccurrences || todayOccurrences.length === 0) {
+              console.log('Fallback: No pending occurrences found for today');
               return new Response(
                 JSON.stringify({ 
                   success: false, 
                   code: 'no_pending',
-                  message: 'No pending occurrence found'
+                  message: 'No pending occurrence found for today'
                 }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
               );
             }
             
-            // Update the first pending occurrence
-            const targetOccurrence = occurrences[0];
+            // Update the oldest (first) pending occurrence
+            const targetOccurrence = todayOccurrences[0];
             const newStatus = nearestAction === 'concluir' ? 'concluido' : 'excluido';
             
             const { error: updateError } = await supabaseClient

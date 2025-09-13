@@ -69,6 +69,24 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     }
   }
 
+  // Function to get the oldest pending time for the medication (chronological order)
+  const getOldestPendingTime = (schedule: Array<{ hora: string; status: string }>): string | null => {
+    // Get all pending times and sort them chronologically (oldest first)
+    const pendingTimes = schedule
+      .filter(item => item.status === 'pendente' && item.hora !== '-')
+      .map(item => {
+        const [hours, minutes] = item.hora.split(':').map(Number);
+        return {
+          hora: item.hora,
+          totalMinutes: hours * 60 + minutes
+        };
+      })
+      .sort((a, b) => a.totalMinutes - b.totalMinutes);
+    
+    // Return the oldest (first) pending time
+    return pendingTimes.length > 0 ? pendingTimes[0].hora : null;
+  };
+
   // Função para determinar o próximo horário baseado nos horários programados
   // Segue a estratégia: (a) hoje >= agora, (b) próximos dias, (c) hoje < agora
   const getNextScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): string => {
@@ -416,7 +434,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
        }));
 
-  const nearestPending = getNextScheduledTime(combinedSchedule);
+  const nearestPending = getOldestPendingTime(combinedSchedule);
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = () => {
@@ -501,7 +519,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
               <div className="flex items-center justify-start sm:justify-end text-primary">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="font-medium text-sm sm:text-base">
-                  Próxima: {formatTime24h(getNextScheduledTime(combinedSchedule))}
+                  Próxima: {nearestPending || formatTime24h(getNextScheduledTime(combinedSchedule))}
                 </span>
               </div>
               <div className="flex items-center justify-start sm:justify-end">
@@ -527,8 +545,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                           relative text-xs sm:text-sm transition-all duration-200
                           ${horario.status === 'concluido' || horario.status === 'excluido'
                             ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through cursor-default"
-                            : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
-                            ? `bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ${horario.hora === nearestPending ? 'ring-primary bg-primary/15' : 'ring-primary/30 hover:ring-primary/50'}`
+                           : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
+                           ? `bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ${horario.hora === nearestPending ? 'ring-primary bg-primary/15' : 'ring-primary/30 hover:ring-primary/50'}`
                             : "bg-accent/20 cursor-default opacity-50"
                           }
                         `}
