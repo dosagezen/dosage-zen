@@ -365,7 +365,7 @@ export const useMedications = (callbacks?: {
     },
   });
 
-  // Mark nearest occurrence - simplified and standardized
+  // Mark nearest occurrence - with optimistic update aligned to UI logic
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
       const currentTime = new Date().toISOString();
@@ -408,6 +408,54 @@ export const useMedications = (callbacks?: {
       }
 
       return data;
+    },
+    onMutate: async ({ medicationId, action }) => {
+      // Cancel refetches so we don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['medications'] });
+      const previous = queryClient.getQueryData<Medication[]>(['medications']);
+
+      const newStatus = action === 'concluir' ? 'concluido' : 'excluido' as const;
+      const now = new Date();
+
+      const getNearestPendingIndex = (horarios: any[]): number => {
+        const pendentes = (horarios || []).map((h: any, i: number) => ({...h, _idx: i}))
+          .filter((h: any) => h.status === 'pendente' && h.hora && h.hora !== '-');
+        if (pendentes.length === 0) return -1;
+        const cur = now.getHours() * 60 + now.getMinutes();
+        const sortAsc = (a: any, b: any) => {
+          const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
+          return (ah*60+am) - (bh*60+bm);
+        };
+        const future = pendentes.filter((h: any) => {
+          const [hH, hM] = h.hora.split(':').map(Number);
+          return (hH*60 + hM) >= cur;
+        }).sort(sortAsc);
+        if (future.length > 0) return future[0]._idx;
+        const past = pendentes.filter((h: any) => {
+          const [hH, hM] = h.hora.split(':').map(Number);
+          return (hH*60 + hM) < cur;
+        }).sort((a: any, b: any) => {
+          const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
+          return (bh*60+bm) - (ah*60+am);
+        });
+        return past.length > 0 ? past[0]._idx : pendentes[0]._idx;
+      };
+
+      // Apply optimistic update on the specific medication and its nearest time
+      queryClient.setQueryData<Medication[]>(['medications'], (old) => {
+        if (!old) return old;
+        return old.map(med => {
+          if (med.id !== medicationId) return med;
+          const horarios = Array.isArray(med.horarios) ? [...med.horarios] : [];
+          const idx = getNearestPendingIndex(horarios);
+          if (idx >= 0) {
+            horarios[idx] = { ...horarios[idx], status: newStatus } as any;
+          }
+          return { ...med, horarios } as Medication;
+        });
+      });
+
+      return { previous };
     },
     onSuccess: (data, { medicationId, action }) => {
       // Store undo context
@@ -465,15 +513,32 @@ export const useMedications = (callbacks?: {
               return horario;
             });
 
-            // Final fallback: if no match found, update first pending time
+            // Final fallback: if no match found, update the true "horário da vez" based on local time
             if (!matched) {
-              const idx = updatedHorarios.findIndex(h => h.status === 'pendente');
-              if (idx >= 0) {
-                updatedHorarios = updatedHorarios.map((h, i) => i === idx ? { 
-                  ...h, 
-                  status: (data as any).new_status as 'concluido' | 'excluido',
-                  onTime: ((data as any).new_status === 'concluido') && Math.abs(((data as any).delta_minutes ?? 9999)) <= 5
-                } : h);
+              const now = new Date();
+              const pendentes = updatedHorarios.map((h, i) => ({...h, _idx: i}))
+                .filter((h: any) => h.status === 'pendente' && h.hora && h.hora !== '-');
+              if (pendentes.length > 0) {
+                const cur = now.getHours() * 60 + now.getMinutes();
+                const future = pendentes.filter((h: any) => {
+                  const [hh, mm] = h.hora.split(':').map(Number);
+                  return (hh*60 + mm) >= cur;
+                }).sort((a: any, b: any) => {
+                  const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
+                  return (ah*60+am) - (bh*60+bm);
+                });
+                const chosen = future[0] ?? pendentes.sort((a: any, b: any) => {
+                  const [ah, am] = a.hora.split(':').map(Number); const [bh, bm] = b.hora.split(':').map(Number);
+                  return (bh*60+bm) - (ah*60+am);
+                })[0];
+                const idx = chosen?._idx ?? -1;
+                if (idx >= 0) {
+                  updatedHorarios = updatedHorarios.map((h, i) => i === idx ? {
+                    ...h,
+                    status: (data as any).new_status as 'concluido' | 'excluido',
+                    onTime: ((data as any).new_status === 'concluido') && Math.abs(((data as any).delta_minutes ?? 9999)) <= 5
+                  } : h);
+                }
               }
             }
             
@@ -496,14 +561,17 @@ export const useMedications = (callbacks?: {
         description: "Ação realizada com sucesso. Toque em Desfazer nos próximos segundos para reverter.",
       });
     },
-    onError: (error: any, variables) => {
+    onError: (error: any, variables, context) => {
       console.error('markNearestOccurrence FAILED:', {
         error: error.message,
         medicationId: variables.medicationId,
         action: variables.action,
         fullError: error
       });
-      
+      // Rollback optimistic update
+      if (context?.previous) {
+        queryClient.setQueryData(['medications'], context.previous);
+      }
       // Simplified error handling
       if (error.message === 'NO_PENDING_OCCURRENCE') {
         toast({
