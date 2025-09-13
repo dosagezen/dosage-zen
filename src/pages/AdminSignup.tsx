@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Shield, Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -344,13 +344,13 @@ export default function AdminSignup() {
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Aceito os{" "}
-                  <a href="/terms" className="text-primary hover:underline">
+                  <Link to="/terms" className="text-primary hover:underline">
                     termos de uso
-                  </a>{" "}
+                  </Link>{" "}
                   e{" "}
-                  <a href="/privacy" className="text-primary hover:underline">
+                  <Link to="/privacy" className="text-primary hover:underline">
                     política de privacidade
-                  </a>
+                  </Link>
                 </Label>
               </div>
             </div>

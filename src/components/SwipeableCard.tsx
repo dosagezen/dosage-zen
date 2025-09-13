@@ -416,6 +416,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
        }));
 
+  const nearestPending = getNextScheduledTime(combinedSchedule);
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
 
   const handleCardClick = () => {
@@ -522,15 +523,15 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                      <Badge 
                        key={index} 
                        variant="secondary" 
-                       className={`
-                         relative text-xs sm:text-sm transition-all duration-200
-                         ${horario.status === 'concluido' || horario.status === 'excluido'
-                           ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through cursor-default"
-                           : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
-                           ? "bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ring-primary/30 hover:ring-primary/50"
-                           : "bg-accent/20 cursor-default opacity-50"
-                         }
-                       `}
+                        className={`
+                          relative text-xs sm:text-sm transition-all duration-200
+                          ${horario.status === 'concluido' || horario.status === 'excluido'
+                            ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through cursor-default"
+                            : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
+                            ? `bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ${horario.hora === nearestPending ? 'ring-primary bg-primary/15' : 'ring-primary/30 hover:ring-primary/50'}`
+                            : "bg-accent/20 cursor-default opacity-50"
+                          }
+                        `}
                       style={horario.status === 'concluido' || horario.status === 'excluido' ? {
                         textDecoration: 'line-through',
                         textDecorationColor: '#588157',
