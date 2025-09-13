@@ -94,7 +94,7 @@ export const useMedications = (callbacks?: {
     }
 
     const { data, error } = await supabase.functions.invoke('manage-medications', {
-      body: { action: 'list' }
+      body: { action: 'list', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo' }
     });
 
     if (error) {
@@ -419,15 +419,25 @@ export const useMedications = (callbacks?: {
         
         return oldData.map(medication => {
           if (medication.id === medicationId) {
-            const updatedHorarios = medication.horarios?.map(horario => {
+            let matched = false;
+            let updatedHorarios = (medication.horarios || []).map(horario => {
               if (horario.occurrence_id === (data as any).occ_id) {
+                matched = true;
                 return {
                   ...horario,
                   status: (data as any).new_status as 'concluido' | 'excluido'
                 };
               }
               return horario;
-            }) || [];
+            });
+
+            // Fallback: if occurrence_id is missing in cache, update first pending time
+            if (!matched) {
+              const idx = updatedHorarios.findIndex(h => h.status === 'pendente');
+              if (idx >= 0) {
+                updatedHorarios = updatedHorarios.map((h, i) => i === idx ? { ...h, status: (data as any).new_status as 'concluido' | 'excluido' } : h);
+              }
+            }
             
             return {
               ...medication,

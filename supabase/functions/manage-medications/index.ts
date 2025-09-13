@@ -364,9 +364,8 @@ serve(async (req) => {
 
       case 'list': {
         // Get ALL active medications with their occurrences
-        const today = new Date().toISOString().split('T')[0];
-        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
+        const tz = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
+        const todayLocal = new Date(new Date().toLocaleString('en-US', { timeZone: tz })).toISOString().split('T')[0];
         const { data: medications, error } = await supabaseClient
           .from('medications')
           .select(`
@@ -396,21 +395,23 @@ serve(async (req) => {
             // All scheduled times from medication.horarios (original schedule)
             const originalHorarios = Array.isArray(med.horarios) ? med.horarios : [];
             
-            // Today's occurrences from database
+            // Today's occurrences from database (localized to user's timezone)
             const todayOccurrences = (med.medication_occurrences || []).filter((occ: any) => {
-              const occDate = new Date(occ.scheduled_at).toISOString().split('T')[0];
-              return occDate === today;
+              const occDateLocal = new Date(occ.scheduled_at).toLocaleDateString('en-CA', { timeZone: tz });
+              return occDateLocal === todayLocal;
             });
 
             // Create complete horarios array with status
             const allHorarios = originalHorarios.map((horario: string) => {
               // Find matching occurrence for today
               const todayOcc = todayOccurrences.find((occ: any) => {
-                const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+                const occTimeLocal = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
                   hour: '2-digit', 
-                  minute: '2-digit' 
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: tz
                 });
-                return occTime === horario;
+                return occTimeLocal === horario;
               });
 
               return {
