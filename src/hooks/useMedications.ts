@@ -8,6 +8,7 @@ interface HorarioStatus {
   occurrence_id?: string;
   scheduled_at?: string;
   completed_at?: string;
+  onTime?: boolean;
 }
 
 interface UndoContext {
@@ -428,7 +429,8 @@ export const useMedications = (callbacks?: {
                 matched = true;
                 return {
                   ...horario,
-                  status: (data as any).new_status as 'concluido' | 'excluido'
+                  status: (data as any).new_status as 'concluido' | 'excluido',
+                  onTime: ((data as any).new_status === 'concluido') && Math.abs(((data as any).delta_minutes ?? 9999)) <= 5
                 };
               }
               
@@ -452,7 +454,8 @@ export const useMedications = (callbacks?: {
                   matched = true;
                   return {
                     ...horario,
-                    status: (data as any).new_status as 'concluido' | 'excluido'
+                    status: (data as any).new_status as 'concluido' | 'excluido',
+                    onTime: ((data as any).new_status === 'concluido') && Math.abs(((data as any).delta_minutes ?? 9999)) <= 5
                   };
                 }
               }
@@ -464,7 +467,11 @@ export const useMedications = (callbacks?: {
             if (!matched) {
               const idx = updatedHorarios.findIndex(h => h.status === 'pendente');
               if (idx >= 0) {
-                updatedHorarios = updatedHorarios.map((h, i) => i === idx ? { ...h, status: (data as any).new_status as 'concluido' | 'excluido' } : h);
+                updatedHorarios = updatedHorarios.map((h, i) => i === idx ? { 
+                  ...h, 
+                  status: (data as any).new_status as 'concluido' | 'excluido',
+                  onTime: ((data as any).new_status === 'concluido') && Math.abs(((data as any).delta_minutes ?? 9999)) <= 5
+                } : h);
               }
             }
             

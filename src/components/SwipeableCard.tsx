@@ -13,6 +13,7 @@ interface HorarioStatus {
   occurrence_id?: string;
   scheduled_at?: string;
   completed_at?: string;
+  onTime?: boolean;
 }
 
 interface MedicacaoCompleta {
@@ -399,7 +400,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
           status: backendData?.status || 'pendente' as const,
           occurrence_id: backendData?.occurrence_id,
           scheduled_at: backendData?.scheduled_at,
-          completed_at: backendData?.completed_at
+          completed_at: backendData?.completed_at,
+          onTime: backendData?.onTime
         };
       })
     : (scheduledTimes.length > 0 ? 
@@ -543,12 +545,12 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                         }
                       }}
                        aria-label={
-                         horario.status === 'concluido' || horario.status === 'excluido'
-                           ? `Dose das ${formatTime24h(horario.hora)} registrada` 
+                         (horario.status === 'concluido' || horario.status === 'excluido')
+                           ? `Dose das ${formatTime24h(horario.hora)} registrada${(horario.status === 'concluido' && horario.onTime) ? ' no horário' : ''}` 
                            : `Dose das ${formatTime24h(horario.hora)} pendente`
                        }
                      >
-                       {formatTime24h(horario.hora)}
+                        {formatTime24h(horario.hora)}{(horario.status === 'concluido' && horario.onTime) ? ' —' : ''}
                      </Badge>
                   ))}
                 </div>
