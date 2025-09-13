@@ -415,7 +415,7 @@ export const useMedications = (callbacks?: {
         timestamp: Date.now()
       };
 
-      // Update the local cache optimistically
+      // Update the local cache optimistically with exact time match
       queryClient.setQueryData<Medication[]>(['medications'], (oldData) => {
         if (!oldData) return oldData;
         
@@ -423,6 +423,7 @@ export const useMedications = (callbacks?: {
           if (medication.id === medicationId) {
             let matched = false;
             let updatedHorarios = (medication.horarios || []).map(horario => {
+              // Try exact occurrence_id match first
               if (horario.occurrence_id === (data as any).occ_id) {
                 matched = true;
                 return {
@@ -430,10 +431,36 @@ export const useMedications = (callbacks?: {
                   status: (data as any).new_status as 'concluido' | 'excluido'
                 };
               }
+              
+              // If no occurrence_id match, match by time using scheduled_at from response
+              if (!matched && (data as any).scheduled_at && horario.scheduled_at) {
+                const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+                const responseTime = new Date((data as any).scheduled_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: userTz
+                });
+                const horarioTime = new Date(horario.scheduled_at).toLocaleTimeString('pt-BR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: userTz
+                });
+                
+                if (responseTime === horarioTime) {
+                  matched = true;
+                  return {
+                    ...horario,
+                    status: (data as any).new_status as 'concluido' | 'excluido'
+                  };
+                }
+              }
+              
               return horario;
             });
 
-            // Fallback: if occurrence_id is missing in cache, update first pending time
+            // Final fallback: if no match found, update first pending time
             if (!matched) {
               const idx = updatedHorarios.findIndex(h => h.status === 'pendente');
               if (idx >= 0) {

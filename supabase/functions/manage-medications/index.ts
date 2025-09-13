@@ -219,6 +219,8 @@ serve(async (req) => {
                 success: true,
                 occ_id: targetOccurrence.id,
                 new_status: newStatus,
+                scheduled_at: targetOccurrence.scheduled_at,
+                all_done_today: false,
                 fallback_used: true
               }),
               { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -236,11 +238,15 @@ serve(async (req) => {
           }
         }
         
-        // Return standardized success response
+        // Return standardized success response with scheduled_at for UI update
         return new Response(
           JSON.stringify({
             success: true,
-            ...nearestResult
+            occ_id: nearestResult.occ_id,
+            new_status: nearestResult.new_status,
+            scheduled_at: nearestResult.scheduled_at,
+            all_done_today: nearestResult.all_done_today,
+            delta_minutes: nearestResult.delta_minutes
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -417,7 +423,8 @@ serve(async (req) => {
                   p_patient_profile_id: patientProfileId,
                   p_horarios: horariosArray,
                   p_data_inicio: med.data_inicio || null,
-                  p_data_fim: med.data_fim || null
+                  p_data_fim: med.data_fim || null,
+                  p_tz: tz
                 });
                 if (regenError) {
                   console.error('fn_upsert_medication_occurrences error:', regenError);
@@ -554,7 +561,8 @@ serve(async (req) => {
               p_patient_profile_id: patientProfileId,
               p_horarios: horariosArray,
               p_data_inicio: data_inicio || null,
-              p_data_fim: data_fim || null
+              p_data_fim: data_fim || null,
+              p_tz: 'America/Sao_Paulo'
             }
           );
 
@@ -691,7 +699,8 @@ serve(async (req) => {
               p_patient_profile_id: patientProfileId,
               p_horarios: horariosArray,
               p_data_inicio: data_inicio || medication.data_inicio,
-              p_data_fim: data_fim || medication.data_fim
+              p_data_fim: data_fim || medication.data_fim,
+              p_tz: 'America/Sao_Paulo'
             }
           );
 
