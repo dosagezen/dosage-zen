@@ -307,9 +307,8 @@ const Medicacoes = () => {
 
   // Função para verificar se uma medicação tem todos os horários do dia checados (concluído OU cancelado)
   const isAllDosesCompleted = useCallback((medicacao: MedicacaoCompleta) => {
-    // Only consider today's occurrences (those with occurrence_id)
-    const todayHorarios = medicacao.horarios.filter(h => h.occurrence_id);
-    return todayHorarios.length > 0 && todayHorarios.every(h => h.status === 'concluido' || h.status === 'excluido');
+    const validHorarios = (medicacao.horarios || []).filter(h => h.hora && h.hora !== '-');
+    return validHorarios.length > 0 && validHorarios.every(h => h.status === 'concluido' || h.status === 'excluido');
   }, [])
 
   // Função para calcular próximo horário pendente
@@ -474,8 +473,8 @@ const Medicacoes = () => {
             if (!med || med.removed_from_today) return false;
             // Always show optimistic medications in "hoje" for immediate feedback
             if (med.isOptimistic) return true;
-            // Only show medications with pending occurrences today (with occurrence_id)
-            const hasPendingToday = med.horarios.some(h => h.occurrence_id && h.status === 'pendente');
+            // Consider any valid pending time today, even if occurrence_id isn't present yet
+            const hasPendingToday = (med.horarios || []).some(h => h.status === 'pendente' && h.hora && h.hora !== '-');
             return med.status === "ativa" && hasPendingToday;
           })
           break
