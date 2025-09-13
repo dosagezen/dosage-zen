@@ -34,6 +34,12 @@ export interface Medication {
   created_at: string;
   updated_at: string;
   proxima?: string;
+  occurrencesToday?: Array<{
+    id: string;
+    time: string;
+    status: 'pendente' | 'concluido' | 'excluido';
+    scheduledAtLocal?: string;
+  }>;
   isOptimistic?: boolean; // Flag for optimistic updates
   has_today?: boolean;
   has_pending_today?: boolean;

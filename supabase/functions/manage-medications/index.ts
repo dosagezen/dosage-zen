@@ -567,7 +567,24 @@ serve(async (req) => {
               proxima: nextOccurrence,
               horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
               has_today: shouldHaveToday,
-              has_pending_today: hasPendingToday
+              has_pending_today: hasPendingToday,
+              occurrencesToday: (todayOccurrences || []).map((occ: any) => {
+                const timeStr = normalizeTime(new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                  timeZone: tz
+                }));
+                const scheduledAtLocal = new Date(occ.scheduled_at)
+                  .toLocaleString('sv-SE', { timeZone: tz })
+                  .replace(' ', 'T');
+                return {
+                  id: occ.id,
+                  time: timeStr,
+                  status: occ.status,
+                  scheduledAtLocal
+                };
+              }).sort((a: any, b: any) => a.time.localeCompare(b.time))
             };
           })
         );
@@ -710,7 +727,24 @@ serve(async (req) => {
           proxima: nextOccurrence,
           horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
           has_today,
-          has_pending_today
+          has_pending_today,
+          occurrencesToday: (todayOccurrences || []).map((occ: any) => {
+            const timeStr = normalizeTime(new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'America/Sao_Paulo'
+            }));
+            const scheduledAtLocal = new Date(occ.scheduled_at)
+              .toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+              .replace(' ', 'T');
+            return {
+              id: occ.id,
+              time: timeStr,
+              status: occ.status,
+              scheduledAtLocal
+            };
+          }).sort((a: any, b: any) => a.time.localeCompare(b.time))
         };
  
         console.log('Medication created successfully:', medication.id);
@@ -850,7 +884,24 @@ serve(async (req) => {
           proxima: nextOccurrence,
           horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
           has_today,
-          has_pending_today
+          has_pending_today,
+          occurrencesToday: (todayOccurrences || []).map((occ: any) => {
+            const timeStr = normalizeTime(new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'America/Sao_Paulo'
+            }));
+            const scheduledAtLocal = new Date(occ.scheduled_at)
+              .toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+              .replace(' ', 'T');
+            return {
+              id: occ.id,
+              time: timeStr,
+              status: occ.status,
+              scheduledAtLocal
+            };
+          }).sort((a: any, b: any) => a.time.localeCompare(b.time))
         };
  
         console.log('Medication updated successfully:', id);

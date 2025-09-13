@@ -32,6 +32,12 @@ interface MedicacaoCompleta {
   horaInicio?: string;
   data_inicio?: string;
   data_fim?: string;
+  occurrencesToday?: Array<{
+    id: string;
+    time: string;
+    status: 'pendente' | 'concluido' | 'excluido';
+    scheduledAtLocal?: string;
+  }>;
 }
 
 interface SwipeableCardProps {
@@ -404,35 +410,48 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
     ? calculateScheduledTimes(medicacao.frequencia, horaInicial)
     : [];
   
-  // Get only today's scheduled times (with occurrence_id) from backend
+  // Preferir ocorrências do backend quando disponíveis
+  const occToday = Array.isArray(medicacao.occurrencesToday) ? medicacao.occurrencesToday : [];
+  // Horários do backend com occurrence_id (fallback)
   const scheduledTimes = medicacao.horarios.filter(h => h.occurrence_id);
-  
-  // Use calculated times with status from backend data (ordem crescente garantida pelo calculateScheduledTimes)
-  const combinedSchedule = calculatedTimes.length > 0 
-    ? calculatedTimes.map(hora => {
-        // Find matching backend data for this time
-        const backendData = scheduledTimes.find(s => s.hora === hora) || 
-                           medicacao.horarios.find(h => h.hora === hora);
-        return {
-          hora,
-          status: backendData?.status || 'pendente' as const,
-          occurrence_id: backendData?.occurrence_id,
-          scheduled_at: backendData?.scheduled_at,
-          completed_at: backendData?.completed_at,
-          onTime: backendData?.onTime
-        };
-      })
-    : (scheduledTimes.length > 0 ? 
-       scheduledTimes.sort((a, b) => {
-         const timeA = a.hora.split(':').map(Number);
-         const timeB = b.hora.split(':').map(Number);
-         return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-       }) : 
-       medicacao.horarios.sort((a, b) => {
-         const timeA = a.hora.split(':').map(Number);
-         const timeB = b.hora.split(':').map(Number);
-         return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-       }));
+  // Montar agenda priorizando IDs de ocorrência vindos do backend
+  let combinedSchedule: Array<HorarioStatus> = [];
+  if (occToday.length > 0) {
+    combinedSchedule = occToday
+      .slice()
+      .sort((a, b) => a.time.localeCompare(b.time))
+      .map((occ) => ({
+        hora: occ.time,
+        status: (occ.status as any),
+        occurrence_id: occ.id
+      }));
+  } else if (calculatedTimes.length > 0) {
+    combinedSchedule = calculatedTimes.map(hora => {
+      // Find matching backend data for this time
+      const backendData = scheduledTimes.find(s => s.hora === hora) || 
+                         medicacao.horarios.find(h => h.hora === hora);
+      return {
+        hora,
+        status: (backendData?.status || 'pendente') as any,
+        occurrence_id: backendData?.occurrence_id,
+        scheduled_at: backendData?.scheduled_at,
+        completed_at: backendData?.completed_at,
+        onTime: backendData?.onTime
+      };
+    });
+  } else if (scheduledTimes.length > 0) {
+    combinedSchedule = scheduledTimes.sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+  } else {
+    combinedSchedule = medicacao.horarios.sort((a, b) => {
+      const timeA = a.hora.split(':').map(Number);
+      const timeB = b.hora.split(':').map(Number);
+      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+    });
+  }
 
   const nearestPending = getOldestPendingTime(combinedSchedule);
   const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
