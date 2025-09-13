@@ -360,11 +360,11 @@ export const useMedications = (callbacks?: {
     },
   });
 
-  // Mark nearest occurrence functionality with enhanced undo support
+  // Mark nearest occurrence functionality with enhanced error handling and retry
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
       const currentTime = new Date().toISOString();
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
       
       console.log('Mobile check: Calling manage-medications with mark_nearest:', {
         medication_id: medicationId,
@@ -384,13 +384,52 @@ export const useMedications = (callbacks?: {
       });
 
       if (error) {
-        console.error('Error marking nearest occurrence:', error);
-        throw error;
+        console.error('Edge Function error details:', {
+          status: error.status,
+          message: error.message,
+          details: error.details || error
+        });
+        
+        // Enhanced error handling for specific HTTP status codes
+        if (error.status === 401 || error.status === 403) {
+          // Session expired - refresh session and retry once
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (!refreshError) {
+            console.log('Session refreshed, retrying mark_nearest...');
+            // Retry once after refresh
+            const { data: retryData, error: retryError } = await supabase.functions.invoke('manage-medications', {
+              body: {
+                action: 'mark_nearest',
+                id: medicationId,
+                nearestAction: action,
+                currentTime,
+                timezone
+              }
+            });
+            
+            if (retryError) {
+              console.error('Retry failed after session refresh:', retryError);
+              throw new Error(`Sessão expirada. Erro: ${retryError.message || 'Falha na autenticação'}`);
+            }
+            
+            if (!retryData?.ok) {
+              throw new Error(retryData?.message || 'Failed to mark occurrence after retry');
+            }
+            
+            return retryData;
+          }
+        }
+        
+        throw new Error(`Erro de conexão (${error.status || 'network'}): ${error.message || 'Falha na comunicação'}`);
       }
 
       console.log('mark_nearest result:', data);
       
-      if (!data?.success) {
+      // Handle Edge Function response format
+      if (!data?.ok && !data?.success) {
+        if (data?.code === 'no_pending') {
+          throw new Error('NO_PENDING_OCCURRENCE');
+        }
         throw new Error(data?.message || 'Failed to mark occurrence');
       }
 
@@ -440,13 +479,43 @@ export const useMedications = (callbacks?: {
         description: "Ação realizada com sucesso. Toque em Desfazer nos próximos segundos para reverter.",
       });
     },
-    onError: (error) => {
-      console.error('Error marking nearest occurrence:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar a medicação.",
-        variant: "destructive",
+    onError: (error: any, variables) => {
+      console.error('Error marking nearest occurrence:', {
+        error: error.message,
+        medicationId: variables.medicationId,
+        action: variables.action
       });
+      
+      // Enhanced error messages based on error type
+      if (error.message === 'NO_PENDING_OCCURRENCE') {
+        // Show specific message for no pending occurrences with manual restore option
+        toast({
+          title: "Nenhuma dose pendente",
+          description: "Não há doses pendentes para hoje. Toque no botão de reabrir para restaurar as doses.",
+          variant: "destructive",
+        });
+        
+        // Store restore function for later use (can be triggered by restore card mutation)
+        (window as any).lastMedicationToRestore = variables.medicationId;
+      } else if (error.message.includes('Sessão expirada')) {
+        toast({
+          title: "Sessão Expirada",
+          description: "Sua sessão expirou. Faça login novamente.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes('Erro de conexão')) {
+        toast({
+          title: "Erro de Conexão",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: `Não foi possível atualizar: ${error.message || 'Erro desconhecido'}`,
+          variant: "destructive",
+        });
+      }
     }
   });
 
@@ -467,7 +536,7 @@ export const useMedications = (callbacks?: {
         throw error;
       }
 
-      if (!data?.success) {
+      if (!data?.success && !data?.ok) {
         throw new Error(data?.message || 'Failed to undo occurrence');
       }
 
@@ -549,11 +618,14 @@ export const useMedications = (callbacks?: {
         description: `${data.restoredCount} horário(s) foram reabertos para hoje.`,
       });
     },
-    onError: (error) => {
-      console.error('Error restoring card:', error);
+    onError: (error: any) => {
+      console.error('Error restoring card:', {
+        message: error.message,
+        details: error.details || error
+      });
       toast({
         title: "Erro",
-        description: "Não foi possível restaurar o card.",
+        description: `Não foi possível restaurar: ${error.message || 'Erro desconhecido'}`,
         variant: "destructive",
       });
     }

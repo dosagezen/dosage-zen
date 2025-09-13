@@ -92,47 +92,112 @@ serve(async (req) => {
       case 'mark_nearest': {
         const { nearestAction, currentTime, timezone } = body;
         
-        console.log(`Mobile check detected: Processing mark_nearest request: medication_id=${id}, action=${nearestAction}`);
+        // Enhanced logging for debugging
+        console.log('mark_nearest request details:', {
+          user_id: user.id,
+          profile_id: patientProfileId,
+          medication_id: id,
+          action: nearestAction,
+          timezone: timezone || 'not provided',
+          currentTime: currentTime || 'not provided'
+        });
         
         if (!id || !nearestAction) {
+          console.error('Missing required parameters:', { id, nearestAction });
           return new Response(
-            JSON.stringify({ error: 'Missing medication_id or nearestAction' }),
-            { status: 400, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'missing_params',
+              message: 'Missing medication_id or nearestAction' 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        // Validate and fallback timezone
+        const validTimezone = timezone && typeof timezone === 'string' && timezone.length > 0 
+          ? timezone 
+          : 'America/Sao_Paulo'; // Default to Brazil timezone
+        
+        const validCurrentTime = currentTime || new Date().toISOString();
+        
+        console.log('Calling fn_mark_nearest_med_occurrence with validated params:', {
+          p_med_id: id,
+          p_action: nearestAction,
+          p_now_utc: validCurrentTime,
+          p_tz: validTimezone
+        });
 
         const { data: nearestResult, error: nearestError } = await supabaseClient
           .rpc('fn_mark_nearest_med_occurrence', {
             p_med_id: id,
             p_action: nearestAction,
-            p_now_utc: currentTime || new Date().toISOString(),
-            p_tz: timezone || 'UTC'
+            p_now_utc: validCurrentTime,
+            p_tz: validTimezone
           });
 
         if (nearestError) {
-          console.error('Mobile check error marking nearest occurrence:', nearestError);
+          console.error('RPC function error:', {
+            code: nearestError.code,
+            message: nearestError.message,
+            details: nearestError.details,
+            hint: nearestError.hint
+          });
+          
           return new Response(
-            JSON.stringify({ error: nearestError.message }),
-            { status: 500, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'rpc_error',
+              message: nearestError.message,
+              details: nearestError.details
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        console.log('Mobile check success - Nearest occurrence marked:', nearestResult);
+        console.log('RPC function success:', nearestResult);
+        
+        // Check if the RPC function returned success=false (no pending occurrence)
+        if (nearestResult && nearestResult.success === false) {
+          console.log('No pending occurrence found for medication:', id);
+          return new Response(
+            JSON.stringify({ 
+              ok: false, 
+              code: 'no_pending',
+              message: nearestResult.message || 'No pending occurrence found'
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Return success response with standardized format
         return new Response(
-          JSON.stringify(nearestResult),
-          { headers: corsHeaders }
+          JSON.stringify({
+            ok: true,
+            ...nearestResult
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       case 'undo_occurrence': {
         const { occurrence_id } = body;
         
-        console.log(`Processing undo request: occurrence_id=${occurrence_id}`);
+        console.log('undo_occurrence request details:', {
+          user_id: user.id,
+          profile_id: patientProfileId,
+          occurrence_id
+        });
         
         if (!occurrence_id) {
+          console.error('Missing occurrence_id parameter');
           return new Response(
-            JSON.stringify({ error: 'Missing occurrence_id' }),
-            { status: 400, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'missing_params',
+              message: 'Missing occurrence_id' 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -142,51 +207,92 @@ serve(async (req) => {
           });
 
         if (undoError) {
-          console.error('Error undoing occurrence:', undoError);
+          console.error('RPC undo error:', {
+            code: undoError.code,
+            message: undoError.message,
+            occurrence_id
+          });
+          
           return new Response(
-            JSON.stringify({ error: undoError.message }),
-            { status: 500, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'rpc_error',
+              message: undoError.message 
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        console.log('Occurrence undone:', undoResult);
+        console.log('Undo success:', undoResult);
         return new Response(
-          JSON.stringify(undoResult),
-          { headers: corsHeaders }
+          JSON.stringify({
+            ok: true,
+            ...undoResult
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
       case 'restore_card': {
         const { medication_id, day_local, timezone } = body;
         
-        console.log(`Processing restore request: medication_id=${medication_id}, day=${day_local}`);
+        console.log('restore_card request details:', {
+          user_id: user.id,
+          profile_id: patientProfileId,
+          medication_id,
+          day_local,
+          timezone: timezone || 'not provided'
+        });
         
         if (!medication_id || !day_local) {
+          console.error('Missing required parameters for restore:', { medication_id, day_local });
           return new Response(
-            JSON.stringify({ error: 'Missing medication_id or day_local' }),
-            { status: 400, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'missing_params',
+              message: 'Missing medication_id or day_local' 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        // Validate and fallback timezone for restore
+        const validTimezone = timezone && typeof timezone === 'string' && timezone.length > 0 
+          ? timezone 
+          : 'America/Sao_Paulo';
 
         const { data: restoreResult, error: restoreError } = await supabaseClient
           .rpc('fn_restore_card_for_today', {
             p_med_id: medication_id,
             p_day_local: day_local,
-            p_tz: timezone || 'UTC'
+            p_tz: validTimezone
           });
 
         if (restoreError) {
-          console.error('Error restoring card:', restoreError);
+          console.error('RPC restore error:', {
+            code: restoreError.code,
+            message: restoreError.message,
+            medication_id,
+            day_local
+          });
+          
           return new Response(
-            JSON.stringify({ error: restoreError.message }),
-            { status: 500, headers: corsHeaders }
+            JSON.stringify({ 
+              ok: false, 
+              code: 'rpc_error',
+              message: restoreError.message 
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        console.log('Card restored:', restoreResult);
+        console.log('Restore success:', { restored_count: restoreResult });
         return new Response(
-          JSON.stringify({ restored_count: restoreResult }),
-          { headers: corsHeaders }
+          JSON.stringify({ 
+            ok: true,
+            restored_count: restoreResult 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
