@@ -106,7 +106,7 @@ serve(async (req) => {
           console.error('Missing required parameters:', { id, nearestAction });
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'missing_params',
               message: 'Missing medication_id or nearestAction' 
             }),
@@ -146,7 +146,7 @@ serve(async (req) => {
           
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'rpc_error',
               message: nearestError.message,
               details: nearestError.details
@@ -157,23 +157,89 @@ serve(async (req) => {
 
         console.log('RPC function success:', nearestResult);
         
-        // Check if the RPC function returned success=false (no pending occurrence)
-        if (nearestResult && nearestResult.success === false) {
-          console.log('No pending occurrence found for medication:', id);
-          return new Response(
-            JSON.stringify({ 
-              ok: false, 
-              code: 'no_pending',
-              message: nearestResult.message || 'No pending occurrence found'
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+        
+        // FALLBACK: If RPC fails, try direct Supabase operations
+        if (!nearestResult || nearestResult.success === false) {
+          console.log('RPC failed, attempting direct fallback for:', id);
+          
+          try {
+            // Get pending occurrences for today
+            const today = new Date(validCurrentTime).toISOString().split('T')[0];
+            const { data: occurrences, error: fetchError } = await supabaseClient
+              .from('medication_occurrences')
+              .select('id, scheduled_at')
+              .eq('medication_id', id)
+              .eq('status', 'pendente')
+              .gte('scheduled_at', `${today}T00:00:00Z`)
+              .lt('scheduled_at', `${today}T23:59:59Z`)
+              .order('scheduled_at', { ascending: true })
+              .limit(1);
+            
+            if (fetchError || !occurrences || occurrences.length === 0) {
+              console.log('Fallback: No pending occurrences found');
+              return new Response(
+                JSON.stringify({ 
+                  success: false, 
+                  code: 'no_pending',
+                  message: 'No pending occurrence found'
+                }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            
+            // Update the first pending occurrence
+            const targetOccurrence = occurrences[0];
+            const newStatus = nearestAction === 'concluir' ? 'concluido' : 'excluido';
+            
+            const { error: updateError } = await supabaseClient
+              .from('medication_occurrences')
+              .update({
+                status: newStatus,
+                completed_at: validCurrentTime,
+                completed_by: patientProfileId,
+                updated_at: validCurrentTime
+              })
+              .eq('id', targetOccurrence.id);
+            
+            if (updateError) {
+              console.error('Fallback update failed:', updateError);
+              return new Response(
+                JSON.stringify({ 
+                  success: false, 
+                  code: 'update_error',
+                  message: 'Failed to update occurrence'
+                }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            
+            console.log('Fallback success:', { occ_id: targetOccurrence.id, new_status: newStatus });
+            return new Response(
+              JSON.stringify({
+                success: true,
+                occ_id: targetOccurrence.id,
+                new_status: newStatus,
+                fallback_used: true
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          } catch (fallbackError) {
+            console.error('Fallback failed completely:', fallbackError);
+            return new Response(
+              JSON.stringify({ 
+                success: false, 
+                code: 'fallback_error',
+                message: 'Both RPC and fallback failed'
+              }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
         }
         
-        // Return success response with standardized format
+        // Return standardized success response
         return new Response(
           JSON.stringify({
-            ok: true,
+            success: true,
             ...nearestResult
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -193,7 +259,7 @@ serve(async (req) => {
           console.error('Missing occurrence_id parameter');
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'missing_params',
               message: 'Missing occurrence_id' 
             }),
@@ -215,7 +281,7 @@ serve(async (req) => {
           
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'rpc_error',
               message: undoError.message 
             }),
@@ -226,7 +292,7 @@ serve(async (req) => {
         console.log('Undo success:', undoResult);
         return new Response(
           JSON.stringify({
-            ok: true,
+            success: true,
             ...undoResult
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -248,7 +314,7 @@ serve(async (req) => {
           console.error('Missing required parameters for restore:', { medication_id, day_local });
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'missing_params',
               message: 'Missing medication_id or day_local' 
             }),
@@ -278,7 +344,7 @@ serve(async (req) => {
           
           return new Response(
             JSON.stringify({ 
-              ok: false, 
+              success: false, 
               code: 'rpc_error',
               message: restoreError.message 
             }),
@@ -289,7 +355,7 @@ serve(async (req) => {
         console.log('Restore success:', { restored_count: restoreResult });
         return new Response(
           JSON.stringify({ 
-            ok: true,
+            success: true,
             restored_count: restoreResult 
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

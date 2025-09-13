@@ -360,15 +360,15 @@ export const useMedications = (callbacks?: {
     },
   });
 
-  // Mark nearest occurrence functionality with enhanced error handling and retry
+  // Mark nearest occurrence - simplified and standardized
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
       const currentTime = new Date().toISOString();
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
       
-      console.log('Mobile check: Calling manage-medications with mark_nearest:', {
+      console.log('Mobile check - mark_nearest request:', {
         medication_id: medicationId,
-        nearestAction: action,
+        action,
         currentTime,
         timezone
       });
@@ -384,53 +384,22 @@ export const useMedications = (callbacks?: {
       });
 
       if (error) {
-        console.error('Edge Function error details:', {
+        console.error('Edge Function HTTP error:', {
           status: error.status,
           message: error.message,
-          details: error.details || error
+          details: error
         });
-        
-        // Enhanced error handling for specific HTTP status codes
-        if (error.status === 401 || error.status === 403) {
-          // Session expired - refresh session and retry once
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          if (!refreshError) {
-            console.log('Session refreshed, retrying mark_nearest...');
-            // Retry once after refresh
-            const { data: retryData, error: retryError } = await supabase.functions.invoke('manage-medications', {
-              body: {
-                action: 'mark_nearest',
-                id: medicationId,
-                nearestAction: action,
-                currentTime,
-                timezone
-              }
-            });
-            
-            if (retryError) {
-              console.error('Retry failed after session refresh:', retryError);
-              throw new Error(`Sessão expirada. Erro: ${retryError.message || 'Falha na autenticação'}`);
-            }
-            
-            if (!retryData?.ok) {
-              throw new Error(retryData?.message || 'Failed to mark occurrence after retry');
-            }
-            
-            return retryData;
-          }
-        }
-        
-        throw new Error(`Erro de conexão (${error.status || 'network'}): ${error.message || 'Falha na comunicação'}`);
+        throw new Error(`Falha na comunicação: ${error.message || 'Erro de rede'}`);
       }
 
-      console.log('mark_nearest result:', data);
+      console.log('mark_nearest response:', data);
       
-      // Handle Edge Function response format
-      if (!data?.ok && !data?.success) {
+      // Standardized response checking - Edge Function now returns { success: boolean }
+      if (!data?.success) {
         if (data?.code === 'no_pending') {
           throw new Error('NO_PENDING_OCCURRENCE');
         }
-        throw new Error(data?.message || 'Failed to mark occurrence');
+        throw new Error(data?.message || 'Falha ao marcar medicação');
       }
 
       return data;
@@ -480,33 +449,18 @@ export const useMedications = (callbacks?: {
       });
     },
     onError: (error: any, variables) => {
-      console.error('Error marking nearest occurrence:', {
+      console.error('markNearestOccurrence FAILED:', {
         error: error.message,
         medicationId: variables.medicationId,
-        action: variables.action
+        action: variables.action,
+        fullError: error
       });
       
-      // Enhanced error messages based on error type
+      // Simplified error handling
       if (error.message === 'NO_PENDING_OCCURRENCE') {
-        // Show specific message for no pending occurrences with manual restore option
         toast({
           title: "Nenhuma dose pendente",
-          description: "Não há doses pendentes para hoje. Toque no botão de reabrir para restaurar as doses.",
-          variant: "destructive",
-        });
-        
-        // Store restore function for later use (can be triggered by restore card mutation)
-        (window as any).lastMedicationToRestore = variables.medicationId;
-      } else if (error.message.includes('Sessão expirada')) {
-        toast({
-          title: "Sessão Expirada",
-          description: "Sua sessão expirou. Faça login novamente.",
-          variant: "destructive",
-        });
-      } else if (error.message.includes('Erro de conexão')) {
-        toast({
-          title: "Erro de Conexão",
-          description: error.message,
+          description: "Não há doses pendentes para hoje. Use o botão de reabrir para restaurar.",
           variant: "destructive",
         });
       } else {
