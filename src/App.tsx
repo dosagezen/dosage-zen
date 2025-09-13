@@ -20,6 +20,7 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
+import { ThemeProvider } from "next-themes";
 
 const queryClient = new QueryClient();
 
@@ -90,21 +91,23 @@ const AppLayout = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/admin/signup" element={<AdminSignup />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/app/*" element={<AppLayout />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/admin/signup" element={<AdminSignup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/app/*" element={<AppLayout />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
