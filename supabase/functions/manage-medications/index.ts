@@ -25,9 +25,31 @@ serve(async (req) => {
       }
     );
 
+    // Helper function to normalize time format to HH:mm
+    const normalizeTime = (time: string): string => {
+      if (!time || typeof time !== 'string') return '';
+      
+      // Remove any whitespace and convert to HH:mm format
+      const cleaned = time.trim();
+      
+      // Handle various formats: "8:00", "08:00", "8:0", etc.
+      const match = cleaned.match(/^(\d{1,2}):(\d{1,2})$/);
+      if (!match) return cleaned; // Return as-is if format is unexpected
+      
+      const hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return cleaned; // Return as-is if invalid
+      }
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     // Helper function to compute daily times based on frequency
     const computeDailyTimes = (startTime: string, frequency: string): string[] => {
-      const times = [startTime];
+      const normalizedStart = normalizeTime(startTime);
+      const times = [normalizedStart];
       
       // Parse frequency to get hours interval
       const freqMatch = frequency.match(/(\d+)h/i);
@@ -40,7 +62,7 @@ serve(async (req) => {
       const dosesPerDay = Math.floor(24 / intervalHours);
       
       // Parse start time
-      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [startHour, startMinute] = normalizedStart.split(':').map(Number);
       if (isNaN(startHour) || isNaN(startMinute)) return times;
       
       // Generate additional times
@@ -455,21 +477,73 @@ serve(async (req) => {
               }
             }
 
-            // Create complete horarios array with status
+            // Create complete horarios array with status using improved matching
             const allHorarios = originalHorarios.map((horario: string) => {
-              // Find matching occurrence for today
-              const todayOcc = todayOccurrences.find((occ: any) => {
+              const normalizedHorario = normalizeTime(horario);
+              
+              // Find matching occurrence for today with multiple strategies
+              let todayOcc = null;
+              const remainingOccurrences = [...todayOccurrences];
+              
+              // Strategy 1: Exact time match (normalized)
+              const exactMatch = remainingOccurrences.find((occ: any) => {
                 const occTimeLocal = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
                   hour: '2-digit', 
                   minute: '2-digit',
                   hour12: false,
                   timeZone: tz
                 });
-                return occTimeLocal === horario;
+                const normalizedOccTime = normalizeTime(occTimeLocal);
+                return normalizedOccTime === normalizedHorario;
               });
+              
+              if (exactMatch) {
+                todayOcc = exactMatch;
+                // Remove from remaining to prevent duplicates
+                const index = remainingOccurrences.indexOf(exactMatch);
+                if (index > -1) remainingOccurrences.splice(index, 1);
+              } else {
+                // Strategy 2: Proximity match (within 2 minutes)
+                const [targetHour, targetMinute] = normalizedHorario.split(':').map(Number);
+                const targetTotalMinutes = targetHour * 60 + targetMinute;
+                
+                const proximityMatch = remainingOccurrences.find((occ: any) => {
+                  const occTimeLocal = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false,
+                    timeZone: tz
+                  });
+                  const [occHour, occMinute] = normalizeTime(occTimeLocal).split(':').map(Number);
+                  const occTotalMinutes = occHour * 60 + occMinute;
+                  
+                  return Math.abs(occTotalMinutes - targetTotalMinutes) <= 2;
+                });
+                
+                if (proximityMatch) {
+                  todayOcc = proximityMatch;
+                  const index = remainingOccurrences.indexOf(proximityMatch);
+                  if (index > -1) remainingOccurrences.splice(index, 1);
+                }
+              }
+              
+              // Log matching attempts for debugging
+              if (!todayOcc && shouldHaveToday) {
+                console.log(`No match found for horario ${normalizedHorario}. Available occurrences:`, 
+                  todayOccurrences.map((occ: any) => ({
+                    time: normalizeTime(new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      hour12: false,
+                      timeZone: tz
+                    })),
+                    status: occ.status
+                  }))
+                );
+              }
 
               return {
-                hora: horario,
+                hora: normalizedHorario,
                 status: todayOcc ? todayOcc.status : (shouldHaveToday ? 'pendente' : 'pendente'),
                 occurrence_id: todayOcc?.id,
                 scheduled_at: todayOcc?.scheduled_at,
@@ -602,17 +676,22 @@ serve(async (req) => {
         // Create complete horarios array with all scheduled times and their status
         const originalHorarios = horariosArray || [];
         const allHorarios = originalHorarios.map((horario: string) => {
-          // Find matching occurrence for today
+          const normalizedHorario = normalizeTime(horario);
+          
+          // Find matching occurrence for today with normalized time matching
           const todayOcc = (todayOccurrences || []).find((occ: any) => {
             const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
               hour: '2-digit', 
-              minute: '2-digit' 
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'America/Sao_Paulo'
             });
-            return occTime === horario;
+            const normalizedOccTime = normalizeTime(occTime);
+            return normalizedOccTime === normalizedHorario;
           });
 
           return {
-            hora: horario,
+            hora: normalizedHorario,
             status: todayOcc ? todayOcc.status : 'pendente',
             occurrence_id: todayOcc?.id,
             scheduled_at: todayOcc?.scheduled_at,
@@ -739,16 +818,21 @@ serve(async (req) => {
         // Create complete horarios array using expanded horarios
         const originalHorarios = (expandedHorarios || medication.horarios || []);
         const allHorarios = originalHorarios.map((horario: string) => {
+          const normalizedHorario = normalizeTime(horario);
+          
           const todayOcc = (todayOccurrences || []).find((occ: any) => {
             const occTime = new Date(occ.scheduled_at).toLocaleTimeString('pt-BR', { 
               hour: '2-digit', 
-              minute: '2-digit' 
+              minute: '2-digit',
+              hour12: false,
+              timeZone: 'America/Sao_Paulo'
             });
-            return occTime === horario;
+            const normalizedOccTime = normalizeTime(occTime);
+            return normalizedOccTime === normalizedHorario;
           });
 
           return {
-            hora: horario,
+            hora: normalizedHorario,
             status: todayOcc ? todayOcc.status : 'pendente',
             occurrence_id: todayOcc?.id,
             scheduled_at: todayOcc?.scheduled_at,
