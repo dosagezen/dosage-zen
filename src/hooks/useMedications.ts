@@ -34,6 +34,8 @@ export interface Medication {
   updated_at: string;
   proxima?: string;
   isOptimistic?: boolean; // Flag for optimistic updates
+  has_today?: boolean;
+  has_pending_today?: boolean;
 }
 
 export interface CreateMedicationData {

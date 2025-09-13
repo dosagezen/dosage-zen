@@ -37,6 +37,8 @@ interface MedicacaoCompleta {
   data_inicio?: string;
   data_fim?: string;
   horaInicio?: string;
+  has_today?: boolean;
+  has_pending_today?: boolean;
 }
 
 interface UndoAction {
@@ -173,7 +175,9 @@ const Medicacoes = () => {
         isOptimistic: med.isOptimistic,
         data_inicio: med.data_inicio,
         data_fim: med.data_fim,
-        horaInicio: horariosStatus.length > 0 ? horariosStatus[0].hora : undefined
+        horaInicio: horariosStatus.length > 0 ? horariosStatus[0].hora : undefined,
+        has_today: (med as any).has_today,
+        has_pending_today: (med as any).has_pending_today
       };
     } catch (error) {
       console.error('Error converting medication:', error, 'for medication:', med);
@@ -471,11 +475,11 @@ const Medicacoes = () => {
         case "hoje":
           filtered = medicacoesList.filter(med => {
             if (!med || med.removed_from_today) return false;
-            // Always show optimistic medications in "hoje" for immediate feedback
-            if (med.isOptimistic) return true;
-            // Consider any valid pending time today, even if occurrence_id isn't present yet
-            const hasPendingToday = (med.horarios || []).some(h => h.status === 'pendente' && h.hora && h.hora !== '-');
-            return med.status === "ativa" && hasPendingToday;
+            if (med.isOptimistic) return true; // Optimistic feedback
+            // Prefer backend flags, fallback to local inference
+            const hasPendingToday = (med as any).has_pending_today ?? ((med.horarios || []).some(h => h.status === 'pendente' && h.hora && h.hora !== '-'));
+            const hasToday = (med as any).has_today ?? true;
+            return med.status === "ativa" && hasToday && hasPendingToday;
           })
           break
         case "ativas":
@@ -549,12 +553,10 @@ const Medicacoes = () => {
 
     const hoje = medicacoesList.filter(med => {
       if (!med || med.removed_from_today) return false;
-      // Count optimistic as "hoje"
-      if (med.isOptimistic) return true;
-      
-      // Check if has pending doses today (real occurrences)
-      const hasPendingToday = med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-');
-      return med.status === "ativa" && hasPendingToday;
+      if (med.isOptimistic) return true; // count optimistic
+      const hasPendingToday = (med as any).has_pending_today ?? (med.horarios?.some(h => h.status === 'pendente' && h.hora !== '-'));
+      const hasToday = (med as any).has_today ?? true;
+      return med.status === "ativa" && hasToday && hasPendingToday;
     }).length;
 
     const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;

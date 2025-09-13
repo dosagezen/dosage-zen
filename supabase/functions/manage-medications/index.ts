@@ -394,12 +394,48 @@ serve(async (req) => {
           (medications || []).map(async (med) => {
             // All scheduled times from medication.horarios (original schedule)
             const originalHorarios = Array.isArray(med.horarios) ? med.horarios : [];
+
+            // Determine if medication should have doses today based on active status and date range
+            const shouldHaveToday = (med.ativo === true)
+              && (originalHorarios.length > 0)
+              && (!med.data_inicio || med.data_inicio <= todayLocal)
+              && (!med.data_fim || med.data_fim >= todayLocal);
             
             // Today's occurrences from database (localized to user's timezone)
-            const todayOccurrences = (med.medication_occurrences || []).filter((occ: any) => {
+            let todayOccurrences = (med.medication_occurrences || []).filter((occ: any) => {
               const occDateLocal = new Date(occ.scheduled_at).toLocaleDateString('en-CA', { timeZone: tz });
               return occDateLocal === todayLocal;
             });
+
+            // If we should have occurrences today but they are missing, regenerate occurrences
+            if (shouldHaveToday && todayOccurrences.length < originalHorarios.length) {
+              try {
+                const horariosArray = originalHorarios.map((h: any) => typeof h === 'string' ? h : h?.hora).filter(Boolean);
+                console.log(`Auto-regenerating occurrences for ${med.id} - expected ${originalHorarios.length}, found ${todayOccurrences.length}`);
+                const { error: regenError } = await supabaseClient.rpc('fn_upsert_medication_occurrences', {
+                  p_medication_id: med.id,
+                  p_patient_profile_id: patientProfileId,
+                  p_horarios: horariosArray,
+                  p_data_inicio: med.data_inicio || null,
+                  p_data_fim: med.data_fim || null
+                });
+                if (regenError) {
+                  console.error('fn_upsert_medication_occurrences error:', regenError);
+                } else {
+                  // Refresh occurrences for this medication and filter to today (local tz)
+                  const { data: refreshed } = await supabaseClient
+                    .from('medication_occurrences')
+                    .select('id, scheduled_at, status, completed_at')
+                    .eq('medication_id', med.id);
+                  todayOccurrences = (refreshed || []).filter((occ: any) => {
+                    const occDateLocal = new Date(occ.scheduled_at).toLocaleDateString('en-CA', { timeZone: tz });
+                    return occDateLocal === todayLocal;
+                  });
+                }
+              } catch (e) {
+                console.error('Auto-regenerate failed:', e);
+              }
+            }
 
             // Create complete horarios array with status
             const allHorarios = originalHorarios.map((horario: string) => {
@@ -416,7 +452,7 @@ serve(async (req) => {
 
               return {
                 hora: horario,
-                status: todayOcc ? todayOcc.status : 'pendente',
+                status: todayOcc ? todayOcc.status : (shouldHaveToday ? 'pendente' : 'pendente'),
                 occurrence_id: todayOcc?.id,
                 scheduled_at: todayOcc?.scheduled_at,
                 completed_at: todayOcc?.completed_at
@@ -429,16 +465,17 @@ serve(async (req) => {
               { p_medication_id: med.id }
             );
             
-            // Calculate if has pending doses today for "hoje" filter
+            // Calculate flags for frontend filtering
             const hasPendingToday = allHorarios.some(h => h.status === 'pendente');
             
-            console.log(`Med ${med.nome}: originalHorarios=${originalHorarios.length}, todayOccs=${todayOccurrences.length}, pendingToday=${hasPendingToday}`);
+            console.log(`Med ${med.nome}: originalHorarios=${originalHorarios.length}, todayOccs=${todayOccurrences.length}, shouldHaveToday=${shouldHaveToday}, pendingToday=${hasPendingToday}`);
             
             return {
               ...med,
               proxima: nextOccurrence,
               horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
-              hasPendingToday // Helper for frontend filtering
+              has_today: shouldHaveToday,
+              has_pending_today: hasPendingToday
             };
           })
         );
@@ -565,13 +602,19 @@ serve(async (req) => {
         });
 
         // Return complete medication data with all horarios
+        const has_pending_today = allHorarios.some(h => h.status === 'pendente');
+        const has_today = (medication.ativo === true)
+          && (originalHorarios.length > 0)
+          && (!medication.data_inicio || medication.data_inicio <= today)
+          && (!medication.data_fim || medication.data_fim >= today);
         const completeMedication = {
           ...medication,
           proxima: nextOccurrence,
           horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
-          hasPendingToday: allHorarios.some(h => h.status === 'pendente')
+          has_today,
+          has_pending_today
         };
-
+ 
         console.log('Medication created successfully:', medication.id);
         return new Response(JSON.stringify({ medication: completeMedication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -693,13 +736,19 @@ serve(async (req) => {
           };
         });
 
+        const has_pending_today = allHorarios.some(h => h.status === 'pendente');
+        const has_today = (medication.ativo === true)
+          && ((expandedHorarios || medication.horarios || []).length > 0)
+          && (!medication.data_inicio || medication.data_inicio <= today)
+          && (!medication.data_fim || medication.data_fim >= today);
         const completeMedication = {
           ...medication,
           proxima: nextOccurrence,
           horarios: allHorarios.sort((a: any, b: any) => a.hora.localeCompare(b.hora)),
-          hasPendingToday: allHorarios.some(h => h.status === 'pendente')
+          has_today,
+          has_pending_today
         };
-
+ 
         console.log('Medication updated successfully:', id);
         return new Response(JSON.stringify({ medication: completeMedication }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
