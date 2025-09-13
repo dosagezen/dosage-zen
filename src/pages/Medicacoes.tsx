@@ -40,6 +40,12 @@ interface MedicacaoCompleta {
   horaInicio?: string;
   has_today?: boolean;
   has_pending_today?: boolean;
+  occurrencesToday?: Array<{
+    id: string;
+    time: string;
+    status: 'pendente' | 'concluido' | 'excluido';
+    scheduledAtLocal?: string;
+  }>;
 }
 
 interface UndoAction {
@@ -187,7 +193,8 @@ const Medicacoes = () => {
         data_fim: med.data_fim,
         horaInicio: horariosStatus.length > 0 ? horariosStatus[0].hora : undefined,
         has_today: (med as any).has_today,
-        has_pending_today: (med as any).has_pending_today
+        has_pending_today: (med as any).has_pending_today,
+        occurrencesToday: (med as any).occurrencesToday
       };
     } catch (error) {
       console.error('Error converting medication:', error, 'for medication:', med);

@@ -532,9 +532,17 @@ export const useMedications = (callbacks?: {
               }
             }
             
+            const updatedOccsToday = Array.isArray(medication.occurrencesToday)
+              ? medication.occurrencesToday.map(occ =>
+                  occ.id === (data as any).occ_id
+                    ? { ...occ, status: (data as any).new_status as 'concluido' | 'excluido' }
+                    : occ
+                )
+              : medication.occurrencesToday;
             return {
               ...medication,
               horarios: updatedHorarios,
+              occurrencesToday: updatedOccsToday as any,
               allDoneToday: (data as any).all_done_today
             };
           }
@@ -619,9 +627,15 @@ export const useMedications = (callbacks?: {
               return horario;
             }) || [];
             
+            const updatedOccsToday = Array.isArray(medication.occurrencesToday)
+              ? medication.occurrencesToday.map(occ =>
+                  occ.id === undoContext.occurrenceId ? { ...occ, status: 'pendente' as const } : occ
+                )
+              : medication.occurrencesToday;
             return {
               ...medication,
               horarios: updatedHorarios,
+              occurrencesToday: updatedOccsToday as any,
               allDoneToday: false // Restore to active list
             };
           }

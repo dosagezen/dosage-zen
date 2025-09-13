@@ -655,6 +655,7 @@ serve(async (req) => {
         // Create occurrences for the new medication IMMEDIATELY using expanded horarios
         const horariosArray = expandedHorarios ? expandedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora) : [];
         if (horariosArray.length > 0) {
+          const tzCreate = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
           console.log(`Generating occurrences for medication ${medication.id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
             'fn_upsert_medication_occurrences',
@@ -664,7 +665,7 @@ serve(async (req) => {
               p_horarios: horariosArray,
               p_data_inicio: data_inicio || null,
               p_data_fim: data_fim || null,
-              p_tz: 'America/Sao_Paulo'
+              p_tz: tzCreate
             }
           );
 
@@ -701,7 +702,7 @@ serve(async (req) => {
               hour: '2-digit', 
               minute: '2-digit',
               hour12: false,
-              timeZone: 'America/Sao_Paulo'
+              timeZone: tzCreate
             });
             const normalizedOccTime = normalizeTime(occTime);
             return normalizedOccTime === normalizedHorario;
@@ -733,10 +734,10 @@ serve(async (req) => {
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
-              timeZone: 'America/Sao_Paulo'
+              timeZone: tzCreate
             }));
             const scheduledAtLocal = new Date(occ.scheduled_at)
-              .toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+              .toLocaleString('sv-SE', { timeZone: tzCreate })
               .replace(' ', 'T');
             return {
               id: occ.id,
@@ -815,6 +816,7 @@ serve(async (req) => {
         const updatedHorarios = expandedHorarios || medication.horarios || [];
         if (updatedHorarios && Array.isArray(updatedHorarios) && updatedHorarios.length > 0) {
           const horariosArray = updatedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora);
+          const tzUpdate = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
           console.log(`Regenerating occurrences for medication ${id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
             'fn_upsert_medication_occurrences',
@@ -824,7 +826,7 @@ serve(async (req) => {
               p_horarios: horariosArray,
               p_data_inicio: data_inicio || medication.data_inicio,
               p_data_fim: data_fim || medication.data_fim,
-              p_tz: 'America/Sao_Paulo'
+              p_tz: tzUpdate
             }
           );
 
@@ -859,7 +861,7 @@ serve(async (req) => {
               hour: '2-digit', 
               minute: '2-digit',
               hour12: false,
-              timeZone: 'America/Sao_Paulo'
+              timeZone: tzUpdate
             });
             const normalizedOccTime = normalizeTime(occTime);
             return normalizedOccTime === normalizedHorario;
@@ -890,10 +892,10 @@ serve(async (req) => {
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
-              timeZone: 'America/Sao_Paulo'
+              timeZone: tzUpdate
             }));
             const scheduledAtLocal = new Date(occ.scheduled_at)
-              .toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo' })
+              .toLocaleString('sv-SE', { timeZone: tzUpdate })
               .replace(' ', 'T');
             return {
               id: occ.id,
