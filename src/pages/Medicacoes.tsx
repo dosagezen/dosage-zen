@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react"
-import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2, Plus, Loader2, AlertCircle } from "lucide-react"
+import { Pill, Clock, Search, Check, Filter, Undo2, ChevronDown, ChevronUp, Trash2, Plus, Loader2, AlertCircle, RotateCcw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import SwipeableCard from "@/components/SwipeableCard"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { useMedications, type Medication } from "@/hooks/useMedications"
-import { formatTime24h } from "@/lib/utils"
+import { formatTime24h, cn } from "@/lib/utils"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -71,10 +71,12 @@ const Medicacoes = () => {
     deleteMedication,
     markOccurrence,
     markNearestOccurrence,
+    restoreCard,
     isCreating,
     isUpdating,
     isDeleting,
-    isMarkingNearest
+    isMarkingNearest,
+    isRestoringCard
   } = useMedications({
     onCreateSuccess: () => {
       setIsEditDialogOpen(false);
@@ -705,36 +707,67 @@ const Medicacoes = () => {
                     {isCompletedExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </Button>
                   
-                  {isCompletedExpanded && (
-                    <div className="grid gap-4">
-                      {medicacoesConcluidas.map((medicacao) => (
-                        <Card key={medicacao.id} className="opacity-75">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Pill className="h-5 w-5 text-green-600" />
-                                  <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                   <Badge variant="outline" className="text-green-600 border-green-600">
-                                     Finalizada
-                                   </Badge>
-                                </div>
-                                
-                                <div className="space-y-2 text-sm text-muted-foreground">
-                                  <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
-                                  <p><strong>Forma:</strong> {medicacao.forma}</p>
-                                  <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
-                                </div>
-                              </div>
+                   {isCompletedExpanded && (
+                     <div className="grid gap-4">
+                       {medicacoesConcluidas.map((medicacao) => (
+                         <Card key={medicacao.id} className="opacity-75">
+                           <CardContent className="p-4">
+                             <div className="flex items-start justify-between">
+                               <div className="flex-1">
+                                 <div className="flex items-center gap-2 mb-2">
+                                   <Pill className="h-5 w-5 text-green-600" />
+                                   <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
+                                    <Badge variant="outline" className="text-green-600 border-green-600">
+                                      Finalizada
+                                    </Badge>
+                                 </div>
+                                 
+                                 <div className="space-y-2 text-sm text-muted-foreground">
+                                   <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
+                                   <p><strong>Forma:</strong> {medicacao.forma}</p>
+                                   <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
+                                 </div>
 
-                              <div className="text-right">
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
+                                 {/* Horários do dia */}
+                                 <div className="mt-3">
+                                   <div className="flex flex-wrap gap-2">
+                                     {medicacao.horarios?.map((horario, index) => (
+                                       <span
+                                         key={index}
+                                         className={cn(
+                                           "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
+                                           horario.status === 'concluido' 
+                                             ? "bg-green-100 text-green-800 line-through" 
+                                             : horario.status === 'excluido'
+                                             ? "bg-destructive/10 text-destructive line-through"
+                                             : "bg-blue-100 text-blue-800"
+                                         )}
+                                       >
+                                         {horario.hora}
+                                       </span>
+                                     ))}
+                                   </div>
+                                 </div>
+                               </div>
+
+                               <div className="text-right">
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => restoreCard(medicacao.id)}
+                                   disabled={isRestoringCard}
+                                   className="gap-2"
+                                 >
+                                   <RotateCcw className="w-3 h-3" />
+                                   {isRestoringCard ? 'Restaurando...' : 'Restaurar'}
+                                 </Button>
+                               </div>
+                             </div>
+                           </CardContent>
+                         </Card>
+                       ))}
+                     </div>
+                   )}
                 </div>
               )}
             </div>

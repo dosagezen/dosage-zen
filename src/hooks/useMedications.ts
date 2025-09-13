@@ -10,6 +10,13 @@ interface HorarioStatus {
   completed_at?: string;
 }
 
+interface UndoContext {
+  medicationId: string;
+  occurrenceId: string;
+  previousStatus: 'pendente' | 'concluido' | 'excluido';
+  timestamp: number;
+}
+
 export interface Medication {
   id: string;
   patient_profile_id: string;
@@ -353,80 +360,188 @@ export const useMedications = (callbacks?: {
     },
   });
 
+  // Mark nearest occurrence functionality with enhanced undo support
   const markNearestOccurrenceMutation = useMutation({
     mutationFn: async ({ medicationId, action }: { medicationId: string; action: 'concluir' | 'cancelar' }) => {
-      console.log('markNearestOccurrenceMutation called with:', { medicationId, action });
+      const currentTime = new Date().toISOString();
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      const { data, error } = await supabase.functions.invoke('manage-medications', {
-        body: {
-          action: 'mark_nearest',
-          id: medicationId,
-          nearestAction: action,
-          currentTime: new Date().toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        }
+      console.log('Calling fn_mark_nearest_med_occurrence with:', {
+        p_med_id: medicationId,
+        p_action: action,
+        p_now_utc: currentTime,
+        p_tz: timezone
       });
-      
-      console.log('Supabase function response:', { data, error });
-      
+
+      const { data, error } = await supabase.rpc('fn_mark_nearest_med_occurrence', {
+        p_med_id: medicationId,
+        p_action: action,
+        p_now_utc: currentTime,
+        p_tz: timezone
+      });
+
       if (error) {
-        console.error('Error in markNearestOccurrenceMutation:', error);
+        console.error('Error marking nearest occurrence:', error);
         throw error;
       }
+
+      console.log('fn_mark_nearest_med_occurrence result:', data);
+      
+      if (!(data as any)?.success) {
+        throw new Error((data as any)?.message || 'Failed to mark occurrence');
+      }
+
       return data;
     },
-    onSuccess: (data) => {
-      console.log('markNearestOccurrenceMutation success:', data);
-      
-      // Update local cache optimistically for immediate visual feedback
-      if (data?.success && data?.scheduled_at) {
-        queryClient.setQueryData(['medications'], (oldData: any[]) => {
-          if (!Array.isArray(oldData)) return oldData;
-          
-          return oldData.map(med => {
-            if (med.id === data.medication_id) {
-              // Find and update the specific time tag that was marked
-              const scheduledTime = new Date(data.scheduled_at).toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-              });
-              
-              // Update the medication occurrences
-              const updatedOccurrences = med.medication_occurrences?.map((occ: any) => {
-                if (occ.id === data.occ_id) {
-                  return {
-                    ...occ,
-                    status: data.new_status,
-                    completed_at: new Date().toISOString(),
-                    completed_by: 'current_user'
-                  };
-                }
-                return occ;
-              }) || [];
-              
-              return {
-                ...med,
-                medication_occurrences: updatedOccurrences
-              };
-            }
-            return med;
-          });
+    onSuccess: (data, { medicationId, action }) => {
+      // Store undo context
+      const undoContext: UndoContext = {
+        medicationId,
+        occurrenceId: (data as any).occ_id,
+        previousStatus: 'pendente',
+        timestamp: Date.now()
+      };
+
+      // Update the local cache optimistically
+      queryClient.setQueryData<Medication[]>(['medications'], (oldData) => {
+        if (!oldData) return oldData;
+        
+        return oldData.map(medication => {
+          if (medication.id === medicationId) {
+            const updatedHorarios = medication.horarios?.map(horario => {
+              if (horario.occurrence_id === (data as any).occ_id) {
+                return {
+                  ...horario,
+                  status: (data as any).new_status as 'concluido' | 'excluido'
+                };
+              }
+              return horario;
+            }) || [];
+            
+            return {
+              ...medication,
+              horarios: updatedHorarios,
+              allDoneToday: (data as any).all_done_today
+            };
+          }
+          return medication;
         });
-      }
-      
+      });
+
+      // Invalidate to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['medications'] });
+      
+      const actionText = action === 'concluir' ? 'Medicação concluída' : 'Medicação cancelada';
       toast({
-        title: 'Sucesso',
-        description: 'Medicação atualizada com sucesso.',
+        title: actionText,
+        description: "Ação realizada com sucesso. Toque em Desfazer nos próximos segundos para reverter.",
       });
     },
-    onError: (error: any) => {
-      console.error('markNearestOccurrenceMutation error:', error);
+    onError: (error) => {
+      console.error('Error marking nearest occurrence:', error);
       toast({
-        title: 'Erro',
-        description: `Falha ao atualizar medicação: ${error?.message || 'Erro desconhecido'}`,
-        variant: 'destructive',
+        title: "Erro",
+        description: "Não foi possível atualizar a medicação.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Undo functionality
+  const undoMutation = useMutation({
+    mutationFn: async (undoContext: UndoContext) => {
+      const { data, error } = await supabase.rpc('fn_undo_last_occurrence', {
+        p_occ_id: undoContext.occurrenceId
+      });
+
+      if (error) {
+        console.error('Error undoing occurrence:', error);
+        throw error;
+      }
+
+      if (!(data as any)?.success) {
+        throw new Error((data as any)?.message || 'Failed to undo occurrence');
+      }
+
+      return data;
+    },
+    onSuccess: (data, undoContext) => {
+      // Update the local cache to restore pending status
+      queryClient.setQueryData<Medication[]>(['medications'], (oldData) => {
+        if (!oldData) return oldData;
+        
+        return oldData.map(medication => {
+          if (medication.id === undoContext.medicationId) {
+            const updatedHorarios = medication.horarios?.map(horario => {
+              if (horario.occurrence_id === undoContext.occurrenceId) {
+                return {
+                  ...horario,
+                  status: 'pendente' as const
+                };
+              }
+              return horario;
+            }) || [];
+            
+            return {
+              ...medication,
+              horarios: updatedHorarios,
+              allDoneToday: false // Restore to active list
+            };
+          }
+          return medication;
+        });
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+      
+      toast({
+        title: "Ação desfeita",
+        description: "A medicação foi restaurada para pendente.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error undoing occurrence:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível desfazer a ação.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Restore card functionality
+  const restoreCardMutation = useMutation({
+    mutationFn: async (medicationId: string) => {
+      const today = new Date().toISOString().split('T')[0];
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      const { data, error } = await supabase.rpc('fn_restore_card_for_today', {
+        p_med_id: medicationId,
+        p_day_local: today,
+        p_tz: timezone
+      });
+
+      if (error) {
+        console.error('Error restoring card:', error);
+        throw error;
+      }
+
+      return { restoredCount: data };
+    },
+    onSuccess: (data, medicationId) => {
+      queryClient.invalidateQueries({ queryKey: ['medications'] });
+      
+      toast({
+        title: "Card restaurado",
+        description: `${data.restoredCount} horário(s) foram reabertos para hoje.`,
+      });
+    },
+    onError: (error) => {
+      console.error('Error restoring card:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível restaurar o card.",
+        variant: "destructive",
       });
     }
   });
@@ -441,10 +556,12 @@ export const useMedications = (callbacks?: {
     deleteMedication: deleteMutation.mutate,
     markOccurrence: markOccurrenceMutation.mutate,
     markNearestOccurrence: markNearestOccurrenceMutation.mutate,
+    restoreCard: restoreCardMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isMarkingOccurrence: markOccurrenceMutation.isPending,
-    isMarkingNearest: markNearestOccurrenceMutation.isPending
+    isMarkingNearest: markNearestOccurrenceMutation.isPending,
+    isRestoringCard: restoreCardMutation.isPending,
   };
 };

@@ -229,6 +229,42 @@ export type Database = {
           },
         ]
       }
+      medication_check_log: {
+        Row: {
+          action: string
+          checked_at: string
+          created_at: string
+          delta_minutes: number
+          id: string
+          med_id: string
+          occ_id: string
+          scheduled_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          checked_at?: string
+          created_at?: string
+          delta_minutes: number
+          id?: string
+          med_id: string
+          occ_id: string
+          scheduled_at: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          checked_at?: string
+          created_at?: string
+          delta_minutes?: number
+          id?: string
+          med_id?: string
+          occ_id?: string
+          scheduled_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       medication_occurrences: {
         Row: {
           completed_at: string | null
@@ -533,7 +569,7 @@ export type Database = {
         Args: {
           p_action: string
           p_med_id: string
-          p_now: string
+          p_now_utc: string
           p_tz: string
         }
         Returns: Json
@@ -560,6 +596,14 @@ export type Database = {
       fn_next_occurrence: {
         Args: { p_medication_id: string }
         Returns: string
+      }
+      fn_restore_card_for_today: {
+        Args: { p_day_local: string; p_med_id: string; p_tz: string }
+        Returns: number
+      }
+      fn_undo_last_occurrence: {
+        Args: { p_occ_id: string }
+        Returns: Json
       }
       fn_upsert_medication_occurrences: {
         Args: {
