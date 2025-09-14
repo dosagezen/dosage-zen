@@ -329,7 +329,7 @@ const Medicacoes = () => {
   // Função para verificar se uma medicação tem todos os horários do dia checados (concluído OU cancelado)
   const isAllDosesCompleted = useCallback((medicacao: MedicacaoCompleta) => {
     const validHorarios = (medicacao.horarios || []).filter(h => h.hora && h.hora !== '-');
-    return validHorarios.length > 0 && validHorarios.every(h => h.status === 'concluido' || h.status === 'excluido');
+    return validHorarios.length > 0 && validHorarios.every(h => h.status === 'concluido');
   }, [])
 
   // Função para calcular próximo horário pendente
