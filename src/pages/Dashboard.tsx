@@ -12,12 +12,29 @@ import { useAppointments } from "@/hooks/useAppointments";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatTime24h } from "@/lib/utils";
 
+// Função utilitária para saudação baseada no horário
+const getGreetingByTime = (timezone?: string): string => {
+  const currentTime = new Date();
+  const timeZone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  
+  // Obter a hora local do usuário
+  const localHour = new Date(currentTime.toLocaleString("en-US", { timeZone })).getHours();
+  
+  if (localHour >= 5 && localHour < 12) {
+    return "Bom dia";
+  } else if (localHour >= 12 && localHour < 18) {
+    return "Boa tarde";
+  } else {
+    return "Boa noite";
+  }
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isAddCompromissoOpen, setIsAddCompromissoOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
   // Hooks para dados reais
   const { medications, isLoading: medicationsLoading, refetchMedications } = useMedications();
@@ -150,14 +167,15 @@ const Dashboard = () => {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-primary">
-            Bom dia{user?.email ? `, ${user.email.split('@')[0]}` : ''}!
+            {getGreetingByTime()}, {profile?.nome || user?.email?.split('@')[0] || 'Márcio'}!
           </h1>
           <p className="text-muted-foreground">
             {new Date().toLocaleDateString('pt-BR', { 
               weekday: 'long', 
               year: 'numeric', 
               month: 'long', 
-              day: 'numeric' 
+              day: 'numeric',
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
             })}
           </p>
         </div>
