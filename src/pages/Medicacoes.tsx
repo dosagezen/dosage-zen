@@ -711,7 +711,7 @@ const Medicacoes = () => {
                         <Clock className="w-5 h-5" />
                         Ativas ({medicacoesPendentes.length})
                       </h3>
-                      <div className="grid gap-4">
+                       <div className="grid gap-4 mb-15">
                         {medicacoesPendentes.map((medicacao) => (
                            <SwipeableCard
                              key={medicacao.id}
@@ -734,7 +734,7 @@ const Medicacoes = () => {
                         <Clock className="w-5 h-5 text-destructive" />
                         Inativas ({medicacoesConcluidas.length})
                       </h3>
-                      <div className="grid gap-4">
+                       <div className="grid gap-4 mb-15">
                         {medicacoesConcluidas.map((medicacao) => (
                            <SwipeableCard
                              key={medicacao.id}
@@ -760,7 +760,7 @@ const Medicacoes = () => {
                          <Clock className="w-5 h-5" />
                          Ativas ({medicacoesPendentes.length})
                        </h3>
-                      <div className="grid gap-4">
+                       <div className="grid gap-4 mb-15">
                         {medicacoesPendentes.map((medicacao) => (
                            <SwipeableCard
                              key={medicacao.id}
@@ -792,7 +792,7 @@ const Medicacoes = () => {
                        </Button>
                        
                         {isCompletedExpanded && (
-                          <div className="grid gap-4">
+                          <div className="grid gap-4 mb-15">
                             {medicacoesConcluidas.map((medicacao) => (
                               <Card key={medicacao.id} className="opacity-75">
                                  <CardContent className="p-4">
