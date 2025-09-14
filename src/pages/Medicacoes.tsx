@@ -569,16 +569,24 @@ const Medicacoes = () => {
   }, [filteredMedicacoes, activeFilter])
   
   const medicacoesConcluidas = useMemo(() => {
-    return filteredMedicacoes.filter(med => {
-      if (!med) return false;
-      if (activeFilter === 'hoje') {
+    if (activeFilter === 'hoje') {
+      // Para o filtro "hoje", buscar diretamente na lista completa, não na filtrada
+      return medicacoesList.filter(med => {
+        if (!med || med.removed_from_today) return false;
+        if (med.status !== "ativa") return false;
+        
+        // Verificar se tem doses hoje (mesmo critério do filtro "hoje")
+        const hasToday = (med as any).has_today ?? ((med.horarios || []).length > 0);
+        if (!hasToday) return false;
+        
+        // E se todas as doses de hoje estão completas
         return isAllDosesCompleted(med);
-      } else if (activeFilter === 'todas') {
-        return med.status === "inativa";
-      }
-      return false; // For "ativas" filter, no completed list
-    });
-  }, [filteredMedicacoes, activeFilter])
+      });
+    } else if (activeFilter === 'todas') {
+      return filteredMedicacoes.filter(med => med && med.status === "inativa");
+    }
+    return []; // For "ativas" filter, no completed list
+  }, [medicacoesList, filteredMedicacoes, activeFilter, isAllDosesCompleted])
 
   // Calculate counters based on real occurrences
   const counters = useMemo(() => {
