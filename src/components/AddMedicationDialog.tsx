@@ -80,7 +80,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
 
   const [horarioError, setHorarioError] = useState("")
 
-  // Atualizar dados quando medication muda
+  // Atualizar dados quando medication muda ou dialog abre
   useEffect(() => {
     if (medication && isEditing) {
       console.log('Setting form data for editing medication:', medication)
@@ -111,7 +111,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       })
       setHorarioError("")
     }
-  }, [medication, isEditing])
+  }, [medication, isEditing, open])
 
   const isControlled = open !== undefined && onOpenChange !== undefined
   const dialogOpen = isControlled ? open : isDialogOpen
