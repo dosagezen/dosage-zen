@@ -813,9 +813,9 @@ serve(async (req) => {
 
         // Always regenerate occurrences when updating medication data using expanded horarios
         const updatedHorarios = expandedHorarios || medication.horarios || [];
+        const tzUpdate = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
         if (updatedHorarios && Array.isArray(updatedHorarios) && updatedHorarios.length > 0) {
           const horariosArray = updatedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora);
-          const tzUpdate = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
           console.log(`Regenerating occurrences for medication ${id} with horarios:`, horariosArray);
           const { error: occurrenceError } = await supabaseClient.rpc(
             'fn_upsert_medication_occurrences',
