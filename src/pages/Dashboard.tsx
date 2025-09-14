@@ -167,16 +167,19 @@ const Dashboard = () => {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-primary">
-            {getGreetingByTime()}, {profile?.nome || user?.email?.split('@')[0] || 'Márcio'}!
+            {getGreetingByTime()}, {profile?.nome?.split(' ')[0] || user?.email?.split('@')[0] || 'Márcio'}!
           </h1>
           <p className="text-muted-foreground">
-            {new Date().toLocaleDateString('pt-BR', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric',
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-            })}
+            {(() => {
+              const dateStr = new Date().toLocaleDateString('pt-BR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              });
+              return dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+            })()}
           </p>
         </div>
         <AddMedicationDialog>
