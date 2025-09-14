@@ -564,8 +564,10 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                        variant="secondary" 
                         className={`
                           relative text-xs sm:text-sm transition-all duration-200
-                          ${horario.status === 'concluido' || horario.status === 'excluido'
-                            ? "bg-[#588157]/20 text-[#588157] opacity-60 line-through cursor-default"
+                          ${horario.status === 'concluido'
+                            ? "bg-green-100 text-green-800 line-through cursor-default"
+                           : horario.status === 'excluido'
+                           ? "bg-destructive/10 text-destructive line-through cursor-default"
                            : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
                            ? `bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ${horario.hora === nearestPending ? 'ring-primary bg-primary/15' : 'ring-primary/30 hover:ring-primary/50'}`
                             : "bg-accent/20 cursor-default opacity-50"
@@ -573,7 +575,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                         `}
                       style={horario.status === 'concluido' || horario.status === 'excluido' ? {
                         textDecoration: 'line-through',
-                        textDecorationColor: '#588157',
+                        textDecorationColor: horario.status === 'concluido' ? '#166534' : 'hsl(var(--destructive))',
                         textDecorationThickness: '2px'
                       } : {}}
                       onClick={(e) => {

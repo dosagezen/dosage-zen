@@ -605,6 +605,12 @@ const Medicacoes = () => {
     return { hoje, ativas, todas };
   }, [medicacoesList])
 
+  // Auto-expand "Finalizadas hoje" when items are completed
+  useEffect(() => {
+    if (medicacoesConcluidas.length > 0 && !isCompletedExpanded) {
+      setIsCompletedExpanded(true);
+    }
+  }, [medicacoesConcluidas.length, isCompletedExpanded])
 
   return (
     <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20">
