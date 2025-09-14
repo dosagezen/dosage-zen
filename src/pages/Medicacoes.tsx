@@ -592,18 +592,22 @@ const Medicacoes = () => {
   const counters = useMemo(() => {
     if (!medicacoesList?.length) return { hoje: 0, ativas: 0, todas: 0 };
 
+    // Para o filtro "hoje", contar apenas medicações programadas (não finalizadas)
     const hoje = medicacoesList.filter(med => {
       if (!med || med.removed_from_today) return false;
       if (med.isOptimistic) return true; // count optimistic
       const hasToday = (med as any).has_today ?? ((med.horarios || []).length > 0);
-      return med.status === "ativa" && hasToday;
+      const isActive = med.status === "ativa" && hasToday;
+      if (!isActive) return false;
+      // Só contar se NÃO estiver com todas as doses finalizadas
+      return !isAllDosesCompleted(med);
     }).length;
 
     const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
     const todas = medicacoesList.filter(med => med && !med.removed_from_today).length;
 
     return { hoje, ativas, todas };
-  }, [medicacoesList])
+  }, [medicacoesList, isAllDosesCompleted])
 
   // Auto-expand "Finalizadas hoje" when items are completed
   useEffect(() => {
@@ -771,9 +775,9 @@ const Medicacoes = () => {
                   {medicacoesPendentes.length > 0 && (
                     <div className="space-y-4">
                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                         <Clock className="w-5 h-5" />
-                         Ativas ({medicacoesPendentes.length})
-                       </h3>
+                          <Clock className="w-5 h-5" />
+                          {activeFilter === 'hoje' ? 'Programadas' : 'Ativas'} ({medicacoesPendentes.length})
+                        </h3>
                        <div className="grid gap-4 mb-15">
                         {medicacoesPendentes.map((medicacao) => (
                            <SwipeableCard
