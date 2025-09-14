@@ -557,6 +557,11 @@ const Medicacoes = () => {
 
   // Separar medicações baseado no filtro ativo
   const medicacoesPendentes = useMemo(() => {
+    if (activeFilter === 'ativas') {
+      // For "ativas" filter, use medicacoesList directly to match the counter logic
+      return medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today);
+    }
+    
     return filteredMedicacoes.filter(med => {
       if (!med) return false;
       if (activeFilter === 'hoje') {
@@ -564,9 +569,9 @@ const Medicacoes = () => {
       } else if (activeFilter === 'todas') {
         return med.status === "ativa";
       }
-      return med.status === "ativa"; // For "ativas" filter - show all active medications
+      return med.status === "ativa";
     });
-  }, [filteredMedicacoes, activeFilter])
+  }, [filteredMedicacoes, activeFilter, medicacoesList])
   
   const medicacoesConcluidas = useMemo(() => {
     if (activeFilter === 'hoje') {
