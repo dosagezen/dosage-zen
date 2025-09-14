@@ -564,7 +564,7 @@ const Medicacoes = () => {
       } else if (activeFilter === 'todas') {
         return med.status === "ativa";
       }
-      return !isAllDosesCompleted(med); // For "ativas" filter
+      return med.status === "ativa"; // For "ativas" filter - show all active medications
     });
   }, [filteredMedicacoes, activeFilter])
   
