@@ -756,10 +756,10 @@ const Medicacoes = () => {
                   {/* Medicações Pendentes */}
                   {medicacoesPendentes.length > 0 && (
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Clock className="w-5 h-5" />
-                        Pendentes ({medicacoesPendentes.length})
-                      </h3>
+                       <h3 className="text-lg font-semibold flex items-center gap-2">
+                         <Clock className="w-5 h-5" />
+                         Ativas ({medicacoesPendentes.length})
+                       </h3>
                       <div className="grid gap-4">
                         {medicacoesPendentes.map((medicacao) => (
                            <SwipeableCard
