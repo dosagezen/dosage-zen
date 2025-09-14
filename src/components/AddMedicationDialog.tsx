@@ -85,7 +85,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
     if (medication && isEditing) {
       console.log('Setting form data for editing medication:', medication)
       setFormData({
-        status: medication.status === "ativa" || medication.status === "active" || medication.ativo === true || !medication.status ? true : false,
+        status: medication.status === "ativa" || medication.status === "active" || medication.ativo === true,
         nome: medication.nome || "",
         dosagem: medication.dosagem || "",
         forma: medication.forma || "",
