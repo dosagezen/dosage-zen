@@ -565,7 +565,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                         className={`
                           relative text-xs sm:text-sm transition-all duration-200
                           ${horario.status === 'concluido'
-                            ? "bg-green-100 text-green-800 line-through cursor-default"
+                            ? "bg-success/10 text-success line-through cursor-default"
                            : horario.status === 'excluido'
                            ? "bg-destructive/10 text-destructive line-through cursor-default"
                            : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
@@ -575,7 +575,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
                         `}
                       style={horario.status === 'concluido' || horario.status === 'excluido' ? {
                         textDecoration: 'line-through',
-                        textDecorationColor: horario.status === 'concluido' ? '#166534' : 'hsl(var(--destructive))',
+                        textDecorationColor: horario.status === 'concluido' ? 'hsl(var(--success))' : 'hsl(var(--destructive))',
                         textDecorationThickness: '2px'
                       } : {}}
                       onClick={(e) => {

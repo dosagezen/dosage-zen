@@ -798,7 +798,7 @@ const Medicacoes = () => {
                          onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
                          className="flex items-center gap-2 p-0 h-auto"
                        >
-                         <Check className="w-5 h-5 text-green-600" />
+                         <Check className="w-5 h-5 text-success" />
                           <h3 className="text-lg font-semibold">
                             Finalizadas hoje ({medicacoesConcluidas.length})
                           </h3>
@@ -814,7 +814,7 @@ const Medicacoes = () => {
                                      // Layout Mobile
                                       <div>
                                         <div className="flex items-center gap-2 mb-2">
-                                          <Pill className="h-5 w-5 text-green-600" />
+                                          <Pill className="h-5 w-5 text-success" />
                                           <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
                                         </div>
                                         
@@ -831,7 +831,7 @@ const Medicacoes = () => {
                                                 className={cn(
                                                   "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
                                                   horario.status === 'concluido' 
-                                                    ? "bg-green-100 text-green-800 line-through" 
+                                                    ? "bg-success/10 text-success line-through" 
                                                     : horario.status === 'excluido'
                                                     ? "bg-destructive/10 text-destructive line-through"
                                                     : "bg-blue-100 text-blue-800"
@@ -844,7 +844,7 @@ const Medicacoes = () => {
                                         </div>
                                         
                                         <div className="mb-4">
-                                          <Badge variant="outline" className="text-green-600 border-green-600">
+                                          <Badge variant="outline" className="text-success border-success">
                                             Finalizada
                                           </Badge>
                                         </div>
@@ -868,9 +868,9 @@ const Medicacoes = () => {
                                      <div className="flex items-start justify-between">
                                        <div className="flex-1">
                                          <div className="flex items-center gap-2 mb-2">
-                                           <Pill className="h-5 w-5 text-green-600" />
+                                           <Pill className="h-5 w-5 text-success" />
                                            <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                            <Badge variant="outline" className="text-green-600 border-green-600">
+                                            <Badge variant="outline" className="text-success border-success">
                                               Finalizada
                                             </Badge>
                                          </div>
@@ -887,14 +887,14 @@ const Medicacoes = () => {
                                              {medicacao.horarios?.map((horario, index) => (
                                                <span
                                                  key={index}
-                                                 className={cn(
-                                                   "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
-                                                   horario.status === 'concluido' 
-                                                     ? "bg-green-100 text-green-800 line-through" 
-                                                     : horario.status === 'excluido'
-                                                     ? "bg-destructive/10 text-destructive line-through"
-                                                     : "bg-blue-100 text-blue-800"
-                                                 )}
+                                                   className={cn(
+                                                     "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
+                                                     horario.status === 'concluido' 
+                                                       ? "bg-success/10 text-success line-through" 
+                                                       : horario.status === 'excluido'
+                                                       ? "bg-destructive/10 text-destructive line-through"
+                                                       : "bg-blue-100 text-blue-800"
+                                                   )}
                                                >
                                                  {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
                                                </span>
