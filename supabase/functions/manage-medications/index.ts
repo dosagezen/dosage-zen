@@ -402,7 +402,7 @@ serve(async (req) => {
       }
 
       case 'list': {
-        // Get ALL active medications with their occurrences
+        // Get ALL medications (active and inactive) with their occurrences
         const tz = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
         const todayLocal = new Date(new Date().toLocaleString('en-US', { timeZone: tz })).toISOString().split('T')[0];
         const { data: medications, error } = await supabaseClient
@@ -417,7 +417,6 @@ serve(async (req) => {
             )
           `)
           .eq('patient_profile_id', patientProfileId)
-          .eq('ativo', true)
           .order('created_at', { ascending: false });
 
         if (error) {

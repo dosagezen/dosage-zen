@@ -48,6 +48,7 @@ interface SwipeableCardProps {
   disabled?: boolean;
   origin?: 'medicacoes' | 'compromissos';
   isLoading?: boolean;
+  isInactive?: boolean;
 }
 
 const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
@@ -57,7 +58,8 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
   onEdit,
   disabled = false,
   origin = 'medicacoes',
-  isLoading = false
+  isLoading = false,
+  isInactive = false
 }) => {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
@@ -480,7 +482,7 @@ const SwipeableCard: React.FC<SwipeableCardProps> = ({
         ref={cardRef}
         className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden z-10 ${
           dragState.isDragging && dragState.isHorizontalSwipe ? 'pointer-events-none' : ''
-        }`}
+        } ${isInactive ? 'bg-destructive/10' : ''}`}
         style={{
           ...getTransformStyle(),
           touchAction: isMobile ? 'pan-y' : 'auto'

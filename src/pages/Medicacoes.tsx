@@ -509,6 +509,7 @@ const Medicacoes = () => {
           )
           break
         case "todas":
+          // Show all medications (active and inactive)
           filtered = medicacoesList.filter(med => med && !med.removed_from_today)
           break
         default:
@@ -554,14 +555,30 @@ const Medicacoes = () => {
     }
   }, [medicacoesList, activeFilter, searchTerm, isMobile])
 
-  // Separar medicações concluídas das pendentes com segurança
+  // Separar medicações baseado no filtro ativo
   const medicacoesPendentes = useMemo(() => {
-    return filteredMedicacoes.filter(med => med && !isAllDosesCompleted(med))
-  }, [filteredMedicacoes])
+    return filteredMedicacoes.filter(med => {
+      if (!med) return false;
+      if (activeFilter === 'hoje') {
+        return !isAllDosesCompleted(med);
+      } else if (activeFilter === 'todas') {
+        return med.status === "ativa";
+      }
+      return !isAllDosesCompleted(med); // For "ativas" filter
+    });
+  }, [filteredMedicacoes, activeFilter])
   
   const medicacoesConcluidas = useMemo(() => {
-    return filteredMedicacoes.filter(med => med && isAllDosesCompleted(med))
-  }, [filteredMedicacoes])
+    return filteredMedicacoes.filter(med => {
+      if (!med) return false;
+      if (activeFilter === 'hoje') {
+        return isAllDosesCompleted(med);
+      } else if (activeFilter === 'todas') {
+        return med.status === "inativa";
+      }
+      return false; // For "ativas" filter, no completed list
+    });
+  }, [filteredMedicacoes, activeFilter])
 
   // Calculate counters based on real occurrences
   const counters = useMemo(() => {
@@ -685,108 +702,161 @@ const Medicacoes = () => {
             </Card>
           ) : (
             <div className="space-y-6">
-              {/* Medicações Pendentes */}
-              {medicacoesPendentes.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
-                    Pendentes ({medicacoesPendentes.length})
-                  </h3>
-                  <div className="grid gap-4">
-                    {medicacoesPendentes.map((medicacao) => (
-                       <SwipeableCard
-                         key={medicacao.id}
-                         medicacao={medicacao}
-                          onComplete={(id) => markDoseCompleted(id)}
-                          onRemove={(id) => markDoseCanceled(id)}
-                          onEdit={(med) => handleEditMedication(med)}
-                          disabled={isUpdating || isDeleting || isMarkingNearest}
-                          isLoading={isMarkingNearest}
-                       />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {activeFilter === 'todas' ? (
+                <>
+                  {/* Lista de medicações Ativas */}
+                  {medicacoesPendentes.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        Ativas ({medicacoesPendentes.length})
+                      </h3>
+                      <div className="grid gap-4">
+                        {medicacoesPendentes.map((medicacao) => (
+                           <SwipeableCard
+                             key={medicacao.id}
+                             medicacao={medicacao}
+                              onComplete={(id) => markDoseCompleted(id)}
+                              onRemove={(id) => markDoseCanceled(id)}
+                              onEdit={(med) => handleEditMedication(med)}
+                              disabled={isUpdating || isDeleting || isMarkingNearest}
+                              isLoading={isMarkingNearest}
+                           />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-              {/* Medicações Concluídas */}
-              {medicacoesConcluidas.length > 0 && (
-                <div className="space-y-4">
-                  <Button
-                    variant="ghost"
-                    onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
-                    className="flex items-center gap-2 p-0 h-auto"
-                  >
-                    <Check className="w-5 h-5 text-green-600" />
-                     <h3 className="text-lg font-semibold">
-                       Finalizadas hoje ({medicacoesConcluidas.length})
-                     </h3>
-                    {isCompletedExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </Button>
-                  
-                   {isCompletedExpanded && (
-                     <div className="grid gap-4">
-                       {medicacoesConcluidas.map((medicacao) => (
-                         <Card key={medicacao.id} className="opacity-75">
-                           <CardContent className="p-4">
-                             <div className="flex items-start justify-between">
-                               <div className="flex-1">
-                                 <div className="flex items-center gap-2 mb-2">
-                                   <Pill className="h-5 w-5 text-green-600" />
-                                   <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                    <Badge variant="outline" className="text-green-600 border-green-600">
-                                      Finalizada
-                                    </Badge>
-                                 </div>
-                                 
-                                 <div className="space-y-2 text-sm text-muted-foreground">
-                                   <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
-                                   <p><strong>Forma:</strong> {medicacao.forma}</p>
-                                   <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
-                                 </div>
+                  {/* Lista de medicações Inativas */}
+                  {medicacoesConcluidas.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-destructive" />
+                        Inativas ({medicacoesConcluidas.length})
+                      </h3>
+                      <div className="grid gap-4">
+                        {medicacoesConcluidas.map((medicacao) => (
+                           <SwipeableCard
+                             key={medicacao.id}
+                             medicacao={medicacao}
+                              onComplete={(id) => markDoseCompleted(id)}
+                              onRemove={(id) => markDoseCanceled(id)}
+                              onEdit={(med) => handleEditMedication(med)}
+                              disabled={isUpdating || isDeleting || isMarkingNearest}
+                              isLoading={isMarkingNearest}
+                              isInactive={true}
+                           />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Medicações Pendentes */}
+                  {medicacoesPendentes.length > 0 && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="w-5 h-5" />
+                        Pendentes ({medicacoesPendentes.length})
+                      </h3>
+                      <div className="grid gap-4">
+                        {medicacoesPendentes.map((medicacao) => (
+                           <SwipeableCard
+                             key={medicacao.id}
+                             medicacao={medicacao}
+                              onComplete={(id) => markDoseCompleted(id)}
+                              onRemove={(id) => markDoseCanceled(id)}
+                              onEdit={(med) => handleEditMedication(med)}
+                              disabled={isUpdating || isDeleting || isMarkingNearest}
+                              isLoading={isMarkingNearest}
+                           />
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                                 {/* Horários do dia */}
-                                 <div className="mt-3">
-                                   <div className="flex flex-wrap gap-2">
-                                     {medicacao.horarios?.map((horario, index) => (
-                                       <span
-                                         key={index}
-                                         className={cn(
-                                           "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
-                                           horario.status === 'concluido' 
-                                             ? "bg-green-100 text-green-800 line-through" 
-                                             : horario.status === 'excluido'
-                                             ? "bg-destructive/10 text-destructive line-through"
-                                             : "bg-blue-100 text-blue-800"
-                                         )}
-                                       >
-                                         {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
-                                       </span>
-                                     ))}
-                                   </div>
-                                 </div>
-                               </div>
+                   {/* Medicações Concluídas */}
+                   {medicacoesConcluidas.length > 0 && (
+                     <div className="space-y-4">
+                       <Button
+                         variant="ghost"
+                         onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                         className="flex items-center gap-2 p-0 h-auto"
+                       >
+                         <Check className="w-5 h-5 text-green-600" />
+                          <h3 className="text-lg font-semibold">
+                            Finalizadas hoje ({medicacoesConcluidas.length})
+                          </h3>
+                         {isCompletedExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                       </Button>
+                       
+                        {isCompletedExpanded && (
+                          <div className="grid gap-4">
+                            {medicacoesConcluidas.map((medicacao) => (
+                              <Card key={medicacao.id} className="opacity-75">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Pill className="h-5 w-5 text-green-600" />
+                                        <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
+                                         <Badge variant="outline" className="text-green-600 border-green-600">
+                                           Finalizada
+                                         </Badge>
+                                      </div>
+                                      
+                                      <div className="space-y-2 text-sm text-muted-foreground">
+                                        <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
+                                        <p><strong>Forma:</strong> {medicacao.forma}</p>
+                                        <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
+                                      </div>
 
-                               <div className="text-right">
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => restoreCard(medicacao.id)}
-                                   disabled={isRestoringCard}
-                                   className="gap-2"
-                                 >
-                                   <RotateCcw className="w-3 h-3" />
-                                   {isRestoringCard ? 'Restaurando...' : 'Restaurar'}
-                                 </Button>
-                               </div>
-                             </div>
-                           </CardContent>
-                         </Card>
-                       ))}
+                                      {/* Horários do dia */}
+                                      <div className="mt-3">
+                                        <div className="flex flex-wrap gap-2">
+                                          {medicacao.horarios?.map((horario, index) => (
+                                            <span
+                                              key={index}
+                                              className={cn(
+                                                "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
+                                                horario.status === 'concluido' 
+                                                  ? "bg-green-100 text-green-800 line-through" 
+                                                  : horario.status === 'excluido'
+                                                  ? "bg-destructive/10 text-destructive line-through"
+                                                  : "bg-blue-100 text-blue-800"
+                                              )}
+                                            >
+                                              {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="text-right">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => restoreCard(medicacao.id)}
+                                        disabled={isRestoringCard}
+                                        className="gap-2"
+                                      >
+                                        <RotateCcw className="w-3 h-3" />
+                                        {isRestoringCard ? 'Restaurando...' : 'Restaurar'}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
                      </div>
                    )}
-                </div>
-              )}
-            </div>
+                 </>
+               )}
+             </div>
           )}
         </div>
       </div>
