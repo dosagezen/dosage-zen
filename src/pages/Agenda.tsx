@@ -1,1216 +1,591 @@
-import { useState, useRef, useEffect } from "react";
-import { Plus, Calendar as CalendarIcon, Clock, MapPin, Search, User, ChevronLeft, ChevronRight, Pill, Stethoscope, Heart } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { cn, formatTime24h } from "@/lib/utils";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay, isSameMonth, addMonths, subMonths } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useLocation } from "react-router-dom";
-import CompromissosModal from "@/components/CompromissosModal";
+import { useState, useMemo } from 'react';
+import { Calendar, Search, Plus, User, Stethoscope, Heart, MapPin, Clock, Filter } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useAppointments, type Appointment, type CreateAppointmentData } from '@/hooks/useAppointments';
+import { useToast } from '@/hooks/use-toast';
+import { SwipeableCard } from '@/components/SwipeableCard';
 
-const Agenda = () => {
-  const isMobile = useIsMobile();
-  const location = useLocation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
+type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
+
+const categoryIcons = {
+  consulta: User,
+  exame: Stethoscope,
+  atividade: Heart,
+};
+
+const categoryLabels = {
+  consulta: 'Consulta',
+  exame: 'Exame',
+  atividade: 'Atividade',
+};
+
+const statusColors = {
+  agendado: 'default',
+  realizado: 'secondary',
+  cancelado: 'destructive',
+} as const;
+
+const weekdays = [
+  { value: 0, label: 'Domingo' },
+  { value: 1, label: 'Segunda' },
+  { value: 2, label: 'Terça' },
+  { value: 3, label: 'Quarta' },
+  { value: 4, label: 'Quinta' },
+  { value: 5, label: 'Sexta' },
+  { value: 6, label: 'Sábado' },
+];
+
+export default function Agenda() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [isDayModalOpen, setIsDayModalOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<'consulta' | 'exame' | 'atividade'>('consulta');
-  
-  // Garantir scroll para o topo quando a página carregar
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-  
-  
-  // Estados específicos para cada categoria
-  const [consultaData, setConsultaData] = useState({
-    date: undefined as Date | undefined,
-    time: "",
-    especialidade: "",
-    profissional: "",
-    local: "",
-    observacoes: ""
-  });
-  const [exameData, setExameData] = useState({
-    date: undefined as Date | undefined,
-    time: "",
-    tipoExame: "",
-    preparos: "",
-    local: "",
-    observacoes: ""
-  });
-  const [atividadeData, setAtividadeData] = useState({
-    date: undefined as Date | undefined,
-    time: "",
-    tipoAtividade: "",
-    local: "",
-    duracao: "",
-    observacoes: "",
-    dias: [] as string[],
-    repeticao: 'none' as 'weekly' | 'none'
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<AppointmentCategory | 'todas'>('todas');
+  const [statusFilter, setStatusFilter] = useState<AppointmentStatus | 'todos'>('todos');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<AppointmentCategory>('consulta');
+  const [formData, setFormData] = useState<CreateAppointmentData>({
+    tipo: 'consulta',
+    titulo: '',
+    data_agendamento: '',
+    duracao_minutos: 60,
   });
 
-  // Estados para rastrear se os campos de hora foram tocados pelo usuário
-  const [timeFieldTouched, setTimeFieldTouched] = useState({
-    consulta: false,
-    exame: false,
-    atividade: false
-  });
+  const { toast } = useToast();
+  const { 
+    appointments, 
+    createAppointment, 
+    updateAppointment, 
+    deleteAppointment, 
+    completeAppointment,
+    isCreating,
+    isUpdating,
+    fetchDayCounts 
+  } = useAppointments();
 
-  // Refs para forçar reset visual dos inputs
-  const consultaTimeRef = useRef<HTMLInputElement>(null);
-  const exameTimeRef = useRef<HTMLInputElement>(null);
-  const atividadeTimeRef = useRef<HTMLInputElement>(null);
-  // Estados para forçar recriação dos inputs
-  const [inputKeys, setInputKeys] = useState({
-    consulta: 'consulta-0',
-    exame: 'exame-0', 
-    atividade: 'atividade-0'
-  });
+  // Mock day counts for now - would fetch from API
+  const dayCounts = useMemo(() => {
+    const counts: Record<string, { consultas: number; exames: number; atividades: number }> = {};
+    appointments.forEach(apt => {
+      const date = format(new Date(apt.data_agendamento), 'yyyy-MM-dd');
+      if (!counts[date]) {
+        counts[date] = { consultas: 0, exames: 0, atividades: 0 };
+      }
+      if (apt.status === 'agendado') {
+        counts[date][`${apt.tipo}s` as keyof typeof counts[string]]++;
+      }
+    });
+    return counts;
+  }, [appointments]);
 
-  // Solução simples para reset do time picker
-  const handleTimeChange = (category: 'consulta' | 'exame' | 'atividade', value: string) => {
-    console.log(`Time change ${category}: ${value}`);
-    
-    if (category === 'consulta') {
-      setConsultaData(prev => ({ ...prev, time: value }));
-    } else if (category === 'exame') {
-      setExameData(prev => ({ ...prev, time: value }));
-    } else if (category === 'atividade') {
-      setAtividadeData(prev => ({ ...prev, time: value }));
-    }
-    
-    setTimeFieldTouched(prev => ({ ...prev, [category]: value !== "" }));
-  };
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter(apt => {
+      const matchesSearch = searchTerm === '' || 
+        apt.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.medico_profissional?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        apt.local_endereco?.toLowerCase().includes(searchTerm.toLowerCase());
 
-  // Função para resetar campo de hora específico
-  const resetTimeField = (category: 'consulta' | 'exame' | 'atividade') => {
-    console.log(`Resetando campo ${category}`);
-    
-    if (category === 'consulta') {
-      setConsultaData(prev => ({ ...prev, time: "" }));
-    } else if (category === 'exame') {
-      setExameData(prev => ({ ...prev, time: "" }));
-    } else if (category === 'atividade') {
-      setAtividadeData(prev => ({ ...prev, time: "" }));
-    }
-    
-    setTimeFieldTouched(prev => ({ ...prev, [category]: false }));
-    
-    // Força recriação do input
-    setInputKeys(prev => ({ ...prev, [category]: `${category}-${Date.now()}` }));
-  };
+      const matchesCategory = categoryFilter === 'todas' || apt.tipo === categoryFilter;
+      const matchesStatus = statusFilter === 'todos' || apt.status === statusFilter;
+      const matchesDate = !selectedDate || isSameDay(new Date(apt.data_agendamento), selectedDate);
 
-  // Mock data simplificado para melhor performance
-  const consultas = [
-    {
-      id: 1,
-      tipo: "consulta",
-      especialidade: "Cardiologia",
-      medico: "Dr. João Silva",
-      local: "Hospital Central",
-      data: "2025-08-15",
-      dataFormatada: "15/08/2025",
-      hora: "09:00",
-      observacoes: "Levar resultados de exames anteriores",
-      status: "agendado"
-    },
-    {
-      id: 8,
-      tipo: "consulta",
-      especialidade: "Clínica Geral",
-      medico: "Dr. Pedro Martins",
-      local: "UBS Central",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "08:30",
-      observacoes: "Consulta de rotina e renovação de receitas",
-      status: "agendado"
-    },
-    {
-      id: 9,
-      tipo: "consulta",
-      especialidade: "Nutricionista",
-      medico: "Dra. Carla Ribeiro",
-      local: "Clínica Vida Saudável",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "14:00",
-      observacoes: "Acompanhamento nutricional mensal",
-      status: "confirmado"
-    },
-    // Setembro 2025 - Compromissos mockados
-    {
-      id: 10,
-      tipo: "consulta",
-      especialidade: "Cardiologia",
-      medico: "Dr. Carlos Santos",
-      local: "Clínica Coração",
-      data: "2025-09-03",
-      dataFormatada: "03/09/2025",
-      hora: "09:00",
-      observacoes: "Retorno de exames",
-      status: "agendado"
-    },
-    {
-      id: 11,
-      tipo: "consulta",
-      especialidade: "Oftalmologia",
-      medico: "Dra. Ana Visão",
-      local: "Clínica Visão",
-      data: "2025-09-11",
-      dataFormatada: "11/09/2025",
-      hora: "14:00",
-      observacoes: "Revisão de óculos",
-      status: "agendado"
-    },
-    {
-      id: 12,
-      tipo: "consulta",
-      especialidade: "Endocrinologia",
-      medico: "Dr. Pedro Vida",
-      local: "Clínica Vida",
-      data: "2025-09-17",
-      dataFormatada: "17/09/2025",
-      hora: "08:30",
-      observacoes: "Avaliação mensal de diabetes",
-      status: "agendado"
-    },
-    {
-      id: 2,
-      tipo: "exame",
-      especialidade: "Endocrinologia",
-      medico: "Dra. Maria Santos",
-      local: "Clínica Saúde Plus",
-      data: "2025-08-22",
-      dataFormatada: "22/08/2025",
-      hora: "14:30",
-      observacoes: "Jejum de 12 horas",
-      status: "agendado"
-    },
-    // Setembro 2025 - Exames mockados
-    {
-      id: 13,
-      tipo: "exame",
-      especialidade: "Cardiologia",
-      medico: "Dr. Carlos Santos",
-      local: "Laboratório Vida",
-      data: "2025-09-03",
-      dataFormatada: "03/09/2025",
-      hora: "11:00",
-      observacoes: "Levar pedido médico",
-      status: "agendado"
-    },
-    {
-      id: 14,
-      tipo: "exame",
-      especialidade: "Clínica Geral",
-      medico: "Dra. Maria Silva",
-      local: "Laboratório Saúde",
-      data: "2025-09-09",
-      dataFormatada: "09/09/2025",
-      hora: "07:30",
-      observacoes: "Jejum de 8 horas",
-      status: "agendado"
-    },
-    {
-      id: 15,
-      tipo: "exame",
-      especialidade: "Gastroenterologia",
-      medico: "Dr. João Ferreira",
-      local: "Imagem Diagnóstica",
-      data: "2025-09-15",
-      dataFormatada: "15/09/2025",
-      hora: "10:00",
-      observacoes: "Beber 1 litro de água antes",
-      status: "agendado"
-    }
-  ];
+      return matchesSearch && matchesCategory && matchesStatus && matchesDate;
+    });
+  }, [appointments, searchTerm, categoryFilter, statusFilter, selectedDate]);
 
-  // Mock de atividades simplificado
-  const atividades = [
-    {
-      id: 301,
-      tipo: "atividade",
-      nome: "Fisioterapia",
-      local: "Clínica Movimento",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "07:30",
-      duracao: "45min",
-      observacoes: "Exercícios para fortalecimento",
-      status: "pendente",
-      dias: ["Seg", "Qua", "Sex"],
-      repeticao: "Toda semana"
-    },
-    {
-      id: 302,
-      tipo: "atividade",
-      nome: "Caminhada",
-      local: "Parque da Cidade",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "18:00",
-      duracao: "30min",
-      observacoes: "Atividade ao ar livre",
-      status: "pendente",
-      dias: ["Dom"],
-      repeticao: "Não se repete"
-    },
-    // Setembro 2025 - Atividades mockadas
-    {
-      id: 303,
-      tipo: "atividade",
-      nome: "Aula de Pilates",
-      local: "Studio Movimento",
-      data: "2025-09-05",
-      dataFormatada: "05/09/2025",
-      hora: "18:00",
-      duracao: "60min",
-      observacoes: "Sessão de alongamento",
-      status: "pendente",
-      dias: ["Sex"],
-      repeticao: "Não se repete"
-    },
-    {
-      id: 304,
-      tipo: "atividade",
-      nome: "Sessão de Fisioterapia",
-      local: "Espaço Reabilitar",
-      data: "2025-09-11",
-      dataFormatada: "11/09/2025",
-      hora: "16:30",
-      duracao: "45min",
-      observacoes: "Exercícios de joelho",
-      status: "pendente",
-      dias: ["Qui"],
-      repeticao: "Não se repete"
-    },
-    {
-      id: 305,
-      tipo: "atividade",
-      nome: "Caminhada Orientada",
-      local: "Parque Central",
-      data: "2025-09-17",
-      dataFormatada: "17/09/2025",
-      hora: "19:00",
-      duracao: "40min",
-      observacoes: "Leve tênis confortável",
-      status: "pendente",
-      dias: ["Qua"],
-      repeticao: "Não se repete"
-    }
-  ];
-
-  // Mock de medicações simplificado
-  const medicacoes = [
-    {
-      id: 101,
-      tipo: "medicacao",
-      nome: "Atorvastatina",
-      dosagem: "10 mg",
-      data: "2025-08-15",
-      dataFormatada: "15/08/2025",
-      hora: "08:00",
-      observacoes: "Tomar com o café da manhã",
-      status: "pendente"
-    },
-    {
-      id: 107,
-      tipo: "medicacao",
-      nome: "Captopril",
-      dosagem: "25 mg",
-      data: "2025-08-19",
-      dataFormatada: "19/08/2025",
-      hora: "06:00",
-      observacoes: "Tomar em jejum, 30 min antes do café",
-      status: "pendente"
-    },
-    {
-      id: 102,
-      tipo: "medicacao",
-      nome: "Losartana",
-      dosagem: "50 mg",
-      data: "2025-08-22",
-      dataFormatada: "22/08/2025",
-      hora: "19:00",
-      observacoes: "Tomar sempre no mesmo horário",
-      status: "pendente"
-    }
-  ];
-
-  // Combinar todos os compromissos
-  const todosCompromissos = [...consultas, ...medicacoes, ...atividades];
-  const filteredConsultas = consultas.filter(consulta => 
-    consulta.especialidade.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    consulta.medico.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const filteredCompromissos = todosCompromissos.filter(item => {
-    if (item.tipo === "medicacao") {
-      return (item as any).nome.toLowerCase().includes(searchTerm.toLowerCase());
-    } else if (item.tipo === "atividade") {
-      return (item as any).nome.toLowerCase().includes(searchTerm.toLowerCase());
-    }
-    return (item as any).especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-           (item as any).medico?.toLowerCase().includes(searchTerm.toLowerCase());
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "agendado":
-        return "default";
-      case "confirmado":
-        return "default";
-      case "cancelado":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getTipoIcon = (tipo: string) => {
-    switch (tipo) {
-      case "consulta":
-        return User;
-      case "exame":
-        return Stethoscope;
-      case "medicacao":
-        return Pill;
-      case "atividade":
-        return Heart;
-      default:
-        return CalendarIcon;
-    }
-  };
-
-  // Calendar utilities
+  // Calendar logic
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const calendarDays = eachDayOfInterval({
-    start: monthStart,
-    end: monthEnd
-  });
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Add padding days for calendar grid (Monday = 0, Sunday = 6)
-  const firstDayOfWeek = (getDay(monthStart) + 6) % 7; // Convert Sunday=0 to Monday=0
-  const paddingDays = Array.from({
-    length: firstDayOfWeek
-  }, (_, i) => new Date(monthStart.getTime() - (firstDayOfWeek - i) * 24 * 60 * 60 * 1000));
-  const allCalendarDays = [...paddingDays, ...calendarDays];
+  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
-  // Get events for a specific day
-  const getEventsForDay = (day: Date) => {
-    return filteredConsultas.filter(evento => isSameDay(new Date(evento.data), day));
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(isSameDay(date, selectedDate || new Date('1900-01-01')) ? null : date);
   };
 
-  // Get all compromissos for a specific day
-  const getCompromissosForDay = (day: Date) => {
-    return filteredCompromissos.filter(compromisso => isSameDay(new Date(compromisso.data), day));
-  };
+  const getDayBadges = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const counts = dayCounts[dateStr];
+    if (!counts) return null;
 
-  const handleDialogClose = (open: boolean) => {
-    setIsDialogOpen(open);
-    if (!open) {
-      // Reset form values when dialog closes - cada categoria mantém seus próprios dados
-      setConsultaData({
-        date: undefined,
-        time: "",
-        especialidade: "",
-        profissional: "",
-        local: "",
-        observacoes: ""
-      });
-      setExameData({
-        date: undefined,
-        time: "",
-        tipoExame: "",
-        preparos: "",
-        local: "",
-        observacoes: ""
-      });
-      setAtividadeData({
-        date: undefined,
-        time: "",
-        tipoAtividade: "",
-        local: "",
-        duracao: "",
-        observacoes: "",
-        dias: [],
-        repeticao: 'none'
-      });
-      setTimeFieldTouched({
-        consulta: false,
-        exame: false,
-        atividade: false
-      });
-    }
-  };
-
-  // Função para obter dados da categoria atual
-  const getCurrentCategoryData = () => {
-    switch (selectedCategory) {
-      case 'consulta': return consultaData;
-      case 'exame': return exameData;
-      case 'atividade': return atividadeData;
-      default: return consultaData;
-    }
-  };
-
-  // Função para atualizar dados da categoria atual
-  const updateCurrentCategoryData = (field: string, value: any) => {
-    switch (selectedCategory) {
-      case 'consulta':
-        setConsultaData(prev => ({ ...prev, [field]: value }));
-        if (field === 'time') {
-          setTimeFieldTouched(prev => ({ ...prev, consulta: true }));
-        }
-        break;
-      case 'exame':
-        setExameData(prev => ({ ...prev, [field]: value }));
-        if (field === 'time') {
-          setTimeFieldTouched(prev => ({ ...prev, exame: true }));
-        }
-        break;
-      case 'atividade':
-        setAtividadeData(prev => ({ ...prev, [field]: value }));
-        if (field === 'time') {
-          setTimeFieldTouched(prev => ({ ...prev, atividade: true }));
-        }
-        break;
-    }
-  };
-
-  // Função para redefinir dados da categoria atual
-  const resetCurrentCategoryData = () => {
-    console.log('Reset button clicked for category:', selectedCategory);
-    console.log('Current timeFieldTouched before reset:', timeFieldTouched);
-    
-    switch (selectedCategory) {
-      case 'consulta':
-        setConsultaData({
-          date: undefined,
-          time: "",
-          especialidade: "",
-          profissional: "",
-          local: "",
-          observacoes: ""
-        });
-        setTimeFieldTouched(prev => ({ ...prev, consulta: false }));
-        console.log('Reset consulta data');
-        break;
-      case 'exame':
-        setExameData({
-          date: undefined,
-          time: "",
-          tipoExame: "",
-          preparos: "",
-          local: "",
-          observacoes: ""
-        });
-        setTimeFieldTouched(prev => ({ ...prev, exame: false }));
-        console.log('Reset exame data');
-        break;
-      case 'atividade':
-        setAtividadeData({
-          date: undefined,
-          time: "",
-          tipoAtividade: "",
-          local: "",
-          duracao: "",
-          observacoes: "",
-          dias: [],
-          repeticao: 'none'
-        });
-        setTimeFieldTouched(prev => ({ ...prev, atividade: false }));
-        console.log('Reset atividade data');
-        break;
-    }
-  };
-
-  // Get compromissos by type for a day
-  const getCompromissosByType = (day: Date) => {
-    const compromissos = getCompromissosForDay(day);
-    return {
-      medicacoes: compromissos.filter(c => c.tipo === "medicacao"),
-      consultas: compromissos.filter(c => c.tipo === "consulta"),
-      exames: compromissos.filter(c => c.tipo === "exame"),
-      atividades: compromissos.filter(c => c.tipo === "atividade")
-    };
-  };
-
-  // Navigation functions
-  const navigateToPreviousMonth = () => {
-    setCurrentDate(subMonths(currentDate, 1));
-  };
-  const navigateToNextMonth = () => {
-    setCurrentDate(addMonths(currentDate, 1));
-  };
-  const handleEventClick = (event: any) => {
-    setSelectedEvent(event);
-    setIsEventModalOpen(true);
-  };
-  const handleDayClick = (day: Date) => {
-    const compromissos = getCompromissosForDay(day);
-    if (compromissos.length > 0) {
-      setSelectedDay(day);
-      setIsDayModalOpen(true);
-    } else {
-      // Se não há compromissos, abrir modal para adicionar com a data já setada
-      setConsultaData(prev => ({ ...prev, date: day }));
-      setExameData(prev => ({ ...prev, date: day }));
-      setAtividadeData(prev => ({ ...prev, date: day }));
-      setIsDialogOpen(true);
-    }
-  };
-
-  // Abrir modal automaticamente se vier da Dashboard
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    if (urlParams.get('add') === 'true') {
-      setIsDialogOpen(true);
-    }
-  }, [location.search]);
-
-  return (
-    <div className="p-6 space-y-6 bg-gradient-soft min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-primary">Agenda</h1>
-          <p className="text-muted-foreground">Gerencie suas consultas e exames</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]" aria-label="Adicionar novo compromisso">
-              {isMobile ? (
-                <Plus className="w-4 h-4" />
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agendar
-                </>
-              )}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] sm:max-h-[95vh] sm:my-2">
-            <DialogHeader className="sm:pt-2">
-              <DialogTitle className="text-primary sm:mb-1 sm:mt-0">Adicionar compromisso</DialogTitle>
-            </DialogHeader>
-            
-            {/* Botões de categoria em estilo chip */}
-            <div className="pt-1 pb-1 sm:-mt-1">
-              <div role="radiogroup" aria-labelledby="category-label" className="flex gap-2 flex-wrap">
-                <span id="category-label" className="sr-only">Selecione o tipo de compromisso</span>
-                
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="category"
-                    value="consulta"
-                    checked={selectedCategory === 'consulta'}
-                    onChange={() => setSelectedCategory('consulta')}
-                    className="sr-only"
-                    aria-checked={selectedCategory === 'consulta'}
-                  />
-                  <div className={`
-                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
-                    ${selectedCategory === 'consulta' 
-                      ? 'bg-[#344E41] text-white' 
-                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
-                    }
-                  `}>
-                    <User className="w-4 h-4" />
-                    Consulta
-                  </div>
-                </label>
-                
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="category"
-                    value="exame"
-                    checked={selectedCategory === 'exame'}
-                    onChange={() => setSelectedCategory('exame')}
-                    className="sr-only"
-                    aria-checked={selectedCategory === 'exame'}
-                  />
-                  <div className={`
-                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
-                    ${selectedCategory === 'exame' 
-                      ? 'bg-[#344E41] text-white' 
-                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
-                    }
-                  `}>
-                    <Stethoscope className="w-4 h-4" />
-                    Exame
-                  </div>
-                </label>
-                
-                <label className="cursor-pointer">
-                  <input
-                    type="radio"
-                    name="category"
-                    value="atividade"
-                    checked={selectedCategory === 'atividade'}
-                    onChange={() => setSelectedCategory('atividade')}
-                    className="sr-only"
-                    aria-checked={selectedCategory === 'atividade'}
-                  />
-                  <div className={`
-                    flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
-                    ${selectedCategory === 'atividade' 
-                      ? 'bg-[#344E41] text-white' 
-                      : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
-                    }
-                  `}>
-                    <Heart className="w-4 h-4" />
-                    Atividade
-                  </div>
-                </label>
-              </div>
-            </div>
-            
-            <div className="space-y-3 py-2 sm:pt-0">
-              {/* FORMULÁRIO PARA CONSULTAS */}
-              {selectedCategory === 'consulta' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="especialidade">Especialidade</Label>
-                    <Input 
-                      id="especialidade"
-                      value={consultaData.especialidade}
-                      onChange={(e) => updateCurrentCategoryData('especialidade', e.target.value)}
-                      placeholder="Ex.: Cardiologia"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="profissional">Profissional</Label>
-                    <Input 
-                      id="profissional"
-                      value={consultaData.profissional}
-                      onChange={(e) => updateCurrentCategoryData('profissional', e.target.value)}
-                      placeholder="Ex.: Dr. João Silva"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="local">Local</Label>
-                    <Input 
-                      id="local"
-                      value={consultaData.local}
-                      onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
-                      placeholder="Ex.: Clínica Boa Saúde"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="data">Data</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                             className={cn(
-                               "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
-                               !consultaData.date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {consultaData.date ? format(consultaData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={consultaData.date}
-                            onSelect={(date) => updateCurrentCategoryData('date', date)}
-                            initialFocus
-                            locale={ptBR}
-                            weekStartsOn={1}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                     <div className="space-y-2">
-                       <Label htmlFor="hora">Hora</Label>
-                        <div className="flex gap-2">
-                          <div className={`relative flex-1 time-input-container ${consultaData.time ? 'has-value' : ''}`}>
-                                <Input
-                                 key={inputKeys.consulta}
-                                 ref={consultaTimeRef}
-                                 id="hora"
-                                 type="time"
-                                 value={consultaData.time}
-                                 onChange={(e) => handleTimeChange('consulta', e.target.value)}
-                                 className={`w-full ${!consultaData.time || consultaData.time === ""
-                                   ? 'text-muted-foreground/50' 
-                                   : ''}`}
-                                 style={{
-                                   WebkitAppearance: 'none',
-                                   MozAppearance: 'textfield'
-                                 }}
-                               />
-                          </div>
-                              {consultaData.time && (
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => resetTimeField('consulta')}
-                                  className="px-2"
-                                >
-                                  ✕
-                                </Button>
-                              )}
-                        </div>
-                      </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="observacoes">Observações</Label>
-                    <Textarea 
-                      id="observacoes"
-                      value={consultaData.observacoes}
-                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
-                      placeholder="Ex.: Levar resultados / Roupas confortáveis"
-                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
-                      rows={2} 
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* FORMULÁRIO PARA EXAMES */}
-              {selectedCategory === 'exame' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="tipoExame">Tipo de Exame</Label>
-                    <Input 
-                      id="tipoExame"
-                      value={exameData.tipoExame}
-                      onChange={(e) => updateCurrentCategoryData('tipoExame', e.target.value)}
-                      placeholder="Ex.: Hemograma"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="preparos">Preparos</Label>
-                    <Input 
-                      id="preparos"
-                      value={exameData.preparos}
-                      onChange={(e) => updateCurrentCategoryData('preparos', e.target.value)}
-                      placeholder="Ex.: Jejum 8h"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="local">Local</Label>
-                    <Input 
-                      id="local"
-                      value={exameData.local}
-                      onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
-                      placeholder="Ex.: Clínica Boa Saúde"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="data">Data</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                             className={cn(
-                               "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
-                               !exameData.date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {exameData.date ? format(exameData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={exameData.date}
-                            onSelect={(date) => updateCurrentCategoryData('date', date)}
-                            initialFocus
-                            locale={ptBR}
-                            weekStartsOn={1}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="space-y-2">
-                       <Label htmlFor="hora">Hora</Label>
-                       <div className="flex gap-2">
-                         <div className={`relative flex-1 time-input-container ${exameData.time ? 'has-value' : ''}`}>
-                           <Input
-                              key={inputKeys.exame}
-                              ref={exameTimeRef}
-                              type="time"
-                              value={exameData.time}
-                              onChange={(e) => handleTimeChange('exame', e.target.value)}
-                              className={`w-full ${!exameData.time || exameData.time === ""
-                                ? 'text-muted-foreground/50' 
-                                : ''}`}
-                              style={{
-                                WebkitAppearance: 'none',
-                                MozAppearance: 'textfield'
-                              }}
-                            />
-                         </div>
-                            {exameData.time && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => resetTimeField('exame')}
-                                className="px-2"
-                              >
-                                ✕
-                              </Button>
-                            )}
-                        </div>
-                       </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="observacoes">Observações</Label>
-                    <Textarea 
-                      id="observacoes"
-                      value={exameData.observacoes}
-                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
-                      placeholder="Ex.: Levar resultados / Roupas confortáveis"
-                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
-                      rows={2} 
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* FORMULÁRIO PARA ATIVIDADES */}
-              {selectedCategory === 'atividade' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="tipoAtividade">Tipo de Atividade</Label>
-                    <Input 
-                      id="tipoAtividade"
-                      value={atividadeData.tipoAtividade}
-                      onChange={(e) => updateCurrentCategoryData('tipoAtividade', e.target.value)}
-                      placeholder="Ex.: Fisioterapia / Pilates / Caminhada"
-                      className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="local">Local</Label>
-                      <Input 
-                        id="local"
-                        value={atividadeData.local}
-                        onChange={(e) => updateCurrentCategoryData('local', e.target.value)}
-                        placeholder="Ex.: Clínica Boa Saúde"
-                        className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="duracao">Duração</Label>
-                      <Input 
-                        id="duracao"
-                        value={atividadeData.duracao}
-                        onChange={(e) => updateCurrentCategoryData('duracao', e.target.value)}
-                        placeholder="Ex.: 45 min"
-                        className="h-10 font-normal placeholder:text-muted-foreground/50" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="data">Data</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                             className={cn(
-                               "w-full justify-start text-left font-normal h-10 text-base md:text-sm",
-                               !atividadeData.date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {atividadeData.date ? format(atividadeData.date, "dd/MM/yy", { locale: ptBR }) : <span className="text-muted-foreground/50 font-normal text-base md:text-sm">20/08/25</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={atividadeData.date}
-                            onSelect={(date) => updateCurrentCategoryData('date', date)}
-                            initialFocus
-                            locale={ptBR}
-                            weekStartsOn={1}
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="space-y-2">
-                       <Label htmlFor="hora">Hora</Label>
-                       <div className="flex gap-2">
-                         <div className={`relative flex-1 time-input-container ${atividadeData.time ? 'has-value' : ''}`}>
-                           <Input
-                              key={inputKeys.atividade}
-                              ref={atividadeTimeRef}
-                              type="time"
-                              value={atividadeData.time}
-                              onChange={(e) => handleTimeChange('atividade', e.target.value)}
-                              className={`w-full ${!atividadeData.time || atividadeData.time === ""
-                                ? 'text-muted-foreground/50' 
-                                : ''}`}
-                              style={{
-                                WebkitAppearance: 'none',
-                                MozAppearance: 'textfield'
-                              }}
-                            />
-                         </div>
-                            {atividadeData.time && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => resetTimeField('atividade')}
-                                className="px-2"
-                              >
-                                ✕
-                              </Button>
-                            )}
-                        </div>
-                       </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Dias da semana</Label>
-                      <div role="group" aria-labelledby="dias-semana-label" className="space-y-2">
-                        <div className="flex justify-between gap-1">
-                          {[
-                            { short: 'Seg', full: 'Segunda' },
-                            { short: 'Ter', full: 'Terça' },
-                            { short: 'Qua', full: 'Quarta' },
-                            { short: 'Qui', full: 'Quinta' },
-                            { short: 'Sex', full: 'Sexta' },
-                            { short: 'Sáb', full: 'Sábado' },
-                            { short: 'Dom', full: 'Domingo' }
-                          ].map((day) => (
-                            <label key={day.short} className="flex flex-col items-center space-y-1 cursor-pointer min-h-[44px] sm:min-h-[32px]">
-                              <span className="text-xs text-foreground font-medium">{day.short}</span>
-                              <Checkbox 
-                                checked={atividadeData.dias.includes(day.short)}
-                                onCheckedChange={(checked) => {
-                                  const newDias = checked 
-                                    ? [...atividadeData.dias, day.short]
-                                    : atividadeData.dias.filter(d => d !== day.short);
-                                  updateCurrentCategoryData('dias', newDias);
-                                }}
-                                className="data-[state=checked]:bg-[#344E41] data-[state=checked]:border-[#344E41]"
-                              />
-                            </label>
-                          ))}
-                        </div>
-                        {atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0 && (
-                          <p className="text-xs text-destructive" role="alert" aria-live="polite">
-                            Selecione ao menos um dia
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="repeticao">Repetição</Label>
-                      <Select 
-                        value={atividadeData.repeticao} 
-                        onValueChange={(value: 'weekly' | 'none') => updateCurrentCategoryData('repeticao', value)}
-                      >
-                        <SelectTrigger className="min-h-[44px] sm:min-h-[32px]">
-                          <SelectValue placeholder="Selecione..." />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border border-border shadow-lg z-50">
-                          <SelectItem value="weekly">Toda semana</SelectItem>
-                          <SelectItem value="none">Não se repete</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="observacoes">Observações</Label>
-                    <Textarea 
-                      id="observacoes"
-                      value={atividadeData.observacoes}
-                      onChange={(e) => updateCurrentCategoryData('observacoes', e.target.value)}
-                      placeholder="Ex.: Roupas confortáveis"
-                      className="placeholder:text-muted-foreground/50 sm:h-8 sm:py-1" 
-                      rows={2} 
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="flex justify-between sm:pb-2 sm:pt-0">
-              <div className="flex gap-2 ml-auto">
-                <Button variant="outline" onClick={() => handleDialogClose(false)}>
-                  Cancelar
-                </Button>
-                <Button 
-                  className="bg-gradient-primary hover:bg-primary-hover"
-                  disabled={selectedCategory === 'atividade' && atividadeData.repeticao === 'weekly' && atividadeData.dias.length === 0}
-                >
-                  Salvar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+    return (
+      <div className="flex gap-1 mt-1">
+        {counts.consultas > 0 && (
+          <Badge variant="outline" className="text-xs p-0 px-1 bg-blue-50">
+            {counts.consultas}
+          </Badge>
+        )}
+        {counts.exames > 0 && (
+          <Badge variant="outline" className="text-xs p-0 px-1 bg-green-50">
+            {counts.exames}
+          </Badge>
+        )}
+        {counts.atividades > 0 && (
+          <Badge variant="outline" className="text-xs p-0 px-1 bg-red-50">
+            {counts.atividades}
+          </Badge>
+        )}
       </div>
+    );
+  };
 
-      {/* Filtros e Busca */}
-      <Card className="shadow-card">
-        <CardContent className="pt-6">
-          <div className="flex gap-4 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por especialidade ou médico..." 
-                className="pl-10" 
-                value={searchTerm} 
-                onChange={e => setSearchTerm(e.target.value)} 
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+  const handleAddAppointment = () => {
+    setEditingAppointment(null);
+    setFormData({
+      tipo: selectedCategory,
+      titulo: '',
+      data_agendamento: selectedDate ? format(selectedDate, "yyyy-MM-dd'T'HH:mm") : '',
+      duracao_minutos: 60,
+    });
+    setShowAddDialog(true);
+  };
 
-      {/* Calendário Mensal */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-primary flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5" />
-              {format(currentDate, "MMMM yyyy", { locale: ptBR })}
-            </CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={navigateToPreviousMonth} className="h-8 w-8 p-0" aria-label="Mês anterior">
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={navigateToNextMonth} className="h-8 w-8 p-0" aria-label="Próximo mês">
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-1 mb-4">
-            {/* Week days header */}
-            {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(day => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                {day}
+  const handleEditAppointment = (appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setSelectedCategory(appointment.tipo);
+    setFormData({
+      tipo: appointment.tipo,
+      titulo: appointment.titulo,
+      especialidade: appointment.especialidade,
+      medico_profissional: appointment.medico_profissional,
+      local_endereco: appointment.local_endereco,
+      data_agendamento: appointment.data_agendamento,
+      duracao_minutos: appointment.duracao_minutos,
+      observacoes: appointment.observacoes,
+      dias_semana: appointment.dias_semana,
+      repeticao: appointment.repeticao,
+    });
+    setShowAddDialog(true);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (editingAppointment) {
+        await updateAppointment({ id: editingAppointment.id, ...formData });
+      } else {
+        await createAppointment(formData);
+      }
+      setShowAddDialog(false);
+      setFormData({
+        tipo: 'consulta',
+        titulo: '',
+        data_agendamento: '',
+        duracao_minutos: 60,
+      });
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+    }
+  };
+
+  const handleComplete = async (appointment: Appointment) => {
+    await completeAppointment(appointment.id);
+  };
+
+  const handleCancel = async (appointment: Appointment) => {
+    await deleteAppointment(appointment.id);
+  };
+
+  const renderAppointmentCard = (appointment: Appointment) => {
+    const CategoryIcon = categoryIcons[appointment.tipo];
+    const time = format(new Date(appointment.data_agendamento), 'HH:mm');
+    const date = format(new Date(appointment.data_agendamento), 'dd/MM/yyyy');
+
+    return (
+      <SwipeableCard
+        key={appointment.id}
+        onSwipeComplete={() => handleComplete(appointment)}
+        onSwipeCancel={() => handleCancel(appointment)}
+        onEdit={() => handleEditAppointment(appointment)}
+      >
+        <Card className="w-full">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CategoryIcon className="w-5 h-5 text-primary" />
+                </div>
               </div>
-            ))}
-            
-            {/* Calendar days */}
-            {allCalendarDays.map((day, index) => {
-              const compromissosByType = getCompromissosByType(day);
-              const totalCompromissos = getCompromissosForDay(day).length;
-              const isCurrentMonth = isSameMonth(day, currentDate);
-              const isToday = isSameDay(day, new Date());
               
-              return (
-                <div 
-                  key={index} 
-                  onClick={() => handleDayClick(day)} 
-                  className={`
-                    min-h-[80px] p-1 border border-border/20 rounded-md transition-colors cursor-pointer
-                    ${isCurrentMonth ? 'bg-card' : 'bg-muted/30'}
-                    ${isToday ? 'ring-2 ring-primary/50' : ''}
-                    ${totalCompromissos > 0 ? 'hover:bg-accent/20' : 'hover:bg-accent/10'}
-                  `}
-                >
-                  <div className={`text-sm ${isCurrentMonth ? 'text-foreground' : 'text-muted-foreground/50'} ${isToday ? 'font-bold text-primary' : ''}`}>
-                    {format(day, 'd')}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-foreground truncate">
+                    {appointment.titulo || categoryLabels[appointment.tipo]}
+                  </h3>
+                  <Badge variant={statusColors[appointment.status] as any} className="ml-2">
+                    {appointment.status}
+                  </Badge>
+                </div>
+                
+                {appointment.especialidade && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {appointment.especialidade}
+                  </p>
+                )}
+                
+                {appointment.medico_profissional && (
+                  <p className="text-sm text-muted-foreground">
+                    {appointment.medico_profissional}
+                  </p>
+                )}
+                
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{time} - {date}</span>
                   </div>
                   
-                  {/* Indicadores visuais por tipo de compromisso */}
-                  {totalCompromissos > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {/* Ícone de Medicações */}
-                      {compromissosByType.medicacoes.length > 0 && (
-                        <div className="flex items-center gap-1 bg-success/20 text-success px-1 py-0.5 rounded text-xs">
-                          <Pill className="w-3 h-3" />
-                          <span>{compromissosByType.medicacoes.length}</span>
-                        </div>
-                      )}
-                      
-                      {/* Ícone de Consultas */}
-                      {compromissosByType.consultas.length > 0 && (
-                        <div className="flex items-center gap-1 bg-primary/20 text-primary px-1 py-0.5 rounded text-xs">
-                          <User className="w-3 h-3" />
-                          <span>{compromissosByType.consultas.length}</span>
-                        </div>
-                      )}
-                      
-                      {/* Ícone de Exames */}
-                      {compromissosByType.exames.length > 0 && (
-                        <div className="flex items-center gap-1 bg-accent/30 text-accent-foreground px-1 py-0.5 rounded text-xs">
-                          <Stethoscope className="w-3 h-3" />
-                          <span>{compromissosByType.exames.length}</span>
-                        </div>
-                      )}
-                      
-                      {/* Ícone de Atividades */}
-                      {compromissosByType.atividades.length > 0 && (
-                        <div className="flex items-center gap-1 bg-success/30 text-success px-1 py-0.5 rounded text-xs">
-                          <Heart className="w-3 h-3" />
-                          <span>{compromissosByType.atividades.length}</span>
-                        </div>
-                      )}
+                  {appointment.local_endereco && (
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate">{appointment.local_endereco}</span>
                     </div>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </SwipeableCard>
+    );
+  };
 
-      {/* Modal de Compromissos do Dia */}
-      <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-card border-b px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-primary" />
+            <h1 className="text-xl font-semibold">Agenda</h1>
+          </div>
+          <Button onClick={handleAddAppointment} size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Compromisso
+          </Button>
+        </div>
+      </header>
+
+      <div className="p-4 space-y-6">
+        {/* Calendar */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">
+                {format(currentDate, 'MMMM yyyy', { locale: ptBR })}
+              </CardTitle>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handlePrevMonth}>
+                  ←
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleNextMonth}>
+                  →
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                <div key={day} className="py-2 text-sm font-medium text-muted-foreground">
+                  {day}
+                </div>
+              ))}
+              
+              {daysInMonth.map(date => {
+                const isSelected = selectedDate && isSameDay(date, selectedDate);
+                const isToday = isSameDay(date, new Date());
+                
+                return (
+                  <button
+                    key={date.toString()}
+                    onClick={() => handleDayClick(date)}
+                    className={`
+                      p-2 text-sm rounded-lg transition-colors min-h-[60px] flex flex-col items-center justify-start
+                      ${isSelected ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}
+                      ${isToday ? 'ring-2 ring-primary' : ''}
+                      ${!isSameMonth(date, currentDate) ? 'text-muted-foreground' : ''}
+                    `}
+                  >
+                    <span>{format(date, 'd')}</span>
+                    {getDayBadges(date)}
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Filters */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Buscar compromissos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="flex gap-2 flex-wrap">
+                <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
+                  <SelectTrigger className="w-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas categorias</SelectItem>
+                    <SelectItem value="consulta">Consultas</SelectItem>
+                    <SelectItem value="exame">Exames</SelectItem>
+                    <SelectItem value="atividade">Atividades</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                  <SelectTrigger className="w-auto">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos status</SelectItem>
+                    <SelectItem value="agendado">Agendado</SelectItem>
+                    <SelectItem value="realizado">Realizado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+                
+                {selectedDate && (
+                  <Button variant="outline" size="sm" onClick={() => setSelectedDate(null)}>
+                    Limpar data
+                  </Button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Appointments List */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Compromissos ({filteredAppointments.length})
+              {selectedDate && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  - {format(selectedDate, 'dd/MM/yyyy')}
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {filteredAppointments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum compromisso encontrado</p>
+              </div>
+            ) : (
+              filteredAppointments.map(renderAppointmentCard)
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingAppointment ? 'Editar Compromisso' : 'Novo Compromisso'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <Tabs value={selectedCategory} onValueChange={(value: any) => {
+            setSelectedCategory(value);
+            setFormData(prev => ({ ...prev, tipo: value }));
+          }}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="consulta">Consulta</TabsTrigger>
+              <TabsTrigger value="exame">Exame</TabsTrigger>
+              <TabsTrigger value="atividade">Atividade</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="consulta" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="especialidade">Especialidade</Label>
+                <Input
+                  id="especialidade"
+                  value={formData.especialidade || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, especialidade: e.target.value, titulo: e.target.value }))}
+                  placeholder="Ex: Cardiologia"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="profissional">Profissional</Label>
+                <Input
+                  id="profissional"
+                  value={formData.medico_profissional || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, medico_profissional: e.target.value }))}
+                  placeholder="Nome do médico"
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="exame" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="tipo_exame">Tipo de Exame</Label>
+                <Input
+                  id="tipo_exame"
+                  value={formData.titulo || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                  placeholder="Ex: Hemograma"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="preparos">Preparos</Label>
+                <Textarea
+                  id="preparos"
+                  value={formData.observacoes || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                  placeholder="Instruções de preparo"
+                  rows={3}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="atividade" className="space-y-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="tipo_atividade">Tipo de Atividade</Label>
+                <Input
+                  id="tipo_atividade"
+                  value={formData.titulo || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                  placeholder="Ex: Caminhada"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="duracao">Duração (minutos)</Label>
+                <Input
+                  id="duracao"
+                  type="number"
+                  value={formData.duracao_minutos || 60}
+                  onChange={(e) => setFormData(prev => ({ ...prev, duracao_minutos: parseInt(e.target.value) || 60 }))}
+                  placeholder="60"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Repetição</Label>
+                <Select 
+                  value={formData.repeticao || 'none'} 
+                  onValueChange={(value: any) => setFormData(prev => ({ ...prev, repeticao: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Não se repete</SelectItem>
+                    <SelectItem value="weekly">Toda semana</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {formData.repeticao === 'weekly' && (
+                <div className="space-y-2">
+                  <Label>Dias da semana</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {weekdays.map(day => (
+                      <div key={day.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`day-${day.value}`}
+                          checked={formData.dias_semana?.includes(day.value) || false}
+                          onCheckedChange={(checked) => {
+                            const current = formData.dias_semana || [];
+                            if (checked) {
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                dias_semana: [...current, day.value] 
+                              }));
+                            } else {
+                              setFormData(prev => ({ 
+                                ...prev, 
+                                dias_semana: current.filter(d => d !== day.value) 
+                              }));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`day-${day.value}`} className="text-sm">
+                          {day.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+          
+          {/* Common fields */}
+          <div className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="local">Local</Label>
+              <Input
+                id="local"
+                value={formData.local_endereco || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, local_endereco: e.target.value }))}
+                placeholder="Endereço ou local"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="data_hora">Data e Hora</Label>
+              <Input
+                id="data_hora"
+                type="datetime-local"
+                value={formData.data_agendamento}
+                onChange={(e) => setFormData(prev => ({ ...prev, data_agendamento: e.target.value }))}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="observacoes_gerais">Observações</Label>
+              <Textarea
+                id="observacoes_gerais"
+                value={formData.observacoes || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                placeholder="Observações gerais"
+                rows={3}
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-2 mt-6">
+            <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit} disabled={isCreating || isUpdating} className="flex-1">
+              {isCreating || isUpdating ? 'Salvando...' : editingAppointment ? 'Atualizar' : 'Criar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default Agenda;
+}

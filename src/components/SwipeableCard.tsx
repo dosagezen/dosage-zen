@@ -1,692 +1,225 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Clock, Pill, Check, Trash2, Edit } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { useNavigate } from "react-router-dom"
-import { formatTime24h } from "@/lib/utils"
-
-interface HorarioStatus {
-  hora: string;
-  status: 'pendente' | 'concluido' | 'excluido';
-  occurrence_id?: string;
-  scheduled_at?: string;
-  completed_at?: string;
-  onTime?: boolean;
-}
-
-interface MedicacaoCompleta {
-  id: string;
-  nome: string;
-  dosagem: string;
-  forma: string;
-  frequencia: string;
-  horarios: HorarioStatus[];
-  proximaDose: string;
-  estoque: number;
-  status: "ativa" | "inativa";
-  removed_from_today?: boolean;
-  proxima?: string;
-  isOptimistic?: boolean;
-  horaInicio?: string;
-  data_inicio?: string;
-  data_fim?: string;
-  occurrencesToday?: Array<{
-    id: string;
-    time: string;
-    status: 'pendente' | 'concluido' | 'excluido';
-    scheduledAtLocal?: string;
-  }>;
-}
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Check, X, Edit } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface SwipeableCardProps {
-  medicacao: MedicacaoCompleta;
-  onComplete: (id: string) => void;
-  onRemove: (id: string) => void;
-  onEdit?: (medicacao: MedicacaoCompleta, origin?: 'medicacoes' | 'compromissos') => void;
+  children: React.ReactNode;
+  onSwipeComplete?: () => void;
+  onSwipeCancel?: () => void;
+  onEdit?: () => void;
   disabled?: boolean;
-  origin?: 'medicacoes' | 'compromissos';
-  isLoading?: boolean;
-  isInactive?: boolean;
 }
 
-const SwipeableCard: React.FC<SwipeableCardProps> = ({ 
-  medicacao, 
-  onComplete, 
-  onRemove, 
+export const SwipeableCard: React.FC<SwipeableCardProps> = ({
+  children,
+  onSwipeComplete,
+  onSwipeCancel,
   onEdit,
-  disabled = false,
-  origin = 'medicacoes',
-  isLoading = false,
-  isInactive = false
+  disabled = false
 }) => {
-  const isMobile = useIsMobile()
-  const navigate = useNavigate()
-  
-  // Função para formatar frequência para texto amigável
-  const formatFrequencia = (frequencia: string): string => {
-    switch (frequencia) {
-      case '4h': return '4 em 4 horas';
-      case '6h': return '6 em 6 horas';
-      case '8h': return '8 em 8 horas';
-      case '12h': return '12 em 12 horas';
-      case '12h_bis': return '2 vezes ao dia';
-      case '24h': return '1 vez ao dia';
-      default: return frequencia;
-    }
-  }
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  // Function to get the oldest pending time for the medication (chronological order)
-  const getOldestPendingTime = (schedule: Array<{ hora: string; status: string }>): string | null => {
-    // Get all pending times and sort them chronologically (oldest first)
-    const pendingTimes = schedule
-      .filter(item => item.status === 'pendente' && item.hora !== '-')
-      .map(item => {
-        const [hours, minutes] = item.hora.split(':').map(Number);
-        return {
-          hora: item.hora,
-          totalMinutes: hours * 60 + minutes
-        };
-      })
-      .sort((a, b) => a.totalMinutes - b.totalMinutes);
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
     
-    // Return the oldest (first) pending time
-    return pendingTimes.length > 0 ? pendingTimes[0].hora : null;
-  };
-
-  // Função para determinar o próximo horário baseado nos horários programados
-  // Segue a estratégia: (a) hoje >= agora, (b) próximos dias, (c) hoje < agora
-  const getNextScheduledTime = (horarios: HorarioStatus[], now: Date = new Date()): string => {
-    const pendingTimes = horarios.filter(h => h.status === 'pendente' && h.hora !== '-');
-    
-    if (pendingTimes.length === 0) return 'Concluído hoje';
-
-    const currentTimeMinutes = now.getHours() * 60 + now.getMinutes();
-    
-    // (a) Horários pendentes hoje >= agora
-    const todayFuture = pendingTimes.filter(horario => {
-      const [hours, minutes] = horario.hora.split(':').map(Number);
-      const timeMinutes = hours * 60 + minutes;
-      return timeMinutes >= currentTimeMinutes;
-    }).sort((a, b) => {
-      const timeA = a.hora.split(':').map(Number);
-      const timeB = b.hora.split(':').map(Number);
-      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-    });
-
-    if (todayFuture.length > 0) {
-      return todayFuture[0].hora;
-    }
-
-    // (c) Fallback: horários pendentes hoje < agora (mais recente)
-    const todayPast = pendingTimes.filter(horario => {
-      const [hours, minutes] = horario.hora.split(':').map(Number);
-      const timeMinutes = hours * 60 + minutes;
-      return timeMinutes < currentTimeMinutes;
-    }).sort((a, b) => {
-      const timeA = a.hora.split(':').map(Number);
-      const timeB = b.hora.split(':').map(Number);
-      return (timeB[0] * 60 + timeB[1]) - (timeA[0] * 60 + timeA[1]); // Descendente
-    });
-
-    if (todayPast.length > 0) {
-      return todayPast[0].hora;
-    }
-
-    // (b) Se não houver horários hoje, mostrar próximo dia (visual apenas)
-    return pendingTimes[0]?.hora || 'Não definido';
-  }
-  
-  const [dragState, setDragState] = useState({
-    isDragging: false,
-    startX: 0,
-    startY: 0,
-    currentX: 0,
-    currentY: 0,
-    deltaX: 0,
-    deltaY: 0,
-    isHorizontalSwipe: false,
-    touchMoved: false,
-    touchEnded: false,
-    startedAt: 0,
-  })
-  const [showActionHint, setShowActionHint] = useState<'complete' | 'remove' | null>(null)
-  const cardRef = useRef<HTMLDivElement>(null)
-  const tapTriggeredRef = useRef(false)
-  const threshold = 0.3 // 30% da largura do card
-  const TAP_MAX_DISTANCE = 24
-  const TAP_MAX_DURATION = 400
-
-  // Função para calcular horários programados baseado na frequência e hora de início (apenas 24h do dia atual)
-  const calculateScheduledTimes = (frequencia: string, horaInicio: string): string[] => {
-    if (!frequencia || !horaInicio) return [];
-    
-    const [hours, minutes] = horaInicio.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return [];
-    
-    const startMinutes = hours * 60 + minutes;
-    
-    // Mapear frequência para intervalo em minutos
-    let intervalMinutes: number;
-    switch (frequencia) {
-      case '4h': 
-        intervalMinutes = 4 * 60; 
-        break;
-      case '6h': 
-        intervalMinutes = 6 * 60; 
-        break;
-      case '8h': 
-        intervalMinutes = 8 * 60; 
-        break;
-      case '12h':
-      case '12h_bis': 
-        intervalMinutes = 12 * 60; 
-        break;
-      case '24h': 
-      default:
-        intervalMinutes = 24 * 60; 
-        break;
-    }
-    
-    const times: string[] = [];
-    let currentMinutes = startMinutes;
-    
-    // Adicionar horários apenas dentro do dia atual (24h)
-    while (currentMinutes < 24 * 60) {
-      const h = Math.floor(currentMinutes / 60);
-      const m = currentMinutes % 60;
-      times.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
-      
-      // Próximo horário
-      currentMinutes += intervalMinutes;
-    }
-    
-    return times;
-  }
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (!isMobile || disabled) return
-    
-    tapTriggeredRef.current = false
-    const touch = e.touches[0]
-    setDragState({
-      isDragging: true,
-      startX: touch.clientX,
-      startY: touch.clientY,
-      currentX: touch.clientX,
-      currentY: touch.clientY,
-      deltaX: 0,
-      deltaY: 0,
-      isHorizontalSwipe: false,
-      touchMoved: false,
-      touchEnded: false,
-      startedAt: Date.now(),
-    })
-  }
+    if (disabled) return;
+    setStartX(e.touches[0].clientX);
+    setIsDragging(true);
+  };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMobile || disabled || !dragState.isDragging) return
+    if (!isDragging || disabled) return;
     
-    const touch = e.touches[0]
-    const deltaX = touch.clientX - dragState.startX
-    const deltaY = touch.clientY - dragState.startY
+    const currentX = e.touches[0].clientX;
+    const deltaX = currentX - startX;
     
-    const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+    // Limit the drag distance
+    const maxDrag = 120;
+    const limitedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaX));
+    setDragX(limitedDelta);
+
+    // Prevent scrolling when swiping horizontally
+    if (Math.abs(deltaX) > 10) {
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging || disabled) return;
     
-    // Mark that touch has moved if movement is significant
-    if (totalMovement > 10) {
-      setDragState(prev => ({ ...prev, touchMoved: true }))
+    const threshold = 60;
+    
+    if (dragX > threshold && onSwipeComplete) {
+      // Swipe right - complete
+      onSwipeComplete();
+      toast({
+        title: "Concluído",
+        description: "Compromisso marcado como concluído",
+      });
+    } else if (dragX < -threshold && onSwipeCancel) {
+      // Swipe left - cancel
+      onSwipeCancel();
+      toast({
+        title: "Cancelado",
+        description: "Compromisso cancelado",
+        variant: "destructive",
+      });
+    } else if (Math.abs(dragX) < 10 && onEdit) {
+      // Tap - edit
+      onEdit();
     }
     
-    // Aguardar movimento mínimo antes de determinar direção
-    if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
-      return
+    setDragX(0);
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (disabled || isMobile) return;
+    setStartX(e.clientX);
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || disabled || isMobile) return;
+    
+    const currentX = e.clientX;
+    const deltaX = currentX - startX;
+    
+    const maxDrag = 120;
+    const limitedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaX));
+    setDragX(limitedDelta);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging || disabled || isMobile) return;
+    handleTouchEnd();
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (disabled || isMobile || isDragging) return;
+    
+    // Only trigger edit on desktop click
+    if (onEdit && !isDragging) {
+      onEdit();
     }
-    
-    // Determinar direção do movimento uma vez
-    if (!dragState.isHorizontalSwipe) {
-      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.5 // Favorece movimento vertical
-      
-      setDragState(prev => ({
-        ...prev,
-        isHorizontalSwipe: isHorizontal,
-        currentX: touch.clientX,
-        currentY: touch.clientY,
-      }))
-      
-      // Só prevenir default se for claramente horizontal
-      if (isHorizontal) {
-        e.preventDefault()
-      }
-      return
-    }
-    
-    // Se é swipe horizontal, continuar com a lógica de swipe
-    if (dragState.isHorizontalSwipe) {
-      e.preventDefault()
-      
-      const cardWidth = cardRef.current?.offsetWidth || 0
-      const normalizedDelta = Math.max(-cardWidth * 0.5, Math.min(cardWidth * 0.5, deltaX))
-      
-      setDragState(prev => ({
-        ...prev,
-        currentX: touch.clientX,
-        currentY: touch.clientY,
-        deltaX: normalizedDelta,
-        deltaY: deltaY,
-      }))
-
-      // Mostrar hint baseado na direção
-      if (Math.abs(normalizedDelta) > cardWidth * 0.1) {
-        if (normalizedDelta > 0) {
-          setShowActionHint('complete')
-        } else {
-          setShowActionHint('remove')
-        }
-      } else {
-        setShowActionHint(null)
-      }
-    }
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isMobile || disabled || !dragState.isDragging || dragState.touchEnded || isLoading) return
-    
-    setDragState(prev => ({ ...prev, touchEnded: true }))
-    
-    // Só executar ação se foi um swipe horizontal significativo
-    if (dragState.isHorizontalSwipe) {
-      const cardWidth = cardRef.current?.offsetWidth || 0
-      const shouldTriggerAction = Math.abs(dragState.deltaX) > cardWidth * threshold
-
-      if (shouldTriggerAction) {
-        if (dragState.deltaX > 0) {
-          console.log('Mobile swipe complete triggered for:', medicacao.id, 'card width:', cardWidth, 'deltaX:', dragState.deltaX);
-          onComplete(medicacao.id)
-        } else {
-          console.log('Mobile swipe cancel triggered for:', medicacao.id, 'card width:', cardWidth, 'deltaX:', dragState.deltaX);
-          onRemove(medicacao.id)
-        }
-      } else {
-        console.log('Mobile swipe below threshold:', Math.abs(dragState.deltaX), 'threshold:', cardWidth * threshold);
-      }
-    } else if (onEdit && !tapTriggeredRef.current) {
-      // Tap detection: check distance and time, not touchMoved
-      const deltaX = dragState.currentX - dragState.startX
-      const deltaY = dragState.currentY - dragState.startY
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-      const duration = Date.now() - dragState.startedAt
-      
-      if (distance <= TAP_MAX_DISTANCE && duration <= TAP_MAX_DURATION && !dragState.isHorizontalSwipe) {
-        tapTriggeredRef.current = true
-        // Add small delay to ensure this is a deliberate tap
-        setTimeout(() => {
-          if (!dragState.isHorizontalSwipe) {
-            onEdit(medicacao, origin)
-          }
-        }, 50)
-      }
-    }
-
-    // Reset state
-    setDragState({
-      isDragging: false,
-      startX: 0,
-      startY: 0,
-      currentX: 0,
-      currentY: 0,
-      deltaX: 0,
-      deltaY: 0,
-      isHorizontalSwipe: false,
-      touchMoved: false,
-      touchEnded: false,
-      startedAt: 0,
-    })
-    setShowActionHint(null)
-  }
-
-  const handleTouchCancel = (e: React.TouchEvent) => {
-    if (!isMobile || disabled) return
-    
-    // Reset state on touch cancel
-    setDragState({
-      isDragging: false,
-      startX: 0,
-      startY: 0,
-      currentX: 0,
-      currentY: 0,
-      deltaX: 0,
-      deltaY: 0,
-      isHorizontalSwipe: false,
-      touchMoved: false,
-      touchEnded: false,
-      startedAt: 0,
-    })
-    setShowActionHint(null)
-    tapTriggeredRef.current = false
-  }
+  };
 
   const getTransformStyle = () => {
-    if (!isMobile || !dragState.isDragging || !dragState.isHorizontalSwipe) return {}
-    
     return {
-      transform: `translateX(${dragState.deltaX}px)`,
-      transition: dragState.isDragging ? 'none' : 'transform 0.3s ease-out',
-    }
-  }
+      transform: `translateX(${dragX}px)`,
+      transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+    };
+  };
 
   const getBackgroundOverlay = () => {
-    if (!isMobile || !showActionHint || !dragState.isHorizontalSwipe) return null
+    if (Math.abs(dragX) < 20) return null;
     
-    const isComplete = showActionHint === 'complete'
-    const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
-    const text = isComplete ? 'Concluir' : 'Cancelar'
-    const delta = Math.abs(dragState.deltaX)
-    const opacity = Math.min(1, delta / 100)
+    const isComplete = dragX > 0;
+    const opacity = Math.min(Math.abs(dragX) / 60, 1);
     
     return (
       <div 
-        className={`absolute inset-0 ${bgColor} rounded-lg flex items-center ${isComplete ? 'justify-start pl-4' : 'justify-end pr-4'} text-white z-0 transition-opacity duration-200`}
+        className={`absolute inset-0 flex items-center ${
+          isComplete ? 'justify-start pl-4 bg-green-100' : 'justify-end pr-4 bg-red-100'
+        }`}
         style={{ opacity }}
       >
-        <div className="flex flex-col items-center gap-1">
-          <span className="font-bold text-lg sm:text-xl">{text}</span>
-          <div className="w-8 h-1 bg-white/60 rounded-full"></div>
+        <div className={`flex items-center gap-2 ${
+          isComplete ? 'text-green-600' : 'text-red-600'
+        }`}>
+          {isComplete ? (
+            <>
+              <Check className="w-5 h-5" />
+              <span className="font-medium">Concluir</span>
+            </>
+          ) : (
+            <>
+              <X className="w-5 h-5" />
+              <span className="font-medium">Cancelar</span>
+            </>
+          )}
         </div>
       </div>
-    )
-  }
-
-  // Calcular horários programados baseado na hora inicial e frequência
-  // Garantir que sempre temos horaInicio disponível
-  const horaInicial = medicacao.horaInicio || 
-                     (medicacao.horarios && medicacao.horarios.length > 0 ? 
-                      medicacao.horarios.sort((a, b) => {
-                        const timeA = a.hora.split(':').map(Number);
-                        const timeB = b.hora.split(':').map(Number);
-                        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-                      })[0]?.hora : '08:00');
-
-  const calculatedTimes = horaInicial && medicacao.frequencia 
-    ? calculateScheduledTimes(medicacao.frequencia, horaInicial)
-    : [];
-  
-  // Preferir ocorrências do backend quando disponíveis
-  const occToday = Array.isArray(medicacao.occurrencesToday) ? medicacao.occurrencesToday : [];
-  // Horários do backend com occurrence_id (fallback)
-  const scheduledTimes = medicacao.horarios.filter(h => h.occurrence_id);
-  // Montar agenda priorizando IDs de ocorrência vindos do backend
-  let combinedSchedule: Array<HorarioStatus> = [];
-  if (occToday.length > 0) {
-    combinedSchedule = occToday
-      .slice()
-      .sort((a, b) => a.time.localeCompare(b.time))
-      .map((occ) => ({
-        hora: occ.time,
-        status: (occ.status as any),
-        occurrence_id: occ.id
-      }));
-  } else if (calculatedTimes.length > 0) {
-    combinedSchedule = calculatedTimes.map(hora => {
-      // Find matching backend data for this time
-      const backendData = scheduledTimes.find(s => s.hora === hora) || 
-                         medicacao.horarios.find(h => h.hora === hora);
-      return {
-        hora,
-        status: (backendData?.status || 'pendente') as any,
-        occurrence_id: backendData?.occurrence_id,
-        scheduled_at: backendData?.scheduled_at,
-        completed_at: backendData?.completed_at,
-        onTime: backendData?.onTime
-      };
-    });
-  } else if (scheduledTimes.length > 0) {
-    combinedSchedule = scheduledTimes.sort((a, b) => {
-      const timeA = a.hora.split(':').map(Number);
-      const timeB = b.hora.split(':').map(Number);
-      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-    });
-  } else {
-    combinedSchedule = medicacao.horarios.sort((a, b) => {
-      const timeA = a.hora.split(':').map(Number);
-      const timeB = b.hora.split(':').map(Number);
-      return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
-    });
-  }
-
-  const nearestPending = getOldestPendingTime(combinedSchedule);
-  const hasPendingDoses = combinedSchedule.some(h => h.status === 'pendente' && h.hora !== '-')
-
-  const handleCardClick = () => {
-    // Universal fallback for taps - works on both mobile and desktop
-    if (onEdit && !tapTriggeredRef.current) {
-      // Pass the original medication data exactly as stored, preserving the original creation date
-      const medicacaoCompleta = {
-        ...medicacao,
-        // Keep the original data_inicio from when the card was created - DO NOT override
-        data_inicio: medicacao.data_inicio,
-        data_fim: medicacao.data_fim,
-        // Ensure horaInicio is available with proper fallback
-        horaInicio: medicacao.horaInicio || 
-                  (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
-      };
-      onEdit(medicacaoCompleta, origin);
-    }
-  }
+    );
+  };
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden rounded-lg">
       {getBackgroundOverlay()}
-      <Card 
+      
+      <div
         ref={cardRef}
-        className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative overflow-hidden z-10 ${
-          dragState.isDragging && dragState.isHorizontalSwipe ? 'pointer-events-none' : ''
-        } ${isInactive ? 'bg-destructive/10' : ''}`}
-        style={{
-          ...getTransformStyle(),
-          touchAction: isMobile ? 'pan-y' : 'auto'
-        }}
+        style={getTransformStyle()}
+        className={`relative ${!disabled && isMobile ? 'touch-pan-y' : ''} ${
+          !disabled && !isMobile ? 'cursor-pointer' : ''
+        }`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         onClick={handleCardClick}
       >
-        <CardContent className="p-4 sm:p-6 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-          <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-accent">
-              <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-accent-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-semibold text-primary">
-                  {medicacao.nome}
-                </h3>
-                {medicacao.isOptimistic && (
-                  <Badge variant="outline" className="text-xs opacity-70">
-                    Sincronizando...
-                  </Badge>
-                )}
-              </div>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  {(() => {
-                    const quantidade = medicacao.estoque || 1;
-                    const dosagem = medicacao.dosagem || "";
-                    const forma = medicacao.forma || "";
-                    
-                    // Make concordance with quantity using the "forma" field
-                    const formaPlural = quantidade === 1 ? forma : forma + "s";
-                    
-                    // Check if dosagem already contains the forma word
-                    const formaInDosagem = dosagem.toLowerCase().includes(forma.toLowerCase());
-                    
-                    if (formaInDosagem) {
-                      // If forma is already in dosagem, just show dosagem • quantity
-                      return `${dosagem} • ${quantidade}`;
-                    } else {
-                      // If forma not in dosagem, show dosagem • quantity + forma with concordance
-                      return `${dosagem} • ${quantidade} ${formaPlural}`;
-                    }
-                  })()}
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {formatFrequencia(medicacao.frequencia)}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-              <div className="flex items-center justify-start sm:justify-end text-primary">
-                <Clock className="w-4 h-4 mr-1" />
-                <span className="font-medium text-sm sm:text-base">
-                  Próxima: {nearestPending || formatTime24h(getNextScheduledTime(combinedSchedule))}
-                </span>
-              </div>
-              <div className="flex items-center justify-start sm:justify-end">
-                <Badge variant="outline" className="text-xs sm:text-sm">
-                  {medicacao.status}
-                </Badge>
-              </div>
-            </div>
+        {children}
+        
+        {/* Desktop action buttons */}
+        {!isMobile && !disabled && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+            )}
+            {onSwipeCancel && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSwipeCancel();
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+            {onSwipeComplete && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSwipeComplete();
+                }}
+              >
+                <Check className="w-4 h-4" />
+              </Button>
+            )}
           </div>
-          
-          <div className="mt-4 pt-4 border-t border-border/50 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Horários programados:
-                </p>
-                <div className="flex gap-2 md:gap-4 lg:gap-4 mt-1 flex-wrap">
-                  {combinedSchedule.map((horario, index) => (
-                     <Badge 
-                       key={index} 
-                       variant="secondary" 
-                        className={`
-                          relative text-xs sm:text-sm transition-all duration-200
-                          ${horario.status === 'concluido'
-                            ? "bg-success/10 text-success line-through cursor-default"
-                           : horario.status === 'excluido'
-                           ? "bg-destructive/10 text-destructive line-through cursor-default"
-                           : horario.status === 'pendente' && horario.hora !== '-' && !isLoading
-                           ? `bg-accent/20 hover:bg-primary/20 cursor-pointer ring-2 ${horario.hora === nearestPending ? 'ring-primary bg-primary/15' : 'ring-primary/30 hover:ring-primary/50'}`
-                            : "bg-accent/20 cursor-default opacity-50"
-                          }
-                        `}
-                      style={horario.status === 'concluido' || horario.status === 'excluido' ? {
-                        textDecoration: 'line-through',
-                        textDecorationColor: horario.status === 'concluido' ? 'hsl(var(--success))' : 'hsl(var(--destructive))',
-                        textDecorationThickness: '2px'
-                      } : {}}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Allow clicking on any pending dose
-                        if (horario.status === 'pendente' && horario.hora !== '-' && !isLoading) {
-                          console.log('Badge clicked - marking complete:', medicacao.id);
-                          onComplete(medicacao.id);
-                        }
-                      }}
-                       aria-label={
-                         (horario.status === 'concluido' || horario.status === 'excluido')
-                           ? `Dose das ${formatTime24h(horario.hora)} registrada${(horario.status === 'concluido' && horario.onTime) ? ' no horário' : ''}` 
-                           : `Dose das ${formatTime24h(horario.hora)} pendente`
-                       }
-                     >
-                        {formatTime24h(horario.hora)}{(horario.status === 'concluido' && horario.onTime) ? ' —' : ''}
-                     </Badge>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
-              {!isMobile && (
-                <div className="flex gap-2 justify-start sm:justify-end mt-2">
-                  {hasPendingDoses && (
-                     <Button 
-                        variant="outline" 
-                        size="sm"
-                        disabled={isLoading}
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          console.log('Desktop Cancel button clicked for:', medicacao.id);
-                          onRemove(medicacao.id); 
-                        }}
-                        className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                        aria-label={`Cancelar dose de ${medicacao.nome}`}
-                      >
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        {isLoading ? 'Processando...' : 'Cancelar'}
-                      </Button>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                     onClick={(e) => { 
-                       e.stopPropagation(); 
-                       e.preventDefault();
-                       console.log('Botão Alterar clicado - dados completos:', {
-                         id: medicacao.id,
-                         nome: medicacao.nome,
-                         dosagem: medicacao.dosagem,
-                         forma: medicacao.forma,
-                         frequencia: medicacao.frequencia,
-                         estoque: medicacao.estoque,
-                         data_inicio: medicacao.data_inicio,
-                         data_fim: medicacao.data_fim,
-                         horaInicio: medicacao.horaInicio,
-                         horarios: medicacao.horarios,
-                         status: medicacao.status
-                       });
-                       if (onEdit) {
-                         // Pass the original medication data exactly as stored, preserving the original creation date
-                         const medicacaoCompleta = {
-                           ...medicacao,
-                           // Keep the original data_inicio from when the card was created - DO NOT override
-                           data_inicio: medicacao.data_inicio,
-                           data_fim: medicacao.data_fim,
-                           // Ensure horaInicio is available with proper fallback
-                           horaInicio: medicacao.horaInicio || 
-                                     (medicacao.horarios && medicacao.horarios.length > 0 ? medicacao.horarios[0].hora : '08:00')
-                         };
-                         console.log('Dados originais preservados para edição:', {
-                           data_inicio_original: medicacao.data_inicio,
-                           data_fim_original: medicacao.data_fim,
-                           horaInicio: medicacaoCompleta.horaInicio
-                         });
-                         onEdit(medicacaoCompleta, origin);
-                       }
-                     }}
-                    className="h-8 text-xs hover:bg-primary hover:text-primary-foreground"
-                    aria-label={`Alterar medicação ${medicacao.nome}`}
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Alterar
-                  </Button>
-                  {hasPendingDoses && (
-                     <Button 
-                       variant="default" 
-                       size="sm"
-                       disabled={isLoading}
-                       onClick={(e) => { 
-                         e.stopPropagation(); 
-                         console.log('Desktop Complete button clicked for:', medicacao.id);
-                         onComplete(medicacao.id); 
-                       }}
-                       className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
-                       aria-label={`Marcar dose de ${medicacao.nome} como concluída`}
-                     >
-                       <Check className="w-3 h-3 mr-1" />
-                       {isLoading ? 'Processando...' : 'Concluir'}
-                     </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
-  )
-}
-
-export default SwipeableCard
+  );
+};

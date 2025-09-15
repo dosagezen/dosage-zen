@@ -17,6 +17,9 @@ export interface Appointment {
   resultado?: string;
   created_at: string;
   updated_at: string;
+  // Activity specific
+  dias_semana?: number[];
+  repeticao?: 'none' | 'weekly';
 }
 
 export interface CreateAppointmentData {
@@ -28,9 +31,20 @@ export interface CreateAppointmentData {
   data_agendamento: string;
   duracao_minutos?: number;
   observacoes?: string;
+  // Activity specific
+  dias_semana?: number[];
+  repeticao?: 'none' | 'weekly';
 }
 
-export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
+export interface DayCounts {
+  [date: string]: {
+    consultas: number;
+    exames: number;
+    atividades: number;
+  };
+}
+
+export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', context_id?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,8 +54,8 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
       throw new Error('User not authenticated');
     }
 
-    const { data, error } = await supabase.functions.invoke('manage-appointments', {
-      body: { action: 'list', tipo }
+    const { data, error } = await supabase.functions.invoke('manage-agenda', {
+      body: { action: 'list', category: tipo, context_id }
     });
 
     if (error) {
@@ -50,6 +64,24 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
     }
 
     return data.appointments || [];
+  };
+
+  const fetchDayCounts = async (month_start: string, month_end: string): Promise<DayCounts> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const { data, error } = await supabase.functions.invoke('manage-agenda', {
+      body: { action: 'day_counts', month_start, month_end, context_id }
+    });
+
+    if (error) {
+      console.error('Error fetching day counts:', error);
+      throw error;
+    }
+
+    return data.counts || {};
   };
 
   const query = useQuery({
@@ -64,8 +96,8 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
 
   const createMutation = useMutation({
     mutationFn: async (appointmentData: CreateAppointmentData) => {
-      const { data, error } = await supabase.functions.invoke('manage-appointments', {
-        body: { action: 'create', ...appointmentData },
+      const { data, error } = await supabase.functions.invoke('manage-agenda', {
+        body: { action: 'create', context_id, ...appointmentData },
       });
 
       if (error) {
@@ -94,8 +126,8 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...appointmentData }: Partial<Appointment> & { id: string }) => {
-      const { data, error } = await supabase.functions.invoke('manage-appointments', {
-        body: { action: 'update', id, ...appointmentData },
+      const { data, error } = await supabase.functions.invoke('manage-agenda', {
+        body: { action: 'update', id, context_id, ...appointmentData },
       });
 
       if (error) {
@@ -124,8 +156,8 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await supabase.functions.invoke('manage-appointments', {
-        body: { action: 'delete', id },
+      const { data, error } = await supabase.functions.invoke('manage-agenda', {
+        body: { action: 'delete', id, context_id },
       });
 
       if (error) {
@@ -152,6 +184,36 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
     },
   });
 
+  const completeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('manage-agenda', {
+        body: { action: 'complete', id, context_id },
+      });
+
+      if (error) {
+        console.error('Error completing appointment:', error);
+        throw error;
+      }
+
+      return data.appointment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Sucesso',
+        description: 'Compromisso concluído!',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error completing appointment:', error);
+      toast({
+        title: 'Erro',
+        description: 'Falha ao concluir compromisso.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     appointments: query.data || [],
     isLoading: query.isLoading,
@@ -161,8 +223,11 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade') => {
     createAppointment: createMutation.mutate,
     updateAppointment: updateMutation.mutate,
     deleteAppointment: deleteMutation.mutate,
+    completeAppointment: completeMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    isCompleting: completeMutation.isPending,
+    fetchDayCounts,
   };
 };

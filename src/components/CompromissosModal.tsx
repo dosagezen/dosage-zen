@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2, Heart } from "lucide-react"
 import { formatTime24h } from "@/lib/utils"
-import SwipeableCard from './SwipeableCard'
+import { SwipeableCard } from './SwipeableCard'
 import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
 import SwipeableAtividadeCard from './SwipeableAtividadeCard'
