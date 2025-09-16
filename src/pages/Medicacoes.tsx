@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import AddMedicationDialog from "@/components/AddMedicationDialog"
-import { SwipeableCard } from "@/components/SwipeableCard"
+import SwipeableMedicationCard from "@/components/SwipeableMedicationCard"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { useMedications, type Medication } from "@/hooks/useMedications"
@@ -730,15 +730,15 @@ const Medicacoes = () => {
                       </h3>
                        <div className="grid gap-4 mb-15">
                         {medicacoesPendentes.map((medicacao) => (
-                           <SwipeableCard
-                             key={medicacao.id}
-                             medicacao={medicacao}
-                              onComplete={(id) => markDoseCompleted(id)}
-                              onRemove={(id) => markDoseCanceled(id)}
-                              onEdit={(med) => handleEditMedication(med)}
-                              disabled={isUpdating || isDeleting || isMarkingNearest}
-                              isLoading={isMarkingNearest}
-                           />
+                           <SwipeableMedicationCard
+                              key={medicacao.id}
+                              medicacao={medicacao}
+                               onComplete={(id) => markDoseCompleted(id)}
+                               onRemove={(id) => markDoseCanceled(id)}
+                               onEdit={(med) => handleEditMedication(med)}
+                               disabled={isUpdating || isDeleting || isMarkingNearest}
+                               isLoading={isMarkingNearest}
+                            />
                         ))}
                       </div>
                     </div>
@@ -753,16 +753,16 @@ const Medicacoes = () => {
                       </h3>
                        <div className="grid gap-4 mb-15">
                         {medicacoesConcluidas.map((medicacao) => (
-                           <SwipeableCard
-                             key={medicacao.id}
-                             medicacao={medicacao}
-                              onComplete={(id) => markDoseCompleted(id)}
-                              onRemove={(id) => markDoseCanceled(id)}
-                              onEdit={(med) => handleEditMedication(med)}
-                              disabled={isUpdating || isDeleting || isMarkingNearest}
-                              isLoading={isMarkingNearest}
-                              isInactive={true}
-                           />
+                           <SwipeableMedicationCard
+                              key={medicacao.id}
+                              medicacao={medicacao}
+                               onComplete={(id) => markDoseCompleted(id)}
+                               onRemove={(id) => markDoseCanceled(id)}
+                               onEdit={(med) => handleEditMedication(med)}
+                               disabled={isUpdating || isDeleting || isMarkingNearest}
+                               isLoading={isMarkingNearest}
+                               isInactive={true}
+                            />
                         ))}
                       </div>
                     </div>
@@ -779,14 +779,14 @@ const Medicacoes = () => {
                         </h3>
                        <div className="grid gap-4 mb-15">
                         {medicacoesPendentes.map((medicacao) => (
-                           <SwipeableCard
-                             key={medicacao.id}
-                             medicacao={medicacao}
-                              onComplete={(id) => markDoseCompleted(id)}
-                              onRemove={(id) => markDoseCanceled(id)}
-                              onEdit={(med) => handleEditMedication(med)}
-                              disabled={isUpdating || isDeleting || isMarkingNearest}
-                              isLoading={isMarkingNearest}
+                           <SwipeableMedicationCard
+                              key={medicacao.id}
+                              medicacao={medicacao}
+                               onComplete={(id) => markDoseCompleted(id)}
+                               onRemove={(id) => markDoseCanceled(id)}
+                               onEdit={(med) => handleEditMedication(med)}
+                               disabled={isUpdating || isDeleting || isMarkingNearest}
+                               isLoading={isMarkingNearest}
                            />
                         ))}
                       </div>

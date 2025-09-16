@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "@/hooks/use-toast"
 import { Calendar, Clock, Pill, User, Stethoscope, MapPin, ChevronDown, ChevronUp, Undo2, Heart } from "lucide-react"
 import { formatTime24h } from "@/lib/utils"
-import { SwipeableCard } from './SwipeableCard'
+import SwipeableMedicationCard from './SwipeableMedicationCard'
 import SwipeableConsultaCard from './SwipeableConsultaCard'
 import SwipeableExameCard from './SwipeableExameCard'
 import SwipeableAtividadeCard from './SwipeableAtividadeCard'
@@ -992,16 +992,15 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
               </h3>
               <div className="space-y-3">
                 {medicacoesPrincipais.map((medicacao) => (
-                  <SwipeableCard
+                  <SwipeableMedicationCard
                     key={medicacao.id}
                     medicacao={medicacao}
                     onComplete={(id) => handleComplete(id, 'medicacao')}
                     onRemove={(id) => handleRemove(id, 'medicacao')}
-                    onEdit={(med, origin) => {
+                    onEdit={(med) => {
                       setEditingMedication(med)
                       setIsEditDialogOpen(true)
                     }}
-                    origin="compromissos"
                   />
                 ))}
               </div>
