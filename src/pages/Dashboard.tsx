@@ -390,7 +390,7 @@ const Dashboard = () => {
 
       {/* Modal de Compromissos do Dia */}
       <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
-    </div>;
+    </div>
 };
 
 export default Dashboard;
