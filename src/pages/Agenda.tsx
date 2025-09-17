@@ -16,6 +16,7 @@ import { useAppointments, type Appointment, type CreateAppointmentData } from '@
 import { useToast } from '@/hooks/use-toast';
 import { SwipeableCard } from '@/components/SwipeableCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
 type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
@@ -267,22 +268,36 @@ export default function Agenda() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20">
       {/* Header */}
-      <header className="bg-card border-b px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-primary" />
-            <h1 className="text-xl font-semibold">Agenda</h1>
+      <div className="flex-shrink-0 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
+            <p className="text-muted-foreground">
+              Gerencie seus compromissos e agendamentos
+            </p>
           </div>
-          <Button onClick={handleAddAppointment} size="sm">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Compromisso
+          <Button 
+            onClick={handleAddAppointment} 
+            disabled={isCreating}
+            className="bg-gradient-primary hover:bg-primary-hover text-primary-foreground shadow-soft min-h-[44px]"
+            aria-label="Adicionar novo compromisso"
+          >
+            {isCreating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Compromisso
+              </>
+            )}
           </Button>
         </div>
-      </header>
+      </div>
 
-      <div className="p-4 space-y-6">
+      <div className="flex-1 overflow-auto p-4">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Calendar */}
         <Card>
           <CardHeader className="pb-3">
@@ -405,6 +420,7 @@ export default function Agenda() {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Add/Edit Dialog */}
