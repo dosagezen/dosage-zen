@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { SwipeableCard } from '@/components/SwipeableCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
 type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
@@ -50,6 +51,7 @@ const weekdays = [
 ];
 
 export default function Agenda() {
+  const isMobile = useIsMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -286,6 +288,8 @@ export default function Agenda() {
           >
             {isCreating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isMobile ? (
+              <Plus className="w-4 h-4" />
             ) : (
               <>
                 <Plus className="w-4 h-4 mr-2" />
