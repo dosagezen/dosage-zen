@@ -85,7 +85,7 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
   };
 
   const query = useQuery({
-    queryKey: ['appointments', tipo],
+    queryKey: ['appointments', tipo, context_id],
     queryFn: fetchAppointments,
     retry: 2,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),

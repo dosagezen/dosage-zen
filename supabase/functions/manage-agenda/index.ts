@@ -58,13 +58,7 @@ serve(async (req) => {
 
         let query = supabaseClient
           .from('appointments')
-          .select(`
-            *,
-            consultations(*),
-            exams(*),
-            activities(*),
-            appointment_occurrences(*)
-          `)
+          .select('*')
           .eq('patient_profile_id', context_id || profile.id)
           .order('data_agendamento', { ascending: true });
 

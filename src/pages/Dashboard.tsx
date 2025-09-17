@@ -34,13 +34,13 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDayModalOpen, setIsDayModalOpen] = useState(false);
   const [isAddCompromissoOpen, setIsAddCompromissoOpen] = useState(false);
-  const { user, profile } = useAuth();
+  const { user, profile, currentContext } = useAuth();
   
   // Hooks para dados reais
   const { medications, isLoading: medicationsLoading, refetchMedications } = useMedications();
-  const { appointments: allAppointments, isLoading: appointmentsLoading, refetchAppointments } = useAppointments();
-  const { appointments: consultas } = useAppointments('consulta');
-  const { appointments: exames } = useAppointments('exame');
+  const { appointments: allAppointments, isLoading: appointmentsLoading, refetchAppointments } = useAppointments(undefined, currentContext);
+  const { appointments: consultas } = useAppointments('consulta', currentContext);
+  const { appointments: exames } = useAppointments('exame', currentContext);
 
   // Detectar parâmetro modal=compromissos para reabrir o modal
   useEffect(() => {

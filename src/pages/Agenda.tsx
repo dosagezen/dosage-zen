@@ -15,6 +15,7 @@ import { ptBR } from 'date-fns/locale';
 import { useAppointments, type Appointment, type CreateAppointmentData } from '@/hooks/useAppointments';
 import { useToast } from '@/hooks/use-toast';
 import { SwipeableCard } from '@/components/SwipeableCard';
+import { useAuth } from '@/contexts/AuthContext';
 
 type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
 type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
@@ -64,6 +65,7 @@ export default function Agenda() {
   });
 
   const { toast } = useToast();
+  const { currentContext } = useAuth();
   const { 
     appointments, 
     createAppointment, 
@@ -73,7 +75,7 @@ export default function Agenda() {
     isCreating,
     isUpdating,
     fetchDayCounts 
-  } = useAppointments();
+  } = useAppointments(undefined, currentContext);
 
   // Mock day counts for now - would fetch from API
   const dayCounts = useMemo(() => {
