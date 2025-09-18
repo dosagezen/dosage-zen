@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAppointments, type Appointment, type CreateAppointmentData } from '@/hooks/useAppointments';
 import { useToast } from '@/hooks/use-toast';
@@ -50,6 +50,8 @@ const weekdays = [
   { value: 6, label: 'Sábado' },
 ];
 
+const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+
 export default function Agenda() {
   const isMobile = useIsMobile();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -80,16 +82,16 @@ export default function Agenda() {
     fetchDayCounts 
   } = useAppointments(undefined, currentContext);
 
-  // Mock day counts for now - would fetch from API
+  // Calculate day counts from appointments data
   const dayCounts = useMemo(() => {
-    const counts: Record<string, { consultas: number; exames: number; atividades: number }> = {};
+    const counts: Record<string, { consulta: number; exame: number; atividade: number }> = {};
     appointments.forEach(apt => {
       const date = format(new Date(apt.data_agendamento), 'yyyy-MM-dd');
       if (!counts[date]) {
-        counts[date] = { consultas: 0, exames: 0, atividades: 0 };
+        counts[date] = { consulta: 0, exame: 0, atividade: 0 };
       }
       if (apt.status === 'agendado') {
-        counts[date][`${apt.tipo}s` as keyof typeof counts[string]]++;
+        counts[date][apt.tipo]++;
       }
     });
     return counts;
@@ -111,13 +113,32 @@ export default function Agenda() {
     });
   }, [appointments, searchTerm, categoryFilter, statusFilter, selectedDate]);
 
-  // Calendar logic
+  // Calendar logic - start week on Monday (weekStartsOn: 1)
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const handlePrevMonth = () => {
+    const newDate = subMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    // Preserve selection if possible, otherwise select day 1
+    if (selectedDate && !isSameMonth(selectedDate, newDate)) {
+      const day1 = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+      setSelectedDate(day1);
+    }
+  };
+  
+  const handleNextMonth = () => {
+    const newDate = addMonths(currentDate, 1);
+    setCurrentDate(newDate);
+    // Preserve selection if possible, otherwise select day 1
+    if (selectedDate && !isSameMonth(selectedDate, newDate)) {
+      const day1 = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+      setSelectedDate(day1);
+    }
+  };
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(isSameDay(date, selectedDate || new Date('1900-01-01')) ? null : date);
@@ -126,24 +147,35 @@ export default function Agenda() {
   const getDayBadges = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const counts = dayCounts[dateStr];
-    if (!counts) return null;
+    if (!counts || (counts.consulta === 0 && counts.exame === 0 && counts.atividade === 0)) return null;
+
+    const isOutsideMonth = !isSameMonth(date, currentDate);
 
     return (
-      <div className="flex gap-1 mt-1">
-        {counts.consultas > 0 && (
-          <Badge variant="outline" className="text-xs p-0 px-1 bg-blue-50">
-            {counts.consultas}
-          </Badge>
+      <div className={`flex items-center justify-center gap-1 flex-wrap mt-1 ${isOutsideMonth ? 'opacity-60' : ''}`}>
+        {counts.consulta > 0 && (
+          <div className="flex items-center gap-0.5 text-xs">
+            <User className="w-3 h-3 text-blue-600" />
+            <span className="text-blue-600 font-medium">
+              {counts.consulta > 9 ? '9+' : counts.consulta}
+            </span>
+          </div>
         )}
-        {counts.exames > 0 && (
-          <Badge variant="outline" className="text-xs p-0 px-1 bg-green-50">
-            {counts.exames}
-          </Badge>
+        {counts.exame > 0 && (
+          <div className="flex items-center gap-0.5 text-xs">
+            <Stethoscope className="w-3 h-3 text-green-600" />
+            <span className="text-green-600 font-medium">
+              {counts.exame > 9 ? '9+' : counts.exame}
+            </span>
+          </div>
         )}
-        {counts.atividades > 0 && (
-          <Badge variant="outline" className="text-xs p-0 px-1 bg-red-50">
-            {counts.atividades}
-          </Badge>
+        {counts.atividade > 0 && (
+          <div className="flex items-center gap-0.5 text-xs">
+            <Heart className="w-3 h-3 text-red-600" />
+            <span className="text-red-600 font-medium">
+              {counts.atividade > 9 ? '9+' : counts.atividade}
+            </span>
+          </div>
         )}
       </div>
     );
@@ -320,29 +352,51 @@ export default function Agenda() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-7 gap-1 text-center">
-              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                <div key={day} className="py-2 text-sm font-medium text-muted-foreground">
+            <div className="grid grid-cols-7 gap-0 border border-border/20 rounded-lg overflow-hidden">
+              {/* Header row with weekday labels */}
+              {weekdayLabels.map(day => (
+                <div key={day} className="py-3 text-sm font-medium text-muted-foreground text-center bg-muted/30 border-r border-b border-border/20 last:border-r-0">
                   {day}
                 </div>
               ))}
               
-              {daysInMonth.map(date => {
+              {/* Calendar days */}
+              {calendarDays.map((date, index) => {
                 const isSelected = selectedDate && isSameDay(date, selectedDate);
-                const isToday = isSameDay(date, new Date());
+                const isDayToday = isToday(date);
+                const isOutsideMonth = !isSameMonth(date, currentDate);
+                const isLastColumn = (index + 1) % 7 === 0;
+                const isLastRow = index >= calendarDays.length - 7;
+                
+                const counts = dayCounts[format(date, 'yyyy-MM-dd')];
+                const totalCount = counts ? counts.consulta + counts.exame + counts.atividade : 0;
+                
+                // Generate aria-label for accessibility
+                const ariaLabel = `${format(date, 'EEEE, d \'de\' MMMM \'de\' yyyy', { locale: ptBR })}${counts ? ` — Consultas ${counts.consulta}, Exames ${counts.exame}, Atividades ${counts.atividade}` : ''}`;
                 
                 return (
                   <button
                     key={date.toString()}
                     onClick={() => handleDayClick(date)}
+                    role="gridcell"
+                    aria-label={ariaLabel}
                     className={`
-                      p-2 text-sm rounded-lg transition-colors min-h-[60px] flex flex-col items-center justify-start
-                      ${isSelected ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'}
-                      ${isToday ? 'ring-2 ring-primary' : ''}
-                      ${!isSameMonth(date, currentDate) ? 'text-muted-foreground' : ''}
+                      relative p-2 text-sm transition-all duration-200 min-h-[70px] flex flex-col items-start justify-start
+                      border-r border-b border-border/20 focus:outline-none focus:ring-2 focus:ring-primary focus:z-10
+                      ${isLastColumn ? 'border-r-0' : ''}
+                      ${isLastRow ? 'border-b-0' : ''}
+                      ${isSelected ? 'border-2 border-destructive bg-background' : 'hover:bg-accent/50'}
+                      ${isDayToday && !isSelected ? 'bg-primary/10 ring-2 ring-primary ring-inset' : ''}
+                      ${isOutsideMonth ? 'text-muted-foreground opacity-60' : 'text-foreground'}
+                      ${!isOutsideMonth && !isSelected && !isDayToday ? 'hover:bg-accent' : ''}
                     `}
                   >
-                    <span>{format(date, 'd')}</span>
+                    {/* Day number */}
+                    <span className={`text-sm ${isDayToday ? 'font-bold' : 'font-medium'} mb-1`}>
+                      {format(date, 'd')}
+                    </span>
+                    
+                    {/* Category badges */}
                     {getDayBadges(date)}
                   </button>
                 );
