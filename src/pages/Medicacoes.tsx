@@ -138,7 +138,7 @@ const Medicacoes = () => {
         return null;
       }
 
-      // Processar horários com validação - agora recebemos objetos HorarioStatus
+      // Processar horários com validação - garantir que todos os horários sejam incluídos
       const horarios = Array.isArray(med.horarios) ? med.horarios : [];
       const horariosStatus: HorarioStatus[] = horarios
         .filter(horario => {
@@ -170,7 +170,14 @@ const Medicacoes = () => {
             // Preserva onTime vindo do cache local ou calcula a partir das datas
             onTime: horario.onTime ?? onTimeComputed
           };
-        });
+        })
+        .sort((a, b) => a.hora.localeCompare(b.hora)); // Ordenar por horário
+
+      // Calcular próxima dose baseado no primeiro horário pendente
+      const proximoHorarioPendente = horariosStatus.find(h => h.status === 'pendente');
+      const proximaDoseCalculada = proximoHorarioPendente 
+        ? formatTime24h(proximoHorarioPendente.hora)
+        : (horariosStatus.length > 0 ? "Todos concluídos hoje" : "-");
       
       return {
         id: med.id, // Manter como string (UUID)
@@ -184,7 +191,7 @@ const Medicacoes = () => {
             hour: '2-digit', 
             minute: '2-digit' 
           })) : 
-          (horariosStatus.length > 0 ? formatTime24h(horariosStatus[0].hora) : "-"),
+          proximaDoseCalculada,
         estoque: typeof med.estoque === 'number' ? med.estoque : 0,
         status: med.ativo ? "ativa" : "inativa",
         proxima: med.proxima,
