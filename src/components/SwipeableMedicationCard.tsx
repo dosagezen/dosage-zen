@@ -162,7 +162,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
 
     const isComplete = dragDirection === 'right'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
-    const text = isComplete ? 'Concluir' : 'Excluir'
+    const text = isComplete ? 'Concluir' : 'Cancelar'
     const deltaX = Math.abs(dragCurrent.x - dragStart.x)
     const opacity = Math.min(1, deltaX / 80)
 
@@ -255,26 +255,28 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
               {/* Mostrar todos os horários programados com seus status */}
               <div className="flex flex-col items-start sm:items-end gap-1">
                 {medicacao.horarios.filter(h => h.hora !== '-').length > 1 ? (
-                  // Múltiplos horários - mostrar lista completa
-                  medicacao.horarios
-                    .filter(h => h.hora !== '-')
-                    .map((horario, index) => (
-                      <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs sm:text-sm">
-                        <Clock className="w-3 h-3 text-muted-foreground" />
-                        <span className={`font-medium ${
-                          horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
-                          horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
-                        }`}>
-                          {formatTime24h(horario.hora)}
-                        </span>
-                        {horario.status === 'concluido' && (
-                          <Check className="w-3 h-3 text-green-600" />
-                        )}
-                        {horario.status === 'excluido' && (
-                          <span className="text-destructive text-xs">✗</span>
-                        )}
-                      </div>
-                    ))
+                  // Múltiplos horários - mostrar horizontalmente
+                  <div className="flex flex-wrap gap-1 justify-start sm:justify-end">
+                    {medicacao.horarios
+                      .filter(h => h.hora !== '-')
+                      .sort((a, b) => a.hora.localeCompare(b.hora))
+                      .map((horario, index) => (
+                        <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs bg-muted/50 px-2 py-1 rounded">
+                          <span className={`font-medium ${
+                            horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
+                            horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
+                          }`}>
+                            {formatTime24h(horario.hora)}
+                          </span>
+                          {horario.status === 'concluido' && (
+                            <Check className="w-3 h-3 text-green-600" />
+                          )}
+                          {horario.status === 'excluido' && (
+                            <span className="text-destructive text-xs">✗</span>
+                          )}
+                        </div>
+                      ))}
+                  </div>
                 ) : (
                   // Horário único - mostrar como antes
                   <div className="flex items-center gap-1 text-primary">
@@ -305,7 +307,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                     disabled={isLoading}
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
-                    Excluir
+                    Cancelar
                   </Button>
                   {onEdit && (
                     <Button 

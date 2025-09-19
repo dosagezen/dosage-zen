@@ -141,7 +141,7 @@ const SwipeableAtividadeCard: React.FC<SwipeableAtividadeCardProps> = ({
 
     const isComplete = dragDirection === 'right'
     const bgColor = isComplete ? 'bg-[#344E41]' : 'bg-[#FF3B30]'
-    const text = isComplete ? 'Concluir' : 'Excluir'
+    const text = isComplete ? 'Concluir' : 'Cancelar'
     const deltaX = Math.abs(dragCurrent.x - dragStart.x)
     const opacity = Math.min(1, deltaX / 80)
 
@@ -236,7 +236,7 @@ const SwipeableAtividadeCard: React.FC<SwipeableAtividadeCardProps> = ({
                     className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
-                    Excluir
+                    Cancelar
                   </Button>
                   {onEdit && (
                     <Button 
