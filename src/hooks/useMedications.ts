@@ -550,8 +550,8 @@ export const useMedications = (callbacks?: {
         });
       });
 
-      // Invalidate to ensure fresh data
-      queryClient.invalidateQueries({ queryKey: ['medications'] });
+      // Use refetchQueries instead of invalidateQueries to maintain visual state
+      queryClient.refetchQueries({ queryKey: ['medications'] });
       
       const actionText = action === 'concluir' ? 'Medicação concluída' : 'Medicação cancelada';
       toast({
@@ -705,7 +705,7 @@ export const useMedications = (callbacks?: {
     }
   });
 
-  return {
+    return {
     medications: Array.isArray(query.data) ? query.data : [],
     isLoading: query.isLoading,
     isFetching: query.isFetching,
@@ -724,5 +724,7 @@ export const useMedications = (callbacks?: {
     isMarkingOccurrence: markOccurrenceMutation.isPending,
     isMarkingNearest: markNearestOccurrenceMutation.isPending,
     isRestoringCard: restoreCardMutation.isPending,
+    undoOccurrence: undoMutation.mutate,
+    isUndoing: undoMutation.isPending,
   };
 };

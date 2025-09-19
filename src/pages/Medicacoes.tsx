@@ -85,7 +85,8 @@ const Medicacoes = () => {
     isUpdating,
     isDeleting,
     isMarkingNearest,
-    isRestoringCard
+    isRestoringCard,
+    isFetching
   } = useMedications({
     onCreateSuccess: () => {
       setIsEditDialogOpen(false);
@@ -745,6 +746,7 @@ const Medicacoes = () => {
                                onEdit={(med) => handleEditMedication(med)}
                                disabled={isUpdating || isDeleting || isMarkingNearest}
                                isLoading={isMarkingNearest}
+                               isProcessing={isMarkingNearest || isFetching}
                             />
                         ))}
                       </div>
@@ -769,6 +771,7 @@ const Medicacoes = () => {
                                disabled={isUpdating || isDeleting || isMarkingNearest}
                                isLoading={isMarkingNearest}
                                isInactive={true}
+                               isProcessing={isMarkingNearest || isFetching}
                             />
                         ))}
                       </div>
@@ -794,6 +797,7 @@ const Medicacoes = () => {
                                onEdit={(med) => handleEditMedication(med)}
                                disabled={isUpdating || isDeleting || isMarkingNearest}
                                isLoading={isMarkingNearest}
+                               isProcessing={isMarkingNearest || isFetching}
                            />
                         ))}
                       </div>

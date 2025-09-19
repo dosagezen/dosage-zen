@@ -40,6 +40,7 @@ interface SwipeableMedicationCardProps {
   isLoading?: boolean;
   isInactive?: boolean;
   origin?: string;
+  isProcessing?: boolean;
 }
 
 const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
@@ -49,7 +50,8 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
   onEdit,
   disabled = false,
   isLoading = false,
-  isInactive = false
+  isInactive = false,
+  isProcessing = false
 }) => {
   const isMobile = useIsMobile()
   const [isDragging, setIsDragging] = useState(false)
@@ -220,7 +222,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
       <Card 
         className={`w-full shadow-card hover:shadow-floating transition-shadow duration-300 relative z-10 ${
           isDragging && isHorizontalSwipe ? 'pointer-events-none' : ''
-        } ${disabled ? 'opacity-60' : ''}`}
+        } ${disabled ? 'opacity-60' : ''} ${isProcessing ? 'opacity-80' : ''}`}
         style={{
           ...getTransformStyle(),
           touchAction: isMobile ? 'pan-y' : 'auto'
