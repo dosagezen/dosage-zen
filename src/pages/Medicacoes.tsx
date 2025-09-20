@@ -807,11 +807,11 @@ const Medicacoes = () => {
                    {/* Medicações Concluídas */}
                    {medicacoesConcluidas.length > 0 && (
                      <div className="space-y-4">
-                       <Button
-                         variant="ghost"
-                         onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
-                         className="flex items-center gap-2 p-0 h-auto"
-                       >
+                        <Button
+                          variant="ghost"
+                          onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                          className="flex items-center gap-2 p-0 h-auto mb-[30px] md:mb-[60px]"
+                        >
                          <Check className="w-5 h-5 text-success" />
                           <h3 className="text-lg font-semibold">
                             Finalizadas hoje ({medicacoesConcluidas.length})
