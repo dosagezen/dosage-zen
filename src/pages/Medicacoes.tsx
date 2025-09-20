@@ -282,9 +282,6 @@ const Medicacoes = () => {
     }
   }, [medications, isSuccess])
 
-  useEffect(() => {
-    setMedicacoesList(convertedMedications)
-  }, [convertedMedications])
 
   // Detectar parâmetro de URL para abrir modal de edição
   useEffect(() => {
@@ -482,23 +479,23 @@ const Medicacoes = () => {
   // Função para aplicar filtros - otimizada com useMemo e segurança
   const filteredMedicacoes = useMemo(() => {
     console.log('Filtering medications', { 
-      totalMeds: medicacoesList?.length || 0, 
+      totalMeds: convertedMedications?.length || 0, 
       activeFilter, 
       searchTerm,
       isMobile 
     })
     
-    if (!medicacoesList || !Array.isArray(medicacoesList) || medicacoesList.length === 0) {
-      console.log('No valid medicacoesList for filtering, returning empty array')
+    if (!convertedMedications || !Array.isArray(convertedMedications) || convertedMedications.length === 0) {
+      console.log('No valid convertedMedications for filtering, returning empty array')
       return []
     }
     
-    let filtered = medicacoesList
+    let filtered = convertedMedications
     
     try {
       switch (activeFilter) {
         case "hoje":
-          filtered = medicacoesList.filter(med => {
+          filtered = convertedMedications.filter(med => {
             if (!med || med.removed_from_today) return false;
             if (med.isOptimistic) return true; // Optimistic feedback
             // Prefer backend flags, fallback to local inference
@@ -507,21 +504,21 @@ const Medicacoes = () => {
           })
           break
         case "ativas":
-          filtered = medicacoesList.filter(med => 
+          filtered = convertedMedications.filter(med => 
             med && med.status === "ativa" && !med.removed_from_today
           )
           break
         case "concluidas":
-          filtered = medicacoesList.filter(med => 
+          filtered = convertedMedications.filter(med => 
             med && isAllDosesCompleted(med)
           )
           break
         case "todas":
           // Show all medications (active and inactive)
-          filtered = medicacoesList.filter(med => med && !med.removed_from_today)
+          filtered = convertedMedications.filter(med => med && !med.removed_from_today)
           break
         default:
-          filtered = medicacoesList.filter(med => med && !med.removed_from_today)
+          filtered = convertedMedications.filter(med => med && !med.removed_from_today)
       }
 
       // Aplicar filtro de busca com segurança
@@ -532,7 +529,7 @@ const Medicacoes = () => {
       }
 
       console.log('Filtered medications result', { 
-        originalCount: medicacoesList.length,
+        originalCount: convertedMedications.length,
         filteredCount: filtered.length,
         filter: activeFilter
       })
@@ -555,19 +552,19 @@ const Medicacoes = () => {
       })
     } catch (error) {
       console.error('Erro ao filtrar medicações:', error, {
-        medicacoesList: medicacoesList?.length || 0,
+        convertedMedications: convertedMedications?.length || 0,
         activeFilter,
         searchTerm
       })
       return []
     }
-  }, [medicacoesList, activeFilter, searchTerm, isMobile])
+  }, [convertedMedications, activeFilter, searchTerm, isMobile, isAllDosesCompleted])
 
   // Separar medicações baseado no filtro ativo
   const medicacoesPendentes = useMemo(() => {
     if (activeFilter === 'ativas') {
-      // For "ativas" filter, use medicacoesList directly to match the counter logic
-      return medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today);
+      // For "ativas" filter, use convertedMedications directly to match the counter logic
+      return convertedMedications.filter(med => med && med.status === "ativa" && !med.removed_from_today);
     }
     
     return filteredMedicacoes.filter(med => {
@@ -579,12 +576,12 @@ const Medicacoes = () => {
       }
       return med.status === "ativa";
     });
-  }, [filteredMedicacoes, activeFilter, medicacoesList])
+  }, [filteredMedicacoes, activeFilter, convertedMedications, isAllDosesCompleted])
   
   const medicacoesConcluidas = useMemo(() => {
     if (activeFilter === 'hoje') {
       // Para o filtro "hoje", buscar diretamente na lista completa, não na filtrada
-      return medicacoesList.filter(med => {
+      return convertedMedications.filter(med => {
         if (!med || med.removed_from_today) return false;
         if (med.status !== "ativa") return false;
         
@@ -599,14 +596,14 @@ const Medicacoes = () => {
       return filteredMedicacoes.filter(med => med && med.status === "inativa");
     }
     return []; // For "ativas" filter, no completed list
-  }, [medicacoesList, filteredMedicacoes, activeFilter, isAllDosesCompleted])
+  }, [convertedMedications, filteredMedicacoes, activeFilter, isAllDosesCompleted])
 
   // Calculate counters based on real occurrences
   const counters = useMemo(() => {
-    if (!medicacoesList?.length) return { hoje: 0, ativas: 0, todas: 0 };
+    if (!convertedMedications?.length) return { hoje: 0, ativas: 0, todas: 0 };
 
     // Para o filtro "hoje", contar apenas medicações programadas (não finalizadas)
-    const hoje = medicacoesList.filter(med => {
+    const hoje = convertedMedications.filter(med => {
       if (!med || med.removed_from_today) return false;
       if (med.isOptimistic) return true; // count optimistic
       const hasToday = (med as any).has_today ?? ((med.horarios || []).length > 0);
@@ -616,11 +613,11 @@ const Medicacoes = () => {
       return !isAllDosesCompleted(med);
     }).length;
 
-    const ativas = medicacoesList.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
-    const todas = medicacoesList.filter(med => med && !med.removed_from_today).length;
+    const ativas = convertedMedications.filter(med => med && med.status === "ativa" && !med.removed_from_today).length;
+    const todas = convertedMedications.filter(med => med && !med.removed_from_today).length;
 
     return { hoje, ativas, todas };
-  }, [medicacoesList, isAllDosesCompleted])
+  }, [convertedMedications, isAllDosesCompleted])
 
 
   return (
