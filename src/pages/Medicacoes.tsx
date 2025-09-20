@@ -878,41 +878,45 @@ const Medicacoes = () => {
                                         </div>
                                       </div>
                                    ) : (
-                                     // Layout Desktop (manter atual)
+                                     // Layout Desktop
                                      <div className="flex items-start justify-between">
-                                       <div className="flex-1">
-                                         <div className="flex items-center gap-2 mb-2">
-                                           <Pill className="h-5 w-5 text-success" />
-                                           <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                            <Badge variant="outline" className="text-success border-success">
-                                              Finalizada
-                                            </Badge>
+                                       <div className="flex gap-6 flex-1">
+                                         <div className="flex-shrink-0">
+                                           <div className="flex items-center gap-2 mb-2">
+                                             <Pill className="h-5 w-5 text-success" />
+                                             <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
+                                              <Badge variant="outline" className="text-success border-success">
+                                                Finalizada
+                                              </Badge>
+                                           </div>
                                          </div>
                                          
-                                         <div className="space-y-2 text-sm text-muted-foreground">
-                                           <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
-                                           <p><strong>Forma:</strong> {medicacao.forma}</p>
-                                           <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
-                                         </div>
+                                         <div className="flex-1">
+                                           <div className="space-y-2 text-sm text-muted-foreground mb-3">
+                                             <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
+                                             <p><strong>Forma:</strong> {medicacao.forma}</p>
+                                             <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
+                                           </div>
 
-                                         {/* Horários do dia */}
-                                         <div className="mt-3">
-                                           <div className="flex flex-wrap gap-2">
-                                             {medicacao.horarios?.map((horario, index) => (
-                                               <span
-                                                 key={index}
-                                                   className={cn(
-                                                     "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
-                                                     horario.status === 'concluido' 
-                                                       ? "bg-success/10 text-success line-through" 
-                                                       : horario.status === 'excluido'
-                                                       ? "bg-destructive/10 text-destructive line-through"
-                                                       : "bg-blue-100 text-blue-800"
-                                                   )}
-                                               >
-                                                 {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
-                                               </span>
-                                             ))}
+                                           {/* Horários do dia */}
+                                           <div>
+                                             <div className="flex flex-wrap gap-2">
+                                               {medicacao.horarios?.map((horario, index) => (
+                                                 <span
+                                                   key={index}
+                                                     className={cn(
+                                                       "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
+                                                       horario.status === 'concluido' 
+                                                         ? "bg-success/10 text-success line-through" 
+                                                         : horario.status === 'excluido'
+                                                         ? "bg-destructive/10 text-destructive line-through"
+                                                         : "bg-blue-100 text-blue-800"
+                                                     )}
+                                                 >
+                                                   {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
+                                                 </span>
+                                               ))}
+                                             </div>
                                            </div>
                                          </div>
                                        </div>
