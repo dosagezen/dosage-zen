@@ -823,7 +823,7 @@ const Medicacoes = () => {
                           <div className="grid gap-4 mb-15">
                             {medicacoesConcluidas.map((medicacao) => (
                               <Card key={medicacao.id} className="opacity-75">
-                                 <CardContent className="p-4">
+                                 <CardContent className={cn("p-4", isCompletedExpanded && "md:mb-[30px]")}>
                                    {isMobile ? (
                                      // Layout Mobile
                                       <div>
