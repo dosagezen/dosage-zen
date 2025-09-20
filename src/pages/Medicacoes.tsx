@@ -879,57 +879,59 @@ const Medicacoes = () => {
                                       </div>
                                    ) : (
                                      // Layout Desktop (manter atual)
-                                     <div className="flex items-start justify-between">
-                                       <div className="flex-1">
-                                         <div className="flex items-center gap-2 mb-2">
-                                           <Pill className="h-5 w-5 text-success" />
-                                           <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
-                                            <Badge variant="outline" className="text-success border-success">
-                                              Finalizada
-                                            </Badge>
-                                         </div>
-                                         
-                                         <div className="space-y-2 text-sm text-muted-foreground">
-                                           <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
-                                           <p><strong>Forma:</strong> {medicacao.forma}</p>
-                                           <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
-                                         </div>
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-2">
+                                          <Pill className="h-5 w-5 text-success" />
+                                          <h3 className="font-semibold text-lg">{medicacao.nome}</h3>
+                                           <Badge variant="outline" className="text-success border-success">
+                                             Finalizada
+                                           </Badge>
+                                        </div>
+                                        
+                                        <div className="flex justify-between">
+                                          <div className="flex-1">
+                                            <div className="space-y-2 text-sm text-muted-foreground">
+                                              <p><strong>Dosagem:</strong> {medicacao.dosagem}</p>
+                                              <p><strong>Forma:</strong> {medicacao.forma}</p>
+                                              <p><strong>Frequência:</strong> {medicacao.frequencia}</p>
+                                            </div>
 
-                                         {/* Horários do dia */}
-                                         <div className="mt-3">
-                                           <div className="flex flex-wrap gap-2">
-                                             {medicacao.horarios?.map((horario, index) => (
-                                               <span
-                                                 key={index}
-                                                   className={cn(
-                                                     "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
-                                                     horario.status === 'concluido' 
-                                                       ? "bg-success/10 text-success line-through" 
-                                                       : horario.status === 'excluido'
-                                                       ? "bg-destructive/10 text-destructive line-through"
-                                                       : "bg-blue-100 text-blue-800"
-                                                   )}
-                                               >
-                                                 {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
-                                               </span>
-                                             ))}
-                                           </div>
-                                         </div>
-                                       </div>
+                                            {/* Horários do dia */}
+                                            <div className="mt-3">
+                                              <div className="flex flex-wrap gap-2">
+                                                {medicacao.horarios?.map((horario, index) => (
+                                                  <span
+                                                    key={index}
+                                                      className={cn(
+                                                        "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full transition-colors",
+                                                        horario.status === 'concluido' 
+                                                          ? "bg-success/10 text-success line-through" 
+                                                          : horario.status === 'excluido'
+                                                          ? "bg-destructive/10 text-destructive line-through"
+                                                          : "bg-blue-100 text-blue-800"
+                                                      )}
+                                                  >
+                                                    {horario.hora}{(horario.status === 'concluido' && (horario as any).onTime) ? ' —' : ''}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            </div>
+                                          </div>
 
-                                       <div className="text-right">
-                                         <Button
-                                           variant="outline"
-                                           size="sm"
-                                           onClick={() => restoreCard(medicacao.id)}
-                                           disabled={isRestoringCard}
-                                           className="gap-2"
-                                         >
-                                           <RotateCcw className="w-3 h-3" />
-                                           {isRestoringCard ? 'Restaurando...' : 'Restaurar'}
-                                         </Button>
-                                       </div>
-                                     </div>
+                                          <div className="text-right">
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => restoreCard(medicacao.id)}
+                                              disabled={isRestoringCard}
+                                              className="gap-2"
+                                            >
+                                              <RotateCcw className="w-3 h-3" />
+                                              {isRestoringCard ? 'Restaurando...' : 'Restaurar'}
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
                                    )}
                                 </CardContent>
                               </Card>
