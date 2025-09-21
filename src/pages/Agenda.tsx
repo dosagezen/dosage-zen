@@ -309,7 +309,7 @@ export default function Agenda() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
             <p className="text-muted-foreground">
-              Gerencie seus compromissos e agendamentos
+              Gerencie seus compromissos
             </p>
           </div>
           <Button 
