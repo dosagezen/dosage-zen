@@ -15,7 +15,7 @@ const MOCK_DATA = {
     totalConcluidos: 7,
     faltando: 3,
     atrasados: 1,
-    excluidos: 1,
+    cancelados: 1,
     categorias: {
       medicacoes: { planejados: 6, concluidos: 5 },
       consultas: { planejados: 2, concluidos: 1 },
@@ -122,7 +122,7 @@ export default function Conquistas() {
         totalConcluidos,
         faltando: Math.floor(totalPlanejados * 0.25), // Mock: 25% faltando
         atrasados: Math.floor(totalPlanejados * 0.08), // Mock: 8% atrasados  
-        excluidos: Math.floor(totalPlanejados * 0.08), // Mock: 8% excluídos
+        cancelados: Math.floor(totalPlanejados * 0.08), // Mock: 8% cancelados
         categorias: categoriasFiltradasHoje as any
       }
     }
@@ -201,7 +201,7 @@ export default function Conquistas() {
     const C = dados.totalConcluidos
     const F = dados.faltando || 0
     const A = dados.atrasados || 0
-    const E = dados.excluidos || 0
+    const E = dados.cancelados || 0
 
     // Garantir que C + F + A + E == P (reconciliação)
     const total = C + F + A + E
@@ -319,7 +319,7 @@ export default function Conquistas() {
                   <div 
                     className="bg-red-500/50 h-full transition-all duration-300"
                     style={{ width: `${metricas.excluidosPct}%` }}
-                    aria-label={`Excluídos: ${metricas.E} (${metricas.excluidosPct}%)`}
+                    aria-label={`Cancelados: ${metricas.E} (${metricas.excluidosPct}%)`}
                   />
                 )}
               </div>
@@ -341,7 +341,7 @@ export default function Conquistas() {
               </div>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-red-500/50 rounded-full"></div>
-                <span className="text-muted-foreground">Excluídos</span>
+                <span className="text-muted-foreground">Cancelados</span>
               </div>
             </div>
           </div>
@@ -390,7 +390,7 @@ export default function Conquistas() {
                     {metricas.excluidosPct}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">Excluídos</p>
+                <p className="text-xs text-muted-foreground mt-3">Cancelados</p>
               </div>
             </div>
           </div>
