@@ -308,10 +308,10 @@ const EditarCompromissoDialog = ({ isOpen, onClose, compromisso, onSave }: Edita
                 aria-checked={selectedCategory === 'consulta'}
               />
               <div className={`
-                flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
+                flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors
                 ${selectedCategory === 'consulta' 
                   ? 'bg-[#344E41] text-white' 
-                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]'
                 }
               `}>
                 <User className="w-4 h-4" />
@@ -330,10 +330,10 @@ const EditarCompromissoDialog = ({ isOpen, onClose, compromisso, onSave }: Edita
                 aria-checked={selectedCategory === 'exame'}
               />
               <div className={`
-                flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
+                flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors
                 ${selectedCategory === 'exame' 
                   ? 'bg-[#344E41] text-white' 
-                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]'
                 }
               `}>
                 <Stethoscope className="w-4 h-4" />
@@ -352,10 +352,10 @@ const EditarCompromissoDialog = ({ isOpen, onClose, compromisso, onSave }: Edita
                 aria-checked={selectedCategory === 'atividade'}
               />
               <div className={`
-                flex items-center gap-1.5 px-2.5 py-1 rounded-full sm:min-h-[32px] min-h-[44px] text-xs sm:text-xs text-sm font-medium transition-colors
+                flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors
                 ${selectedCategory === 'atividade' 
                   ? 'bg-[#344E41] text-white' 
-                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#DAD7CD]/80'
+                  : 'bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]'
                 }
               `}>
                 <Heart className="w-4 h-4" />

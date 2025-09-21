@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -490,17 +490,55 @@ export default function Agenda() {
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs value={selectedCategory} onValueChange={(value: any) => {
-            setSelectedCategory(value);
-            setFormData(prev => ({ ...prev, tipo: value }));
-          }}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="consulta">Consulta</TabsTrigger>
-              <TabsTrigger value="exame">Exame</TabsTrigger>
-              <TabsTrigger value="atividade">Atividade</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="consulta" className="space-y-4 mt-4">
+          {/* Category selection buttons */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => {
+                setSelectedCategory('consulta');
+                setFormData(prev => ({ ...prev, tipo: 'consulta' }));
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === 'consulta'
+                  ? "bg-[#344E41] text-white"
+                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+              }`}
+            >
+              <User className="w-4 h-4" />
+              Consulta
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategory('exame');
+                setFormData(prev => ({ ...prev, tipo: 'exame' }));
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === 'exame'
+                  ? "bg-[#344E41] text-white"
+                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+              }`}
+            >
+              <Stethoscope className="w-4 h-4" />
+              Exame
+            </button>
+            <button
+              onClick={() => {
+                setSelectedCategory('atividade');
+                setFormData(prev => ({ ...prev, tipo: 'atividade' }));
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === 'atividade'
+                  ? "bg-[#344E41] text-white"
+                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+              }`}
+            >
+              <Heart className="w-4 h-4" />
+              Atividade
+            </button>
+          </div>
+          
+          {/* Form content based on selected category */}
+          {selectedCategory === 'consulta' && (
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="especialidade">Especialidade</Label>
                 <Input
@@ -520,9 +558,11 @@ export default function Agenda() {
                   placeholder="Nome do médico"
                 />
               </div>
-            </TabsContent>
-            
-            <TabsContent value="exame" className="space-y-4 mt-4">
+            </div>
+          )}
+          
+          {selectedCategory === 'exame' && (
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="tipo_exame">Tipo de Exame</Label>
                 <Input
@@ -543,9 +583,11 @@ export default function Agenda() {
                   rows={3}
                 />
               </div>
-            </TabsContent>
-            
-            <TabsContent value="atividade" className="space-y-4 mt-4">
+            </div>
+          )}
+          
+          {selectedCategory === 'atividade' && (
+            <div className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="tipo_atividade">Tipo de Atividade</Label>
                 <Input
@@ -615,8 +657,8 @@ export default function Agenda() {
                   </div>
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
           
           {/* Common fields */}
           <div className="space-y-4 mt-4">
