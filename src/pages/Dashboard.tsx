@@ -70,11 +70,11 @@ const Dashboard = () => {
     return dataApt >= hoje && dataApt <= proximosDias;
   }).slice(0, 5) || [];
 
-  // Calcular estatísticas
-  const compromissosHoje = allAppointments?.filter(apt => {
+  // Calcular estatísticas - incluindo medicações ativas + compromissos do dia
+  const compromissosHoje = (allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
     return dataApt.toDateString() === hoje.toDateString();
-  }).length || 0;
+  }).length || 0) + medicacoesAtivas.length;
 
   const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hoje);
   const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hoje);

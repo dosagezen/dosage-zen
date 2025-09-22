@@ -1126,7 +1126,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                 className="flex items-center cursor-pointer py-2 hover:bg-accent/10 rounded-lg transition-colors"
                 onClick={() => setIsRemovedExpanded(!isRemovedExpanded)}
                 aria-expanded={isRemovedExpanded}
-                aria-label={isRemovedExpanded ? "Colapsar compromissos resolvidos" : "Expandir compromissos resolvidos"}
+                aria-label={isRemovedExpanded ? "Colapsar finalizados hoje" : "Expandir finalizados hoje"}
               >
                 {isRemovedExpanded ? (
                   <ChevronUp className="w-5 h-5 text-[#344E41] ml-2" />
@@ -1134,7 +1134,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                   <ChevronDown className="w-5 h-5 text-[#344E41] ml-2" />
                 )}
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold text-[#344E41]">Compromissos resolvidos</h3>
+                  <h3 className="text-lg font-bold text-[#344E41]">Finalizados hoje</h3>
                   <Badge variant="secondary" className="bg-[#344E41]/10 text-[#344E41]">
                     {itensRemovidos.length}
                   </Badge>
