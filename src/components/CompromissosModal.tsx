@@ -103,7 +103,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   
   // Converter dados reais para formato da interface
   const convertMedicationsToModal = (): MedicacaoCompleta[] => {
-    return medications.filter(med => med.ativo).slice(0, 5).map((med, index) => ({
+    const today = new Date().toISOString().split('T')[0];
+    
+    return medications.filter(med => {
+      // Filtrar apenas medicações ativas
+      if (!med.ativo) return false;
+      
+      // Verificar se está no período ativo hoje
+      if (med.data_inicio && med.data_inicio > today) return false;
+      if (med.data_fim && med.data_fim < today) return false;
+      
+      return true;
+    }).map((med, index) => ({
       id: med.id, // Manter como string (UUID)
       nome: med.nome,
       dosagem: med.dosagem,
@@ -121,9 +132,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
   const convertAppointmentsToModal = (): (ConsultaCompleta | ExameCompleto | AtividadeCompleta)[] => {
     const today = new Date().toISOString().split('T')[0];
-    const todayAppointments = appointments.filter(apt => 
-      apt.data_agendamento.startsWith(today) && apt.status === 'agendado'
-    ).slice(0, 6);
+    const todayAppointments = appointments.filter(apt => {
+      const appointmentDate = new Date(apt.data_agendamento).toISOString().split('T')[0];
+      return appointmentDate === today;
+    });
 
     return todayAppointments.map((apt, index) => {
       const time = formatTime24h(new Date(apt.data_agendamento).toLocaleTimeString('pt-BR', { 
@@ -131,31 +143,46 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         minute: '2-digit' 
       }));
 
+      // Determinar se está finalizado - usando status string
+      const statusString = apt.status || 'agendado';
+      const isFinalized = ['realizado', 'concluido', 'cancelado'].includes(statusString);
+      const removalReason = statusString === 'cancelado' ? 'excluded' : 
+                           (['realizado', 'concluido'].includes(statusString)) ? 'completed' : undefined;
+
       if (apt.tipo === 'consulta') {
         return {
-          id: apt.id, // Manter como string (UUID)
+          id: apt.id,
           especialidade: apt.especialidade || 'Consulta Médica',
           profissional: apt.medico_profissional || 'Médico',
           local: apt.local_endereco || 'Clínica',
           hora: time,
-          status: 'agendado' as const
+          status: isFinalized ? 'concluido_hoje' as const : 'agendado' as const,
+          removed_from_today: isFinalized,
+          removal_reason: removalReason,
+          completed_at: isFinalized ? apt.updated_at : undefined
         } as ConsultaCompleta;
       } else if (apt.tipo === 'exame') {
         return {
-          id: apt.id, // Manter como string (UUID)
+          id: apt.id,
           tipo: apt.titulo || 'Exame',
           local: apt.local_endereco || 'Laboratório',
           hora: time,
-          status: 'agendado' as const
+          status: isFinalized ? 'concluido_hoje' as const : 'agendado' as const,
+          removed_from_today: isFinalized,
+          removal_reason: removalReason,
+          completed_at: isFinalized ? apt.updated_at : undefined
         } as ExameCompleto;
       } else {
         return {
-          id: apt.id, // Manter como string (UUID)
+          id: apt.id,
           tipo: apt.titulo || 'Atividade',
           local: apt.local_endereco || 'Local',
           hora: time,
           duracao: `${apt.duracao_minutos || 30}min`,
-          status: 'pendente' as const
+          status: isFinalized ? 'concluido_hoje' as const : 'pendente' as const,
+          removed_from_today: isFinalized,
+          removal_reason: removalReason,
+          completed_at: isFinalized ? apt.updated_at : undefined
         } as AtividadeCompleta;
       }
     });

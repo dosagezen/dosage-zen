@@ -70,11 +70,24 @@ const Dashboard = () => {
     return dataApt >= hoje && dataApt <= proximosDias;
   }).slice(0, 5) || [];
 
-  // Calcular estatísticas - incluindo medicações ativas + compromissos do dia
+  // Calcular estatísticas - medicações com horários pendentes hoje + compromissos agendados para hoje
+  const medicacoesHoje = medicacoesAtivas.filter(med => {
+    // Verificar se tem horários pendentes para hoje
+    if (!Array.isArray(med.horarios) || med.horarios.length === 0) return false;
+    
+    // Se tem data de início/fim, verificar se está no período ativo
+    const hoje_date = hoje.toISOString().split('T')[0];
+    if (med.data_inicio && med.data_inicio > hoje_date) return false;
+    if (med.data_fim && med.data_fim < hoje_date) return false;
+    
+    return true; // Medicação ativa com horários para hoje
+  }).length;
+
   const compromissosHoje = (allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
-    return dataApt.toDateString() === hoje.toDateString();
-  }).length || 0) + medicacoesAtivas.length;
+    return dataApt.toDateString() === hoje.toDateString() && 
+           ['agendado', 'confirmado'].includes(apt.status);
+  }).length || 0) + medicacoesHoje;
 
   const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hoje);
   const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hoje);
