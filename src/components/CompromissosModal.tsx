@@ -109,9 +109,9 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       // Filtrar apenas medicações ativas
       if (!med.ativo) return false;
       
-      // Verificar se está no período ativo hoje
-      if (med.data_inicio && med.data_inicio > today) return false;
-      if (med.data_fim && med.data_fim < today) return false;
+      // Usar has_today do backend que já considera timezone do usuário
+      const hasToday = (med as any).has_today ?? false;
+      if (!hasToday) return false;
       
       return true;
     }).map((med, index) => ({
@@ -131,10 +131,11 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   };
 
   const convertAppointmentsToModal = (): (ConsultaCompleta | ExameCompleto | AtividadeCompleta)[] => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
     const todayAppointments = appointments.filter(apt => {
-      const appointmentDate = new Date(apt.data_agendamento).toISOString().split('T')[0];
-      return appointmentDate === today;
+      // Usar date-fns isToday para verificar se é o mesmo dia local
+      const appointmentDate = new Date(apt.data_agendamento);
+      return appointmentDate.toDateString() === today.toDateString();
     });
 
     return todayAppointments.map((apt, index) => {
@@ -1006,7 +1007,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
             <Calendar className="w-5 h-5" />
             Compromissos do dia
           </DialogTitle>
-          <p className="text-muted-foreground text-sm text-left">14 de agosto de 2025</p>
+          <p className="text-muted-foreground text-sm text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
