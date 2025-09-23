@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Calendar, Search, Plus, User, Stethoscope, Heart, MapPin, Clock, Filter } from 'lucide-react';
+import { Calendar, Search, Plus, User, Stethoscope, Heart, MapPin, Clock, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { TabsContent } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -68,6 +69,8 @@ export default function Agenda() {
     data_agendamento: '',
     duracao_minutos: 60,
   });
+  const [agendadosExpanded, setAgendadosExpanded] = useState(true);
+  const [realizadosExpanded, setRealizadosExpanded] = useState(false);
 
   const { toast } = useToast();
   const { currentContext } = useAuth();
@@ -482,26 +485,40 @@ export default function Agenda() {
               <>
                 {/* Pending Appointments */}
                 {filteredAppointments.pending.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                      Agendados ({filteredAppointments.pending.length})
-                    </h3>
-                    <div className="space-y-3">
+                  <Collapsible open={agendadosExpanded} onOpenChange={setAgendadosExpanded}>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Agendados ({filteredAppointments.pending.length})
+                      </h3>
+                      {agendadosExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-3 mt-3">
                       {filteredAppointments.pending.map(renderAppointmentCard)}
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
 
                 {/* Completed Appointments */}
                 {filteredAppointments.completed.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                      Realizados ({filteredAppointments.completed.length})
-                    </h3>
-                    <div className="space-y-3 opacity-60">
+                  <Collapsible open={realizadosExpanded} onOpenChange={setRealizadosExpanded}>
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        Realizados ({filteredAppointments.completed.length})
+                      </h3>
+                      {realizadosExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-3 mt-3 opacity-60">
                       {filteredAppointments.completed.map(renderAppointmentCard)}
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 )}
               </>
             )}
