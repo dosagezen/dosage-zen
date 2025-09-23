@@ -98,7 +98,7 @@ export default function Agenda() {
   }, [appointments]);
 
   const filteredAppointments = useMemo(() => {
-    return appointments.filter(apt => {
+    const filtered = appointments.filter(apt => {
       const matchesSearch = searchTerm === '' || 
         apt.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         apt.especialidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -111,6 +111,11 @@ export default function Agenda() {
 
       return matchesSearch && matchesCategory && matchesStatus && matchesDate;
     });
+
+    return {
+      pending: filtered.filter(apt => apt.status === 'agendado'),
+      completed: filtered.filter(apt => apt.status === 'realizado' || apt.status === 'cancelado')
+    };
   }, [appointments, searchTerm, categoryFilter, statusFilter, selectedDate]);
 
   // Calendar logic - start week on Monday (weekStartsOn: 1)
@@ -459,7 +464,7 @@ export default function Agenda() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="w-5 h-5" />
-              Compromissos ({filteredAppointments.length})
+              Compromissos ({filteredAppointments.pending.length + filteredAppointments.completed.length})
               {selectedDate && (
                 <span className="text-sm font-normal text-muted-foreground">
                   - {format(selectedDate, 'dd/MM/yyyy')}
@@ -467,14 +472,38 @@ export default function Agenda() {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {filteredAppointments.length === 0 ? (
+          <CardContent className="space-y-6">
+            {filteredAppointments.pending.length === 0 && filteredAppointments.completed.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>Nenhum compromisso encontrado</p>
               </div>
             ) : (
-              filteredAppointments.map(renderAppointmentCard)
+              <>
+                {/* Pending Appointments */}
+                {filteredAppointments.pending.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Agendados ({filteredAppointments.pending.length})
+                    </h3>
+                    <div className="space-y-3">
+                      {filteredAppointments.pending.map(renderAppointmentCard)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Completed Appointments */}
+                {filteredAppointments.completed.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                      Realizados ({filteredAppointments.completed.length})
+                    </h3>
+                    <div className="space-y-3 opacity-60">
+                      {filteredAppointments.completed.map(renderAppointmentCard)}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
