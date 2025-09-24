@@ -9,6 +9,7 @@ import AddMedicationDialog from "@/components/AddMedicationDialog";
 import CompromissosModal from "@/components/CompromissosModal";
 import { useMedications } from "@/hooks/useMedications";
 import { useAppointments } from "@/hooks/useAppointments";
+import { useCompromissosDodia } from "@/hooks/useCompromissosDodia";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatTime24h } from "@/lib/utils";
 
@@ -41,6 +42,7 @@ const Dashboard = () => {
   const { appointments: allAppointments, isLoading: appointmentsLoading, refetchAppointments } = useAppointments(undefined, currentContext);
   const { appointments: consultas } = useAppointments('consulta', currentContext);
   const { appointments: exames } = useAppointments('exame', currentContext);
+  const { total, concluidos, restantes } = useCompromissosDodia();
 
   // Detectar parâmetro modal=compromissos para reabrir o modal
   useEffect(() => {
@@ -99,8 +101,8 @@ const Dashboard = () => {
     Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   const estatisticas = [{
-    titulo: "Compromissos Hoje",
-    valor: compromissosHoje.toString(),
+    titulo: "Compromissos do Dia",
+    valor: restantes.toString(),
     icone: Pill,
     cor: "success"
   }, {
@@ -222,7 +224,7 @@ const Dashboard = () => {
                 isClickable ? 'cursor-pointer hover:scale-105 transition-transform' : ''
               }`} 
               onClick={isClickable ? handleClick : undefined}
-              aria-label={isClickable ? `Ir para ${stat.titulo}` : undefined}
+              aria-label={isClickable ? (index === 0 ? `Restantes ${restantes}, Total ${total}, Concluídos ${concluidos}` : `Ir para ${stat.titulo}`) : undefined}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -231,7 +233,12 @@ const Dashboard = () => {
                 <stat.icone className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-primary">{stat.valor}</div>
+                <div className="text-2xl font-bold text-primary" aria-live={index === 0 ? "polite" : undefined}>{stat.valor}</div>
+                {index === 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Total: {total} • Concluídos: {concluidos} • Restantes: {restantes}
+                  </p>
+                )}
               </CardContent>
             </Card>
           );
