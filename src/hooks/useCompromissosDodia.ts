@@ -23,9 +23,9 @@ export interface CompromissosDia {
 }
 
 export function useCompromissosDodia(): CompromissosDia & { refetch: () => void } {
-  const { profile } = useAuth();
+  const { profile, currentContext } = useAuth();
   const { medications, refetchMedications } = useMedications();
-  const { appointments, refetchAppointments } = useAppointments();
+  const { appointments, refetchAppointments } = useAppointments(undefined, currentContext);
   const { subscribeToUpdates } = useCompromissosEvents();
 
   // Get user's local date
