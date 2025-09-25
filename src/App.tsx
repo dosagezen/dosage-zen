@@ -19,6 +19,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
+import Index from "./pages/Index";
 import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
 import { ThemeProvider } from "next-themes";
 
@@ -98,6 +99,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/admin/signup" element={<AdminSignup />} />

@@ -7,16 +7,21 @@ const Index = () => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user) {
-      navigate('/app');
+    if (!loading) {
+      if (user) {
+        navigate('/app/');
+      } else {
+        navigate('/login');
+      }
     }
   }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Bem-vindo ao DosageZen</h1>
-        <p className="text-xl text-muted-foreground">Faça login para continuar.</p>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <h1 className="text-2xl font-bold mb-2">DosageZen</h1>
+        <p className="text-muted-foreground">Carregando...</p>
       </div>
     </div>
   );
