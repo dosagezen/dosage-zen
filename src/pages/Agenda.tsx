@@ -19,6 +19,7 @@ import { SwipeableCard } from '@/components/SwipeableCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCompromissosEvents } from '@/contexts/CompromissosEventContext';
 
 type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
 type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
@@ -74,6 +75,7 @@ export default function Agenda() {
 
   const { toast } = useToast();
   const { currentContext } = useAuth();
+  const { onCompromissoAtualizado } = useCompromissosEvents();
   const { 
     appointments, 
     createAppointment, 
@@ -239,10 +241,26 @@ export default function Agenda() {
 
   const handleComplete = async (appointment: Appointment) => {
     await completeAppointment(appointment.id);
+    
+    // Emitir evento global para atualizar widget
+    onCompromissoAtualizado({
+      type: 'complete',
+      itemId: appointment.id,
+      itemType: appointment.tipo as 'consulta' | 'exame' | 'atividade',
+      timestamp: Date.now()
+    });
   };
 
   const handleCancel = async (appointment: Appointment) => {
     await deleteAppointment(appointment.id);
+    
+    // Emitir evento global para atualizar widget
+    onCompromissoAtualizado({
+      type: 'cancel',
+      itemId: appointment.id,
+      itemType: appointment.tipo as 'consulta' | 'exame' | 'atividade',
+      timestamp: Date.now()
+    });
   };
 
   const renderAppointmentCard = (appointment: Appointment) => {

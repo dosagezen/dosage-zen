@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { useMedications, type Medication } from "@/hooks/useMedications"
 import { formatTime24h, cn } from "@/lib/utils"
+import { useCompromissosEvents } from "@/contexts/CompromissosEventContext"
 
 // Tipos para sistema de horários
 interface HorarioStatus {
@@ -68,6 +69,7 @@ const Medicacoes = () => {
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false)
   const [modalOrigin, setModalOrigin] = useState<string | null>(null)
+  const { onCompromissoAtualizado } = useCompromissosEvents()
   
   // Integração com dados reais do Supabase
   const { 
@@ -406,7 +408,15 @@ const Medicacoes = () => {
       medicationId: medicacaoId, 
       action: 'concluir' 
     });
-  }, [markNearestOccurrence, isMarkingNearest])
+
+    // Emitir evento global para atualizar widget
+    onCompromissoAtualizado({
+      type: 'complete',
+      itemId: medicacaoId,
+      itemType: 'medicacao',
+      timestamp: Date.now()
+    });
+  }, [markNearestOccurrence, isMarkingNearest, onCompromissoAtualizado])
 
   // Função para marcar dose como cancelada/excluída (usando horário da vez)
   const markDoseCanceled = useCallback((medicacaoId: string) => {
@@ -417,7 +427,15 @@ const Medicacoes = () => {
       medicationId: medicacaoId, 
       action: 'cancelar' 
     });
-  }, [markNearestOccurrence, isMarkingNearest])
+
+    // Emitir evento global para atualizar widget
+    onCompromissoAtualizado({
+      type: 'cancel',
+      itemId: medicacaoId,
+      itemType: 'medicacao',
+      timestamp: Date.now()
+    });
+  }, [markNearestOccurrence, isMarkingNearest, onCompromissoAtualizado])
 
   // Função para desfazer última ação
   const handleUndo = useCallback((undoAction: UndoAction) => {

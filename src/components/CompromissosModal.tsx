@@ -14,6 +14,7 @@ import AddMedicationDialog from './AddMedicationDialog'
 import EditarCompromissoDialog from './EditarCompromissoDialog'
 import { useMedications } from '@/hooks/useMedications'
 import { useAppointments } from '@/hooks/useAppointments'
+import { useCompromissosEvents } from '@/contexts/CompromissosEventContext'
 
 interface HorarioStatus {
   hora: string;
@@ -100,6 +101,7 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Hooks para integração com backend
   const { medications, updateMedication } = useMedications()
   const { appointments, updateAppointment } = useAppointments()
+  const { onCompromissoAtualizado } = useCompromissosEvents()
   
   // Converter dados reais para formato da interface
   const convertMedicationsToModal = (): MedicacaoCompleta[] => {
@@ -356,6 +358,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       setLastUndoAction(undoAction)
 
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'complete',
+        itemId,
+        itemType: 'medicacao',
+        timestamp: Date.now()
+      })
+
       // Exibir toast
       toast({
         title: `Dose de ${formatTime24h(horarioMarcado)} registrada`,
@@ -413,6 +423,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       setLastUndoAction(undoAction)
 
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'complete',
+        itemId,
+        itemType: 'consulta',
+        timestamp: Date.now()
+      })
+
       toast({
         title: "Consulta concluída",
         description: "A consulta foi marcada como concluída hoje.",
@@ -469,6 +487,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       setLastUndoAction(undoAction)
 
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'complete',
+        itemId,
+        itemType: 'exame',
+        timestamp: Date.now()
+      })
+
       toast({
         title: "Exame concluído",
         description: "O exame foi marcado como concluído hoje.",
@@ -524,6 +550,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       }))
 
       setLastUndoAction(undoAction)
+
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'complete',
+        itemId,
+        itemType: 'atividade',
+        timestamp: Date.now()
+      })
 
       toast({
         title: "Atividade concluída",
@@ -592,6 +626,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       setLastUndoAction(undoAction)
 
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'cancel',
+        itemId,
+        itemType: 'medicacao',
+        timestamp: Date.now()
+      })
+
       toast({
         title: "Medicação removida da lista de hoje",
         description: "A medicação foi excluída da lista principal.",
@@ -644,6 +686,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       }))
 
       setLastUndoAction(undoAction)
+
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'cancel',
+        itemId,
+        itemType: 'consulta',
+        timestamp: Date.now()
+      })
 
       toast({
         title: "Consulta removida da lista de hoje",
@@ -698,6 +748,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
       setLastUndoAction(undoAction)
 
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'cancel',
+        itemId,
+        itemType: 'exame',
+        timestamp: Date.now()
+      })
+
       toast({
         title: "Exame removido da lista de hoje",
         description: "O exame foi excluído da lista principal.",
@@ -750,6 +808,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       }))
 
       setLastUndoAction(undoAction)
+
+      // Emitir evento global para atualizar widget
+      onCompromissoAtualizado({
+        type: 'cancel',
+        itemId,
+        itemType: 'atividade',
+        timestamp: Date.now()
+      })
 
       toast({
         title: "Atividade removida da lista de hoje",

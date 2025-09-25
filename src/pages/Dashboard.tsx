@@ -234,11 +234,6 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-primary" aria-live={index === 0 ? "polite" : undefined}>{stat.valor}</div>
-                {index === 0 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Total: {total} • Concluídos: {concluidos} • Restantes: {restantes}
-                  </p>
-                )}
               </CardContent>
             </Card>
           );
