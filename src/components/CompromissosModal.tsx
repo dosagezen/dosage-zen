@@ -311,14 +311,14 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           )
           
           const novaProximaDose = calculateNextDose(novosHorarios)
-          const allCompleted = novosHorarios.filter(h => h.hora !== '-').every(h => h.status === 'concluido')
+          // Move to "Finalizados" immediately after any dose is completed
           
           return {
             ...med,
             horarios: novosHorarios,
             proximaDose: novaProximaDose,
-            removed_from_today: allCompleted,
-            removal_reason: allCompleted ? 'completed' : undefined
+            removed_from_today: true,
+            removal_reason: 'completed'
           }
         }
         return med
@@ -1021,8 +1021,15 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         clearTimeout(undoTimeout)
         setUndoTimeout(null)
       }
+      // Trigger global refetch when modal closes to update widget
+      onCompromissoAtualizado({
+        type: 'complete',
+        itemId: 'modal-closed',
+        itemType: 'medicacao',
+        timestamp: Date.now()
+      })
     }
-  }, [isOpen, undoTimeout])
+  }, [isOpen, undoTimeout, onCompromissoAtualizado])
 
   const getStatusText = (item: any, itemType: 'medicacao' | 'consulta' | 'exame' | 'atividade') => {
     if (item.removal_reason === 'completed') {
@@ -1036,6 +1043,29 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          onClick={onClose}
+        >
+          <span className="sr-only">Close</span>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+          >
+            <path
+              d="m11.7816 4.03157c.0622-.06217.0622-.16294 0-.22511L11.5595 3.5845c-.0622-.06218-.1629-.06218-.2251 0L7.875 7.04325 4.41588 3.5845c-.06217-.06218-.16294-.06218-.22511 0L3.96923 3.80606c-.06218.06217-.06218.16294 0 .22511L7.42835 7.49 3.96923 10.9541c-.06218.0622-.06218.1629 0 .2251l.22154.2216c.06217.0622.16294.0622.22511 0L7.875 8.93675 11.3341 12.396c.0622.0622.1629.0622.2251 0l.2215-.2216c.0622-.0622.0622-.1629 0-.2251L8.32165 7.49 11.7816 4.03157Z"
+              fill="currentColor"
+              fillRule="evenodd"
+              clipRule="evenodd"
+            />
+          </svg>
+        </Button>
         <DialogHeader>
           <DialogTitle className="text-primary flex items-center gap-2">
             <Calendar className="w-5 h-5" />

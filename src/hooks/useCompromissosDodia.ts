@@ -128,7 +128,7 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
     const concluidos = allItems.filter(item => 
       ['concluido', 'realizado', 'cancelado', 'excluido'].includes(item.status)
     ).length;
-    const restantes = total - concluidos;
+    const restantes = Math.max(0, total - concluidos);
 
     return {
       total,
