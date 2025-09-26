@@ -43,37 +43,41 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
 
   // Convert medications to compromisso items
   const medicationItems = useMemo((): CompromissoItem[] => {
-    if (!medications) return [];
+    if (!medications || medications.length === 0) return [];
 
     const items: CompromissoItem[] = [];
     
     medications.forEach(medication => {
       if (!medication.ativo) return;
       
-      // Check if medication should have doses today
+      // Verificar se tem horários válidos
+      if (!Array.isArray(medication.horarios) || medication.horarios.length === 0) return;
+      
+      // Verificar se está dentro do período de validade
       const startDate = medication.data_inicio ? new Date(medication.data_inicio) : null;
       const endDate = medication.data_fim ? new Date(medication.data_fim) : null;
       
       if (startDate && startDate > today) return;
       if (endDate && endDate < today) return;
       
-      // Process each scheduled time for today
-      if (Array.isArray(medication.horarios)) {
-        medication.horarios.forEach((horario, index) => {
-          // For medications, we'll check if there are any pending/completed occurrences today
-          // Since we don't have direct access to occurrences, we'll use a simplified approach
-          
+      // Processar apenas horários válidos e pendentes
+      medication.horarios.forEach((horario, index) => {
+        const timeStr = typeof horario === 'string' ? horario : horario.hora;
+        const status = typeof horario === 'object' && horario.status ? horario.status : 'pendente';
+        
+        // Só incluir se for um horário válido e ainda pendente
+        if (timeStr && timeStr !== '-' && status === 'pendente') {
           items.push({
             id: `${medication.id}-${index}`,
             type: 'medicacao',
             title: medication.nome,
             subtitle: `${medication.dosagem} • ${medication.forma}`,
-            time: typeof horario === 'string' ? horario : horario.hora,
-            status: 'pendente', // We'll update this based on actual data later
+            time: timeStr,
+            status: 'pendente',
             originalData: { medication }
           });
-        });
-      }
+        }
+      });
     });
 
     return items;
@@ -81,13 +85,20 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
 
   // Convert appointments to compromisso items
   const appointmentItems = useMemo((): CompromissoItem[] => {
-    if (!appointments) return [];
+    if (!appointments || appointments.length === 0) return [];
 
     return appointments
       .filter(appointment => {
+        // Verificar se é hoje
         const appointmentDate = new Date(appointment.data_agendamento);
         const appointmentLocalDate = new Date(appointmentDate.toLocaleDateString('en-CA'));
-        return appointmentLocalDate.getTime() === today.getTime();
+        const isSameDay = appointmentLocalDate.getTime() === today.getTime();
+        
+        // Filtrar apenas compromissos pendentes (não finalizados)
+        const status = appointment.status || 'agendado';
+        const isPending = !['realizado', 'concluido', 'cancelado'].includes(status);
+        
+        return isSameDay && isPending;
       })
       .map(appointment => ({
         id: appointment.id,
@@ -98,9 +109,7 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
           hour: '2-digit', 
           minute: '2-digit'
         }),
-        status: appointment.status === 'agendado' ? 'pendente' : 
-                appointment.status === 'realizado' ? 'concluido' : 
-                appointment.status === 'cancelado' ? 'cancelado' : 'pendente',
+        status: 'pendente',
         originalData: appointment
       }));
   }, [appointments, today]);

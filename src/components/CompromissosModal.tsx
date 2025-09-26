@@ -105,15 +105,24 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   
   // Converter dados reais para formato da interface
   const convertMedicationsToModal = (): MedicacaoCompleta[] => {
-    const today = new Date().toISOString().split('T')[0];
+    if (!medications || medications.length === 0) return [];
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Midnight
     
     return medications.filter(med => {
       // Filtrar apenas medicações ativas
       if (!med.ativo) return false;
       
-      // Usar has_today do backend que já considera timezone do usuário
-      const hasToday = (med as any).has_today ?? false;
-      if (!hasToday) return false;
+      // Verificar se a medicação tem horários válidos
+      if (!Array.isArray(med.horarios) || med.horarios.length === 0) return false;
+      
+      // Verificar se está dentro do período de validade
+      const startDate = med.data_inicio ? new Date(med.data_inicio) : null;
+      const endDate = med.data_fim ? new Date(med.data_fim) : null;
+      
+      if (startDate && startDate > today) return false;
+      if (endDate && endDate < today) return false;
       
       return true;
     }).map((med, index) => ({
@@ -133,11 +142,18 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   };
 
   const convertAppointmentsToModal = (): (ConsultaCompleta | ExameCompleto | AtividadeCompleta)[] => {
+    if (!appointments || appointments.length === 0) return [];
+    
     const today = new Date();
     const todayAppointments = appointments.filter(apt => {
-      // Usar date-fns isToday para verificar se é o mesmo dia local
+      // Verificar se é o mesmo dia local
       const appointmentDate = new Date(apt.data_agendamento);
-      return appointmentDate.toDateString() === today.toDateString();
+      const isSameDay = appointmentDate.toDateString() === today.toDateString();
+      
+      // Filtrar apenas compromissos pendentes (não finalizados)
+      const isNotFinalized = !['realizado', 'concluido', 'cancelado'].includes(apt.status || 'agendado');
+      
+      return isSameDay && isNotFinalized;
     });
 
     return todayAppointments.map((apt, index) => {
@@ -199,54 +215,6 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     atividades: realAppointments.filter(apt => 'duracao' in apt) as AtividadeCompleta[]
   };
 
-  // Dados de fallback caso não haja dados reais
-  const fallbackMedicacoes: MedicacaoCompleta[] = [
-    {
-      id: "fallback-1",
-      nome: "Atorvastatina",
-      dosagem: "10 mg",
-      forma: "Comprimido",
-      frequencia: "1x ao dia",
-        horarios: [{ hora: "08:00", status: "pendente" }],
-        proximaDose: "08:00",
-      estoque: 28,
-      status: "ativa"
-    }
-  ];
-
-  const fallbackConsultas: ConsultaCompleta[] = [
-    {
-      id: "fallback-3",
-      especialidade: "Cardiologia",
-      profissional: "Dr. João Silva",
-      local: "Clínica Boa Saúde",
-      hora: "09:30",
-      status: "agendado"
-    }
-  ];
-
-  const fallbackExames: ExameCompleto[] = [
-    {
-      id: "fallback-5",
-      tipo: "Hemograma",
-      local: "Lab Central",
-      hora: "07:00",
-      status: "agendado"
-    }
-  ];
-
-  const fallbackAtividades: AtividadeCompleta[] = [
-    {
-      id: "fallback-7",
-      tipo: "Fisioterapia",
-      local: "Clínica Movimento",
-      hora: "07:30",
-      duracao: "45min",
-      status: "pendente",
-      dias: ["Seg", "Qua", "Sex"],
-      repeticao: "Toda semana"
-    }
-  ];
 
   const [medicacoesList, setMedicacoesList] = useState<MedicacaoCompleta[]>([])
   const [consultasList, setConsultasList] = useState<ConsultaCompleta[]>([])
@@ -257,10 +225,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   useEffect(() => {
     if (isOpen) {
       const realMedicacoes = convertMedicationsToModal();
-      setMedicacoesList(realMedicacoes.length > 0 ? realMedicacoes : fallbackMedicacoes);
-      setConsultasList(separatedAppointments.consultas.length > 0 ? separatedAppointments.consultas : fallbackConsultas);
-      setExamesList(separatedAppointments.exames.length > 0 ? separatedAppointments.exames : fallbackExames);
-      setAtividadesList(separatedAppointments.atividades.length > 0 ? separatedAppointments.atividades : fallbackAtividades);
+      setMedicacoesList(realMedicacoes);
+      setConsultasList(separatedAppointments.consultas);
+      setExamesList(separatedAppointments.exames);
+      setAtividadesList(separatedAppointments.atividades);
     }
   }, [isOpen, medications, appointments]);
   const [lastUndoAction, setLastUndoAction] = useState<UndoAction | null>(null)
@@ -1043,10 +1011,10 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setMedicacoesList(fallbackMedicacoes)
-      setConsultasList(fallbackConsultas)
-      setExamesList(fallbackExames)
-      setAtividadesList(fallbackAtividades)
+      setMedicacoesList([])
+      setConsultasList([])
+      setExamesList([])
+      setAtividadesList([])
       setLastUndoAction(null)
       setIsRemovedExpanded(false)
       if (undoTimeout) {
