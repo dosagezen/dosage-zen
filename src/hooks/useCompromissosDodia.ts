@@ -73,7 +73,7 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
             title: medication.nome,
             subtitle: `${medication.dosagem} • ${medication.forma}`,
             time: timeStr,
-            status: 'pendente',
+            status: status, // Use actual status instead of always 'pendente'
             originalData: { medication }
           });
         }

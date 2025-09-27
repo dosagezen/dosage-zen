@@ -99,7 +99,7 @@ interface CompromissosModalProps {
 
 const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }) => {
   // Hooks para integração com backend
-  const { medications, updateMedication } = useMedications()
+  const { medications, updateMedication, markOccurrence, markNearestOccurrence } = useMedications()
   const { appointments, updateAppointment } = useAppointments()
   const { onCompromissoAtualizado } = useCompromissosEvents()
   
@@ -301,7 +301,24 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         }
       }
 
-      // Atualizar medicação
+      // Update backend first
+      const horarioComOccurrence = medicacao.horarios.find(h => h.hora === horarioMarcado && h.status === 'pendente')
+      
+      if (horarioComOccurrence?.occurrence_id) {
+        // Use specific occurrence ID
+        markOccurrence({
+          occurrence_id: horarioComOccurrence.occurrence_id,
+          status: 'concluido'
+        })
+      } else {
+        // Use nearest occurrence logic
+        markNearestOccurrence({
+          medicationId: itemId,
+          action: 'concluir'
+        })
+      }
+
+      // Atualizar medicação local
       setMedicacoesList(prev => prev.map(med => {
         if (med.id === itemId) {
           const novosHorarios = med.horarios.map(h => 
