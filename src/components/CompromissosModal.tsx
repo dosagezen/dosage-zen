@@ -132,9 +132,24 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       forma: med.forma,
       frequencia: med.frequencia,
       horarios: Array.isArray(med.horarios) ? med.horarios.map(hora => typeof hora === 'string' ? { hora, status: 'pendente' as const } : hora) : [{ hora: "08:00", status: 'pendente' as const }],
-      proximaDose: Array.isArray(med.horarios) && med.horarios.length > 0 ? (typeof med.horarios[0] === 'string' ? med.horarios[0] : med.horarios[0].hora) : "08:00",
+      proximaDose: (() => {
+        const horarios = Array.isArray(med.horarios) ? med.horarios.map(hora => typeof hora === 'string' ? { hora, status: 'pendente' as const } : hora) : [];
+        const proximoPendente = horarios.find(h => h.status === 'pendente');
+        return proximoPendente ? proximoPendente.hora : (horarios.length > 0 ? "Todos concluídos hoje" : "08:00");
+      })(),
       estoque: med.estoque || 0,
       status: "ativa" as const,
+      removed_from_today: (() => {
+        const horarios = Array.isArray(med.horarios) ? med.horarios.map(hora => typeof hora === 'string' ? { hora, status: 'pendente' as const } : hora) : [];
+        const validHorarios = horarios.filter(h => h.hora !== '-');
+        return validHorarios.length > 0 && validHorarios.every(h => h.status !== 'pendente');
+      })(),
+      removal_reason: (() => {
+        const horarios = Array.isArray(med.horarios) ? med.horarios.map(hora => typeof hora === 'string' ? { hora, status: 'pendente' as const } : hora) : [];
+        const validHorarios = horarios.filter(h => h.hora !== '-');
+        const isFinalized = validHorarios.length > 0 && validHorarios.every(h => h.status !== 'pendente');
+        return isFinalized ? ('completed' as const) : undefined;
+      })(),
       data_inicio: med.data_inicio,
       data_fim: med.data_fim,
       horaInicio: Array.isArray(med.horarios) && med.horarios.length > 0 ? (typeof med.horarios[0] === 'string' ? med.horarios[0] : med.horarios[0].hora) : undefined
@@ -260,12 +275,12 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
     return pendentes[0].hora
   }, [])
 
-  // Função para verificar se uma medicação tem todos os horários concluídos
+  // Função para verificar se uma medicação tem todos os horários finalizados (concluído OU cancelado)
   const isAllDosesCompleted = useCallback((medicacao: MedicacaoCompleta) => {
     if (medicacao.status === "inativa") return false
     
     const horariosDoHoje = medicacao.horarios.filter(h => h.hora !== '-')
-    return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status === 'concluido')
+    return horariosDoHoje.length > 0 && horariosDoHoje.every(h => h.status !== 'pendente')
   }, [])
 
   // Função genérica para marcar item como concluído
@@ -329,17 +344,17 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
           
           const novaProximaDose = calculateNextDose(novosHorarios)
           
-          // Only move to "Finalizados" when ALL schedules are completed
-          const todosHorariosConcluidos = novosHorarios
+          // Only move to "Finalizados" when ALL schedules are finalized (not pending)
+          const todosHorariosFinalizados = novosHorarios
             .filter(h => h.hora !== '-')
-            .every(h => h.status === 'concluido')
+            .every(h => h.status !== 'pendente')
           
           return {
             ...med,
             horarios: novosHorarios,
             proximaDose: novaProximaDose,
-            removed_from_today: todosHorariosConcluidos,
-            removal_reason: todosHorariosConcluidos ? 'completed' : undefined
+            removed_from_today: todosHorariosFinalizados,
+            removal_reason: todosHorariosFinalizados ? 'completed' : undefined
           }
         }
         return med
@@ -582,12 +597,33 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       const medicacao = medicacoesList.find(m => m.id === itemId)
       if (!medicacao) return
 
-      // Atualizar no backend - medicação não é excluída, apenas marcada como removida do dia
-      const medicationFromBackend = medications.find(med => med.id === itemId)
-      if (medicationFromBackend) {
-        updateMedication({
-          id: medicationFromBackend.id,
-          observacoes: `${medicationFromBackend.observacoes || ''}\n[Removido do dia ${new Date().toLocaleDateString()}]`.trim()
+      // Encontrar primeiro horário pendente
+      const primeiroHorarioPendente = medicacao.horarios
+        .filter(h => h.status === 'pendente' && h.hora !== '-')
+        .sort((a, b) => {
+          const timeA = a.hora.split(':').map(Number)
+          const timeB = b.hora.split(':').map(Number)
+          return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1])
+        })[0]
+
+      if (!primeiroHorarioPendente) return
+
+      const horarioMarcado = primeiroHorarioPendente.hora
+
+      // Update backend first
+      const horarioComOccurrence = medicacao.horarios.find(h => h.hora === horarioMarcado && h.status === 'pendente')
+      
+      if (horarioComOccurrence?.occurrence_id) {
+        // Use specific occurrence ID
+        markOccurrence({
+          occurrence_id: horarioComOccurrence.occurrence_id,
+          status: 'excluido'
+        })
+      } else {
+        // Use nearest occurrence logic
+        markNearestOccurrence({
+          medicationId: itemId,
+          action: 'cancelar'
         })
       }
 
@@ -597,17 +633,35 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
         action: 'remove',
         timestamp: Date.now(),
         previousData: {
+          horarios: [...medicacao.horarios],
+          proximaDose: medicacao.proximaDose,
           removed_from_today: medicacao.removed_from_today,
           removal_reason: medicacao.removal_reason
         }
       }
 
+      // Atualizar medicação local
       setMedicacoesList(prev => prev.map(med => {
         if (med.id === itemId) {
+          const novosHorarios = med.horarios.map(h => 
+            h.hora === horarioMarcado && h.status === 'pendente'
+              ? { ...h, status: 'excluido' as const, completed_at: new Date().toISOString() }
+              : h
+          )
+          
+          const novaProximaDose = calculateNextDose(novosHorarios)
+          
+          // Only move to "Finalizados" when ALL schedules are finalized (not pending)
+          const todosHorariosFinalizados = novosHorarios
+            .filter(h => h.hora !== '-')
+            .every(h => h.status !== 'pendente')
+          
           return {
             ...med,
-            removed_from_today: true,
-            removal_reason: 'excluded'
+            horarios: novosHorarios,
+            proximaDose: novaProximaDose,
+            removed_from_today: todosHorariosFinalizados,
+            removal_reason: todosHorariosFinalizados ? 'excluded' : undefined
           }
         }
         return med
@@ -624,8 +678,8 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
       })
 
       toast({
-        title: "Medicação removida da lista de hoje",
-        description: "A medicação foi excluída da lista principal.",
+        title: `Dose de ${formatTime24h(horarioMarcado)} cancelada`,
+        description: "A dose foi marcada como excluída.",
         action: (
           <Button
             variant="outline"
