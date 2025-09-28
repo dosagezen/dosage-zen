@@ -134,19 +134,34 @@ serve(async (req) => {
       }
 
       case 'update': {
-        const { id, context_id, ...updateData } = body;
+        const { id, context_id, action: _ignoreAction, ...updateData } = body;
 
         // Validação de entrada
         if (!id || typeof id !== 'string') {
           throw new Error('ID do compromisso é obrigatório e deve ser uma string válida');
         }
 
-        // Limpar dados de entrada
+        // Apenas campos válidos da tabela appointments
+        const allowedFields = new Set([
+          'tipo',
+          'titulo',
+          'especialidade',
+          'medico_profissional',
+          'local_endereco',
+          'data_agendamento',
+          'duracao_minutos',
+          'observacoes',
+          'status',
+          'resultado',
+        ]);
+
+        // Limpar dados de entrada removendo campos inválidos e nulos/indefinidos
         const cleanedData = Object.fromEntries(
-          Object.entries(updateData).filter(([_, value]) => value !== undefined && value !== null)
+          Object.entries(updateData)
+            .filter(([key, value]) => allowedFields.has(String(key)) && value !== undefined && value !== null)
         );
 
-        console.log('Updating appointment:', id, 'with data:', cleanedData);
+        console.log('Updating appointment:', id, 'with data keys:', Object.keys(cleanedData));
 
         // Verificar se o compromisso existe e pertence ao usuário
         const { data: existingAppointment, error: checkError } = await supabaseClient
@@ -161,7 +176,7 @@ serve(async (req) => {
           throw new Error('Compromisso não encontrado ou acesso negado');
         }
 
-        // Atualizar o compromisso
+        // Atualizar o compromisso (sempre atualiza updated_at)
         const { data: appointment, error } = await supabaseClient
           .from('appointments')
           .update({
