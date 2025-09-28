@@ -557,7 +557,7 @@ serve(async (req) => {
             );
             
             // Calculate flags for frontend filtering
-            const hasPendingToday = allHorarios.some(h => h.status === 'pendente');
+            const hasPendingToday = allHorarios.some((h: any) => h.status === 'pendente');
             
             console.log(`Med ${med.nome}: originalHorarios=${originalHorarios.length}, todayOccs=${todayOccurrences.length}, shouldHaveToday=${shouldHaveToday}, pendingToday=${hasPendingToday}`);
             
@@ -717,7 +717,7 @@ serve(async (req) => {
         });
 
         // Return complete medication data with all horarios
-        const has_pending_today = allHorarios.some(h => h.status === 'pendente');
+        const has_pending_today = allHorarios.some((h: any) => h.status === 'pendente');
         const has_today = (medication.ativo === true)
           && (originalHorarios.length > 0)
           && (!medication.data_inicio || medication.data_inicio <= today)
@@ -875,7 +875,7 @@ serve(async (req) => {
           };
         });
 
-        const has_pending_today = allHorarios.some(h => h.status === 'pendente');
+        const has_pending_today = allHorarios.some((h: any) => h.status === 'pendente');
         const has_today = (medication.ativo === true)
           && ((expandedHorarios || medication.horarios || []).length > 0)
           && (!medication.data_inicio || medication.data_inicio <= today)
@@ -981,7 +981,7 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Function error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
