@@ -7,15 +7,26 @@ export interface CompromissosEvent {
   timestamp: number;
 }
 
+export interface ConquestsEvent {
+  type: 'conquests:updated';
+  contextId: string;
+  category: string;
+  action: string;
+  timestamp: number;
+}
+
 interface CompromissosEventContextType {
   onCompromissoAtualizado: (event: CompromissosEvent) => void;
   subscribeToUpdates: (callback: (event: CompromissosEvent) => void) => () => void;
+  emitConquestsUpdate: (event: ConquestsEvent) => void;
+  subscribeToConquestsUpdates: (callback: (event: ConquestsEvent) => void) => () => void;
 }
 
 const CompromissosEventContext = createContext<CompromissosEventContextType | undefined>(undefined);
 
 export function CompromissosEventProvider({ children }: { children: React.ReactNode }) {
   const [listeners, setListeners] = useState<Set<(event: CompromissosEvent) => void>>(new Set());
+  const [conquestsListeners, setConquestsListeners] = useState<Set<(event: ConquestsEvent) => void>>(new Set());
 
   const onCompromissoAtualizado = useCallback((event: CompromissosEvent) => {
     // Notify all listeners
@@ -35,8 +46,31 @@ export function CompromissosEventProvider({ children }: { children: React.ReactN
     };
   }, []);
 
+  const emitConquestsUpdate = useCallback((event: ConquestsEvent) => {
+    // Notify all conquest listeners
+    conquestsListeners.forEach(callback => callback(event));
+  }, [conquestsListeners]);
+
+  const subscribeToConquestsUpdates = useCallback((callback: (event: ConquestsEvent) => void) => {
+    setConquestsListeners(prev => new Set([...prev, callback]));
+    
+    // Return unsubscribe function
+    return () => {
+      setConquestsListeners(prev => {
+        const next = new Set(prev);
+        next.delete(callback);
+        return next;
+      });
+    };
+  }, []);
+
   return (
-    <CompromissosEventContext.Provider value={{ onCompromissoAtualizado, subscribeToUpdates }}>
+    <CompromissosEventContext.Provider value={{ 
+      onCompromissoAtualizado, 
+      subscribeToUpdates,
+      emitConquestsUpdate,
+      subscribeToConquestsUpdates
+    }}>
       {children}
     </CompromissosEventContext.Provider>
   );

@@ -1,139 +1,126 @@
-import React, { useState, useMemo, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, Tooltip } from 'recharts'
-import { Filter } from 'lucide-react'
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TrendingUp, TrendingDown, Minus, Award, Target, Clock, XCircle } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { useToast } from "@/hooks/use-toast";
+import { useConquests, ConquestPeriod, ConquestCategory } from "@/hooks/useConquests";
 
-// Dados mockados conforme especificado
+type Periodo = ConquestPeriod;
+type Categoria = ConquestCategory;
+
+// Mock data for development
 const MOCK_DATA = {
   hoje: {
-    totalPlanejados: 12,
-    totalConcluidos: 7,
+    planejados: 12,
+    concluidos: 7,
     faltando: 3,
     atrasados: 1,
     cancelados: 1,
-    categorias: {
-      medicacoes: { planejados: 6, concluidos: 5 },
-      consultas: { planejados: 2, concluidos: 1 },
-      exames: { planejados: 1, concluidos: 1 },
-      atividades: { planejados: 3, concluidos: 2 }
+    aderencia_pct: 58,
+    by_category: {
+      medicacao: { planejados: 6, concluidos: 5, faltando: 1, atrasados: 0, cancelados: 0, aderencia_pct: 83 },
+      consulta: { planejados: 1, concluidos: 1, faltando: 0, atrasados: 0, cancelados: 0, aderencia_pct: 100 },
+      exame: { planejados: 0, concluidos: 0, faltando: 0, atrasados: 0, cancelados: 0, aderencia_pct: 0 },
+      atividade: { planejados: 5, concluidos: 1, faltando: 2, atrasados: 1, cancelados: 1, aderencia_pct: 20 }
     }
   },
   semana: [
-    { dia: 'Seg', planejados: 10, concluidos: 8 },
-    { dia: 'Ter', planejados: 8, concluidos: 8 },
-    { dia: 'Qua', planejados: 9, concluidos: 6 },
-    { dia: 'Qui', planejados: 12, concluidos: 10 },
-    { dia: 'Sex', planejados: 11, concluidos: 9 },
-    { dia: 'Sáb', planejados: 6, concluidos: 3 },
-    { dia: 'Dom', planejados: 7, concluidos: 5 }
+    { dia: 'Seg', concluidos: 8, faltando: 2 },
+    { dia: 'Ter', concluidos: 6, faltando: 2 },
+    { dia: 'Qua', concluidos: 9, faltando: 1 },
+    { dia: 'Qui', concluidos: 7, faltando: 3 },
+    { dia: 'Sex', concluidos: 11, faltando: 1 },
+    { dia: 'Sáb', concluidos: 5, faltando: 2 },
+    { dia: 'Dom', concluidos: 6, faltando: 1 }
   ],
   mes: [
-    { semana: 'Semana 1', planejados: 40, concluidos: 32 },
-    { semana: 'Semana 2', planejados: 36, concluidos: 30 },
-    { semana: 'Semana 3', planejados: 38, concluidos: 34 },
-    { semana: 'Semana 4', planejados: 35, concluidos: 29 }
+    { semana: 'Sem 1', aderencia: 75 },
+    { semana: 'Sem 2', aderencia: 82 },
+    { semana: 'Sem 3', aderencia: 78 },
+    { semana: 'Sem 4', aderencia: 85 }
   ],
   historico: [
-    { mes: 'Jul', perc: 68 },
-    { mes: 'Ago', perc: 75 },
-    { mes: 'Set', perc: 78 },
-    { mes: 'Out', perc: 82 }
+    { mes: 'Jul', aderencia: 68 },
+    { mes: 'Ago', aderencia: 75 },
+    { mes: 'Set', aderencia: 78 },
+    { mes: 'Out', aderencia: 82 }
   ]
-}
+};
 
 const CATEGORIA_LABELS = {
-  medicacoes: 'Medicações',
-  consultas: 'Consultas',
-  exames: 'Exames',
-  atividades: 'Atividades'
-}
-
-type Periodo = 'hoje' | 'semana' | 'mes' | 'historico'
-type Categoria = keyof typeof CATEGORIA_LABELS | 'todas'
+  todas: 'Todas as categorias',
+  medicacao: 'Medicações',
+  consulta: 'Consultas',
+  exame: 'Exames',
+  atividade: 'Atividades'
+};
 
 export default function Conquistas() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [periodoSelecionado, setPeriodoSelecionado] = useState<Periodo>('hoje')
-  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<Categoria[]>(['todas'])
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
 
-  // Sincronizar com URL params
+  const [periodoSelecionado, setPeriodoSelecionado] = useState<Periodo>(() => {
+    return (searchParams.get('periodo') as Periodo) || 'hoje';
+  });
+
+  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<Categoria>(() => {
+    return (searchParams.get('categoria') as Categoria) || 'todas';
+  });
+
+  // Hook to fetch real data
+  const { summary, isLoading, error } = useConquests({
+    period: periodoSelecionado,
+    category: categoriasSelecionadas
+  });
+
+  // Sincronia com URL
   useEffect(() => {
-    const periodo = searchParams.get('periodo') as Periodo
-    const categoria = searchParams.get('cat') as Categoria
+    const periodo = searchParams.get('periodo') as Periodo;
+    const categoria = searchParams.get('categoria') as Categoria;
     
-    if (periodo && ['hoje', 'semana', 'mes', 'historico'].includes(periodo)) {
-      setPeriodoSelecionado(periodo)
+    if (periodo && periodo !== periodoSelecionado) {
+      setPeriodoSelecionado(periodo);
     }
-    
-    if (categoria && Object.keys(CATEGORIA_LABELS).includes(categoria)) {
-      setCategoriasSelecionadas([categoria])
-    } else if (categoria === 'todas') {
-      setCategoriasSelecionadas(['todas'])
+    if (categoria && categoria !== categoriasSelecionadas) {
+      setCategoriasSelecionadas(categoria);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
-  // Atualizar URL quando filtros mudarem
-  const updateFilters = (novoPeriodo?: Periodo, novaCategoria?: Categoria[]) => {
-    const newParams = new URLSearchParams(searchParams)
+  const updateFilters = (newPeriodo?: Periodo, newCategoria?: Categoria) => {
+    const params = new URLSearchParams(searchParams);
     
-    if (novoPeriodo) {
-      newParams.set('periodo', novoPeriodo)
+    if (newPeriodo) {
+      params.set('periodo', newPeriodo);
+      setPeriodoSelecionado(newPeriodo);
     }
     
-    if (novaCategoria) {
-      if (novaCategoria.includes('todas')) {
-        newParams.delete('cat')
-      } else {
-        newParams.set('cat', novaCategoria.join(','))
-      }
+    if (newCategoria) {
+      params.set('categoria', newCategoria);
+      setCategoriasSelecionadas(newCategoria);
     }
     
-    setSearchParams(newParams)
-  }
+    setSearchParams(params);
+  };
 
-  // Função para calcular dados filtrados
+  // Use real data or fallback to mock for visual development
   const dadosFiltrados = useMemo(() => {
-    if (categoriasSelecionadas.includes('todas')) {
-      return MOCK_DATA
+    if (summary && periodoSelecionado === 'hoje') {
+      return summary;
     }
-
-    // Filtrar dados por categoria
-    const dadosFiltrasdos = { ...MOCK_DATA }
-    
-    // Para 'hoje', filtrar categorias
-    if (periodoSelecionado === 'hoje') {
-      const categoriasFiltradasHoje = Object.keys(dadosFiltrasdos.hoje.categorias)
-        .filter(cat => categoriasSelecionadas.includes(cat as Categoria))
-        .reduce((acc, cat) => {
-          acc[cat] = dadosFiltrasdos.hoje.categorias[cat as keyof typeof dadosFiltrasdos.hoje.categorias]
-          return acc
-        }, {} as Record<string, { planejados: number; concluidos: number }>)
-
-      const totalPlanejados = Object.values(categoriasFiltradasHoje).reduce((sum, cat) => sum + cat.planejados, 0)
-      const totalConcluidos = Object.values(categoriasFiltradasHoje).reduce((sum, cat) => sum + cat.concluidos, 0)
-
-      dadosFiltrasdos.hoje = {
-        totalPlanejados,
-        totalConcluidos,
-        faltando: Math.floor(totalPlanejados * 0.25), // Mock: 25% faltando
-        atrasados: Math.floor(totalPlanejados * 0.08), // Mock: 8% atrasados  
-        cancelados: Math.floor(totalPlanejados * 0.08), // Mock: 8% cancelados
-        categorias: categoriasFiltradasHoje as any
-      }
-    }
-
-    return dadosFiltrasdos
-  }, [categoriasSelecionadas, periodoSelecionado])
+    // Fallback to mock data for development
+    return MOCK_DATA[periodoSelecionado];
+  }, [summary, periodoSelecionado]);
 
   const scrollToGraficos = () => {
-    const elemento = document.getElementById('graficos-section')
-    elemento?.scrollIntoView({ behavior: 'smooth' })
-  }
+    const elemento = document.getElementById('graficos');
+    elemento?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const renderPeriodChips = () => {
     const periodos = [
@@ -141,7 +128,7 @@ export default function Conquistas() {
       { key: 'semana', label: 'Semana' },
       { key: 'mes', label: 'Mês' },
       { key: 'historico', label: 'Histórico' }
-    ]
+    ];
 
     return (
       <div className="flex flex-wrap gap-2">
@@ -149,501 +136,318 @@ export default function Conquistas() {
           <Badge
             key={periodo.key}
             variant={periodoSelecionado === periodo.key ? 'default' : 'secondary'}
-            className={`cursor-pointer px-3 py-1 ${
-              periodoSelecionado === periodo.key 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-filter-neutral text-filter-neutral-foreground hover:bg-primary/10'
-            }`}
-            onClick={() => {
-              setPeriodoSelecionado(periodo.key as Periodo)
-              updateFilters(periodo.key as Periodo, categoriasSelecionadas)
-            }}
-            aria-label={`Filtrar por período: ${periodo.label}`}
+            className="cursor-pointer px-3 py-1"
+            onClick={() => updateFilters(periodo.key as Periodo, categoriasSelecionadas)}
           >
             {periodo.label}
           </Badge>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const renderCategoriaSelect = () => {
     return (
       <Select
-        value={categoriasSelecionadas.includes('todas') ? 'todas' : categoriasSelecionadas.join(',')}
-        onValueChange={(value) => {
-          let novaCategoria: Categoria[]
-          if (value === 'todas') {
-            novaCategoria = ['todas']
-          } else {
-            novaCategoria = value.split(',') as Categoria[]
-          }
-          setCategoriasSelecionadas(novaCategoria)
-          updateFilters(periodoSelecionado, novaCategoria)
-        }}
+        value={categoriasSelecionadas}
+        onValueChange={(value) => updateFilters(periodoSelecionado, value as Categoria)}
       >
         <SelectTrigger className="w-full sm:w-[200px]">
-          <SelectValue placeholder="Selecionar categorias" />
+          <SelectValue placeholder="Selecionar categoria" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="todas">Todas as categorias</SelectItem>
           {Object.entries(CATEGORIA_LABELS).map(([key, label]) => (
             <SelectItem key={key} value={key}>{label}</SelectItem>
           ))}
         </SelectContent>
       </Select>
-    )
-  }
+    );
+  };
 
-  // Função para calcular métricas detalhadas
-  const calcularMetricas = (dados: typeof MOCK_DATA.hoje) => {
-    const P = dados.totalPlanejados
-    const C = dados.totalConcluidos
-    const F = dados.faltando || 0
-    const A = dados.atrasados || 0
-    const E = dados.cancelados || 0
-
-    // Garantir que C + F + A + E == P (reconciliação)
-    const total = C + F + A + E
-    if (total !== P && P > 0) {
-      console.warn(`Inconsistência nos dados: ${total} !== ${P}`)
-    }
-
-    // Calcular percentuais (0 quando P == 0)
-    const concluidosPct = P > 0 ? Math.round((C / P) * 100) : 0
-    const faltandoPct = P > 0 ? Math.round((F / P) * 100) : 0
-    const atrasadosPct = P > 0 ? Math.round((A / P) * 100) : 0
-    const excluidosPct = P > 0 ? Math.round((E / P) * 100) : 0
-
+  const calcularMetricas = () => {
+    const dados = dadosFiltrados;
+    if (!dados || Array.isArray(dados) || typeof dados !== 'object') return null;
+    
+    // Type guard to ensure we have the right data structure for 'hoje'
+    if (!('planejados' in dados)) return null;
+    
+    const total = dados.planejados;
+    
     return {
-      P, C, F, A, E,
-      concluidosPct,
-      faltandoPct,
-      atrasadosPct,
-      excluidosPct,
-      aderencia: concluidosPct
-    }
-  }
+      concluidos: dados.concluidos,
+      faltando: dados.faltando,
+      atrasados: dados.atrasados,
+      cancelados: dados.cancelados,
+      total,
+      aderencia: dados.aderencia_pct,
+      percentuais: {
+        concluidos: total > 0 ? Math.round((dados.concluidos / total) * 100) : 0,
+        faltando: total > 0 ? Math.round((dados.faltando / total) * 100) : 0,
+        atrasados: total > 0 ? Math.round((dados.atrasados / total) * 100) : 0,
+        cancelados: total > 0 ? Math.round((dados.cancelados / total) * 100) : 0,
+      }
+    };
+  };
 
   const renderResumoCard = () => {
-    const dados = dadosFiltrados.hoje
-    const metricas = calcularMetricas(dados)
-
-    // Estado quando P == 0
-    if (metricas.P === 0) {
-      return (
-        <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 shadow-lg">
-          <CardContent className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
-                <p className="text-sm text-muted-foreground">Progresso diário</p>
-              </div>
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 border-2 border-primary/20">
-                <span className="text-2xl font-bold text-primary">0%</span>
-              </div>
-            </div>
-            
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-lg">Nenhum compromisso no período</p>
-            </div>
-
-            <Button 
-              onClick={scrollToGraficos}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-11 font-medium"
-            >
-              Adicionar na Agenda
-            </Button>
-          </CardContent>
-        </Card>
-      )
-    }
+    const metricas = calcularMetricas();
+    
+    if (!metricas) return null;
 
     return (
-      <Card className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5 opacity-60"></div>
-        <CardContent className="relative p-6 space-y-6" aria-live="polite">
-          {/* Cabeçalho */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Resumo Hoje</h3>
-              <p className="text-sm text-muted-foreground">Progresso diário</p>
-            </div>
-            <div className="relative w-20 h-20">
-              {/* Círculo de progresso */}
+      <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="p-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold mb-2">
+              Resumo {periodoSelecionado === 'hoje' ? 'Hoje' : 
+                      periodoSelecionado === 'semana' ? 'Semana' :
+                      periodoSelecionado === 'mes' ? 'Mês' : 'Histórico'}
+            </h3>
+            
+            {/* Circular Progress */}
+            <div className="relative w-24 h-24 mx-auto mb-4">
+              <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
               <div 
-                className="absolute inset-0 rounded-full p-1"
+                className="absolute inset-0 rounded-full border-4 border-primary border-l-transparent transform rotate-90"
                 style={{
-                  background: `conic-gradient(from 0deg, #16a34a ${metricas.aderencia * 3.6}deg, #e5e7eb ${metricas.aderencia * 3.6}deg)`
+                  background: `conic-gradient(from 90deg, hsl(var(--primary)) ${metricas.aderencia * 3.6}deg, transparent 0deg)`
                 }}
-              >
-                <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                  <span className="text-2xl font-bold text-foreground">{metricas.aderencia}%</span>
-                </div>
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold">{metricas.aderencia}%</span>
               </div>
-            </div>
-          </div>
-
-          {/* Barra de progresso segmentada */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Progresso</span>
-              <span className="font-medium text-foreground">{metricas.C} de {metricas.P}</span>
             </div>
             
-            <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
-              {/* Segmentos proporcionais */}
-              <div className="flex h-full">
-                {metricas.C > 0 && (
-                  <div 
-                    className="bg-[#344E41] h-full transition-all duration-300"
-                    style={{ width: `${metricas.concluidosPct}%` }}
-                    aria-label={`Concluídos: ${metricas.C} (${metricas.concluidosPct}%)`}
-                  />
-                )}
-                {metricas.F > 0 && (
-                  <div 
-                    className="bg-[#588157] h-full transition-all duration-300"
-                    style={{ width: `${metricas.faltandoPct}%` }}
-                    aria-label={`Faltando: ${metricas.F} (${metricas.faltandoPct}%)`}
-                  />
-                )}
-                {metricas.A > 0 && (
-                  <div 
-                    className="bg-[#E67E22] h-full transition-all duration-300"
-                    style={{ width: `${metricas.atrasadosPct}%` }}
-                    aria-label={`Atrasados: ${metricas.A} (${metricas.atrasadosPct}%)`}
-                  />
-                )}
-                {metricas.E > 0 && (
-                  <div 
-                    className="bg-red-500/50 h-full transition-all duration-300"
-                    style={{ width: `${metricas.excluidosPct}%` }}
-                    aria-label={`Cancelados: ${metricas.E} (${metricas.excluidosPct}%)`}
-                  />
-                )}
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              {metricas.concluidos} de {metricas.total}
+            </p>
+          </div>
 
-            {/* Legenda compacta */}
-            <div className="flex flex-wrap gap-3 text-xs">
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-[#344E41] rounded-full"></div>
-                <span className="text-muted-foreground">Concluídos</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-[#588157] rounded-full"></div>
-                <span className="text-muted-foreground">Faltando</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-[#E67E22] rounded-full"></div>
-                <span className="text-muted-foreground">Atrasados</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-red-500/50 rounded-full"></div>
-                <span className="text-muted-foreground">Cancelados</span>
-              </div>
+          {/* Barra empilhada */}
+          <div className="mb-4">
+            <div className="h-3 rounded-full overflow-hidden bg-muted flex">
+              <div 
+                className="bg-primary h-full"
+                style={{ width: `${metricas.percentuais.concluidos}%` }}
+              ></div>
+              <div 
+                className="bg-blue-500 h-full"
+                style={{ width: `${metricas.percentuais.faltando}%` }}
+              ></div>
+              <div 
+                className="bg-destructive h-full"
+                style={{ width: `${metricas.percentuais.atrasados}%` }}
+              ></div>
+              <div 
+                className="bg-muted-foreground h-full"
+                style={{ width: `${metricas.percentuais.cancelados}%` }}
+              ></div>
             </div>
           </div>
 
-          {/* Linha de métricas - 4 cards compactos em uma linha */}
-          <div className="overflow-x-auto">
-            <div className="flex gap-3 min-w-max md:min-w-0 md:grid md:grid-cols-4">
-              {/* Concluídos */}
-              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
-                <div className="relative inline-block">
-                  <p className="text-xl font-bold text-[#344E41] mt-4">{metricas.C}</p>
-                  <span className="absolute -top-1 -right-1 text-xs font-semibold text-[#344E41]/70 bg-[#344E41]/10 px-1 rounded text-right">
-                    {metricas.concluidosPct}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Concluídos</p>
+          {/* Métricas em linha */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="text-center p-2 bg-primary/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-primary bg-primary/20 px-1 rounded">
+                {metricas.percentuais.concluidos}%
+              </span>
+              <div className="flex items-center justify-center mb-1">
+                <Award className="w-4 h-4 text-primary" />
               </div>
-
-              {/* Faltando */}
-              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
-                <div className="relative inline-block">
-                  <p className="text-xl font-bold text-[#588157] mt-4">{metricas.F}</p>
-                  <span className="absolute -top-1 -right-1 text-xs font-semibold text-[#588157]/70 bg-[#588157]/10 px-1 rounded text-right">
-                    {metricas.faltandoPct}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Faltando</p>
+              <div className="text-lg font-semibold text-primary">{metricas.concluidos}</div>
+              <div className="text-xs text-primary/80">Concluídos</div>
+            </div>
+            
+            <div className="text-center p-2 bg-blue-50 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-blue-600 bg-blue-100 px-1 rounded">
+                {metricas.percentuais.faltando}%
+              </span>
+              <div className="flex items-center justify-center mb-1">
+                <Target className="w-4 h-4 text-blue-600" />
               </div>
-
-              {/* Atrasados */}
-              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
-                <div className="relative inline-block">
-                  <p className="text-xl font-bold text-[#E67E22] mt-4">{metricas.A}</p>
-                  <span className="absolute -top-1 -right-1 text-xs font-semibold text-[#E67E22]/70 bg-[#E67E22]/10 px-1 rounded text-right">
-                    {metricas.atrasadosPct}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Atrasados</p>
+              <div className="text-lg font-semibold text-blue-700">{metricas.faltando}</div>
+              <div className="text-xs text-blue-600">Faltando</div>
+            </div>
+            
+            <div className="text-center p-2 bg-destructive/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-destructive bg-destructive/20 px-1 rounded">
+                {metricas.percentuais.atrasados}%
+              </span>
+              <div className="flex items-center justify-center mb-1">
+                <Clock className="w-4 h-4 text-destructive" />
               </div>
-
-              {/* Excluídos */}
-              <div className="flex-shrink-0 w-20 md:w-full text-center p-3 rounded-lg bg-background/50 border border-border/50 relative">
-                <div className="relative inline-block">
-                  <p className="text-xl font-bold text-destructive mt-4">{metricas.E}</p>
-                  <span className="absolute -top-1 -right-1 text-xs font-semibold text-destructive/50 bg-destructive/10 px-1 rounded text-right">
-                    {metricas.excluidosPct}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">Cancelados</p>
+              <div className="text-lg font-semibold text-destructive">{metricas.atrasados}</div>
+              <div className="text-xs text-destructive/80">Atrasados</div>
+            </div>
+            
+            <div className="text-center p-2 bg-muted rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-muted-foreground bg-muted-foreground/20 px-1 rounded">
+                {metricas.percentuais.cancelados}%
+              </span>
+              <div className="flex items-center justify-center mb-1">
+                <XCircle className="w-4 h-4 text-muted-foreground" />
               </div>
+              <div className="text-lg font-semibold text-muted-foreground">{metricas.cancelados}</div>
+              <div className="text-xs text-muted-foreground">Cancelados</div>
             </div>
           </div>
 
           <Button 
-            onClick={scrollToGraficos}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-11 font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            onClick={scrollToGraficos} 
+            className="w-full"
+            variant="outline"
           >
-            <span>Ver análise detalhada</span>
-            <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
+            Ver análise detalhada
           </Button>
         </CardContent>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderMiniCards = () => {
-    const dados = dadosFiltrados.hoje.categorias
+    if (Array.isArray(dadosFiltrados) || !dadosFiltrados || typeof dadosFiltrados !== 'object') return null;
+    if (!('by_category' in dadosFiltrados) || categoriasSelecionadas !== 'todas') return null;
 
-    if (Object.keys(dados).length === 0) {
-      return (
-        <Card className="shadow-card">
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground opacity-70">
-              Nenhum compromisso para as categorias selecionadas
-            </p>
-          </CardContent>
-        </Card>
-      )
-    }
+    const categorias = Object.entries(dadosFiltrados.by_category).map(([key, data]: [string, any]) => ({
+      key,
+      label: CATEGORIA_LABELS[key as keyof typeof CATEGORIA_LABELS] || key,
+      planejados: data.planejados,
+      concluidos: data.concluidos,
+      aderencia: data.aderencia_pct
+    })).filter(cat => cat.planejados > 0);
+
+    if (categorias.length === 0) return null;
 
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.entries(dados).map(([key, categoria]) => {
-          const percentual = categoria.planejados > 0 ? Math.round((categoria.concluidos / categoria.planejados) * 100) : 0
-          return (
-            <Card key={key} className="shadow-card">
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-sm mb-2">{CATEGORIA_LABELS[key as keyof typeof CATEGORIA_LABELS]}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {categoria.planejados} planejados / {categoria.concluidos} concluídos
-                </p>
-                <p className="text-lg font-bold text-primary">{percentual}%</p>
-                <Progress value={percentual} className="h-2 mt-2" />
-              </CardContent>
-            </Card>
-          )
-        })}
+      <div className="space-y-4 mb-8">
+        <h3 className="text-lg font-semibold">Progresso por Categoria</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {categorias.map((categoria) => {
+            return (
+              <Card key={categoria.key} className="p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{categoria.label}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {categoria.concluidos}/{categoria.planejados}
+                  </span>
+                </div>
+                <Progress value={categoria.aderencia} className="h-2" />
+                <div className="text-xs text-muted-foreground mt-1">
+                  {categoria.aderencia}% concluído
+                </div>
+              </Card>
+            );
+          })}
+        </div>
       </div>
-    )
-  }
-
-  const renderGraficoSemana = () => {
-    const dados = dadosFiltrados.semana.map(item => ({
-      ...item,
-      percentual: item.planejados > 0 ? Math.round((item.concluidos / item.planejados) * 100) : 0
-    }))
-
-    const media = Math.round(dados.reduce((sum, item) => sum + item.percentual, 0) / dados.length)
-
-    return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Progresso Semanal</CardTitle>
-          <p className="text-sm text-muted-foreground">Média semanal: {media}% concluído</p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dados}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis 
-                dataKey="dia" 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  color: 'hsl(var(--popover-foreground))'
-                }}
-                labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              />
-              <Bar 
-                dataKey="percentual" 
-                fill="hsl(var(--primary))" 
-                radius={[4, 4, 0, 0]}
-                name="Percentual Concluído (%)"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const renderGraficoMes = () => {
-    const dados = dadosFiltrados.mes.map(item => ({
-      ...item,
-      percentual: item.planejados > 0 ? Math.round((item.concluidos / item.planejados) * 100) : 0
-    }))
-
-    const media = Math.round(dados.reduce((sum, item) => sum + item.percentual, 0) / dados.length)
-
-    return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Progresso Mensal</CardTitle>
-          <p className="text-sm text-muted-foreground">Média do mês: {media}% concluído</p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={dados}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis 
-                dataKey="semana" 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  color: 'hsl(var(--popover-foreground))'
-                }}
-                labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              />
-              <Bar 
-                dataKey="percentual" 
-                fill="hsl(var(--primary))" 
-                radius={[4, 4, 0, 0]}
-                name="Percentual Concluído (%)"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const renderGraficoHistorico = () => {
-    const dados = dadosFiltrados.historico
-    const evolucao = dados.length > 1 ? dados[dados.length - 1].perc - dados[dados.length - 2].perc : 0
-
-    return (
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle>Evolução Histórica</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Evolução: {dados[dados.length - 2]?.perc}% → {dados[dados.length - 1]?.perc}% 
-            ({evolucao > 0 ? '+' : ''}{evolucao}%)
-          </p>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={dados}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis 
-                dataKey="mes" 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                axisLine={{ stroke: 'hsl(var(--border))' }}
-              />
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--popover))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  color: 'hsl(var(--popover-foreground))'
-                }}
-                labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="perc" 
-                stroke="hsl(var(--success))" 
-                strokeWidth={3}
-                dot={{ fill: "hsl(var(--success))", strokeWidth: 2, r: 6 }}
-                activeDot={{ r: 8, stroke: "hsl(var(--success))", strokeWidth: 2 }}
-                name="Percentual Concluído (%)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    )
-  }
+    );
+  };
 
   const renderGraficos = () => {
-    switch (periodoSelecionado) {
-      case 'hoje':
-        return renderMiniCards()
-      case 'semana':
-        return renderGraficoSemana()
-      case 'mes':
-        return renderGraficoMes()
-      case 'historico':
-        return renderGraficoHistorico()
-      default:
-        return <div className="text-center text-muted-foreground">Selecione um período</div>
+    const data = MOCK_DATA[periodoSelecionado];
+    
+    if (periodoSelecionado === 'hoje') {
+      return (
+        <div className="space-y-6">
+          <p className="text-muted-foreground text-center">
+            Gráficos detalhados disponíveis para períodos: Semana, Mês, Histórico
+          </p>
+        </div>
+      );
     }
+
+    if (periodoSelecionado === 'semana' && Array.isArray(data)) {
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="dia" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="concluidos" fill="hsl(var(--primary))" name="Concluídos" />
+            <Bar dataKey="faltando" fill="#3b82f6" name="Faltando" />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if ((periodoSelecionado === 'mes' || periodoSelecionado === 'historico') && Array.isArray(data)) {
+      return (
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey={periodoSelecionado === 'mes' ? 'semana' : 'mes'} />
+            <YAxis />
+            <Tooltip />
+            <Line 
+              type="monotone" 
+              dataKey="aderencia" 
+              stroke="hsl(var(--primary))" 
+              strokeWidth={2}
+              name="Aderência (%)"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    return null;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex flex-col space-y-4">
+              <h1 className="text-2xl font-bold">Conquistas</h1>
+              <div className="flex gap-2">
+                {[1,2,3,4].map(i => <Skeleton key={i} className="h-8 w-20" />)}
+              </div>
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-6 space-y-8">
+          <Skeleton className="h-64 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header sticky */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      {/* Header fixo */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-primary">Minhas Conquistas</h1>
-              <p className="text-muted-foreground">Resumo de compromissos concluídos</p>
-            </div>
+          <div className="flex flex-col space-y-4">
+            <h1 className="text-2xl font-bold">Conquistas</h1>
             
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Filter className="h-5 w-5 text-muted-foreground" aria-label="Filtros" />
-                {renderPeriodChips()}
-              </div>
-              {renderCategoriaSelect()}
-            </div>
+            {/* Chips de período */}
+            {renderPeriodChips()}
+            
+            {/* Seletor de categoria */}
+            {renderCategoriaSelect()}
           </div>
         </div>
       </div>
 
       {/* Conteúdo principal */}
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Card Resumo */}
+      <div className="container mx-auto px-4 py-6 space-y-8">
         {renderResumoCard()}
-
-        {/* Seção de Gráficos */}
-        <div id="graficos-section" className="space-y-6">
-          <h2 className="text-xl font-semibold text-primary">
+        {renderMiniCards()}
+        
+        {/* Seção de gráficos */}
+        <div id="graficos" className="space-y-6">
+          <h2 className="text-xl font-semibold">
             Progresso - {periodoSelecionado.charAt(0).toUpperCase() + periodoSelecionado.slice(1)}
           </h2>
           {renderGraficos()}
         </div>
       </div>
     </div>
-  )
+  );
 }

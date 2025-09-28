@@ -558,9 +558,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_conquests_occurrences: {
+        Row: {
+          category: string | null
+          completed_at: string | null
+          completed_by: string | null
+          context_id: string | null
+          due_at: string | null
+          occurrence_id: string | null
+          source: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      fn_conquests_summary: {
+        Args: {
+          p_context_id: string
+          p_range_end: string
+          p_range_start: string
+          p_tz?: string
+        }
+        Returns: Json
+      }
       fn_count_medications: {
         Args: { p_patient_profile_id: string }
         Returns: Json
