@@ -106,6 +106,17 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				conquistas: {
+					concluido: 'hsl(var(--conquistas-concluido))',
+					'concluido-foreground': 'hsl(var(--conquistas-concluido-foreground))',
+					faltando: 'hsl(var(--conquistas-faltando))',
+					'faltando-foreground': 'hsl(var(--conquistas-faltando-foreground))',
+					atrasado: 'hsl(var(--conquistas-atrasado))',
+					'atrasado-foreground': 'hsl(var(--conquistas-atrasado-foreground))',
+					cancelado: 'hsl(var(--conquistas-cancelado))',
+					'cancelado-foreground': 'hsl(var(--conquistas-cancelado-foreground))',
+					'card-bg': 'hsl(var(--conquistas-card-bg))'
 				}
 			},
 			backgroundImage: {

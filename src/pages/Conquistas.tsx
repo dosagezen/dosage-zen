@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, Minus, Award, Target, Clock, XCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Award, Target, Clock, XCircle, Filter, ChevronRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
 import { useConquests, ConquestPeriod, ConquestCategory } from "@/hooks/useConquests";
@@ -88,12 +88,17 @@ export default function Conquistas() {
     ];
 
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 items-center">
+        <Filter className="w-4 h-4 text-muted-foreground" />
         {periodos.map(periodo => (
           <Badge
             key={periodo.key}
             variant={periodoSelecionado === periodo.key ? 'default' : 'secondary'}
-            className="cursor-pointer px-3 py-1"
+            className={`cursor-pointer px-3 py-1 ${
+              periodoSelecionado === periodo.key 
+                ? 'bg-conquistas-concluido text-conquistas-concluido-foreground hover:bg-conquistas-concluido/90' 
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+            }`}
             onClick={() => updateFilters(periodo.key as Periodo, categoriasSelecionadas)}
           >
             {periodo.label}
@@ -152,7 +157,7 @@ export default function Conquistas() {
     if (!metricas) return null;
 
     return (
-      <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+      <Card className="bg-conquistas-card-bg border-border">
         <CardContent className="p-6">
           <div className="text-center mb-4">
             <h3 className="text-lg font-semibold mb-2">
@@ -165,13 +170,13 @@ export default function Conquistas() {
             <div className="relative w-24 h-24 mx-auto mb-4">
               <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
               <div 
-                className="absolute inset-0 rounded-full border-4 border-primary border-l-transparent transform rotate-90"
+                className="absolute inset-0 rounded-full border-4 border-conquistas-concluido border-l-transparent transform rotate-90"
                 style={{
-                  background: `conic-gradient(from 90deg, hsl(var(--primary)) ${metricas.aderencia * 3.6}deg, transparent 0deg)`
+                  background: `conic-gradient(from 90deg, hsl(var(--conquistas-concluido)) ${metricas.aderencia * 3.6}deg, transparent 0deg)`
                 }}
               ></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold">{metricas.aderencia}%</span>
+                <span className="text-xl font-bold text-conquistas-concluido">{metricas.aderencia}%</span>
               </div>
             </div>
             
@@ -184,19 +189,19 @@ export default function Conquistas() {
           <div className="mb-4">
             <div className="h-3 rounded-full overflow-hidden bg-muted flex">
               <div 
-                className="bg-primary h-full"
+                className="bg-conquistas-concluido h-full"
                 style={{ width: `${metricas.percentuais.concluidos}%` }}
               ></div>
               <div 
-                className="bg-blue-500 h-full"
+                className="bg-conquistas-faltando h-full"
                 style={{ width: `${metricas.percentuais.faltando}%` }}
               ></div>
               <div 
-                className="bg-destructive h-full"
+                className="bg-conquistas-atrasado h-full"
                 style={{ width: `${metricas.percentuais.atrasados}%` }}
               ></div>
               <div 
-                className="bg-muted-foreground h-full"
+                className="bg-conquistas-cancelado h-full"
                 style={{ width: `${metricas.percentuais.cancelados}%` }}
               ></div>
             </div>
@@ -204,57 +209,57 @@ export default function Conquistas() {
 
           {/* Métricas em linha */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            <div className="text-center p-2 bg-primary/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-primary bg-primary/20 px-1 rounded">
+            <div className="text-center p-2 bg-conquistas-concluido/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-conquistas-concluido bg-conquistas-concluido/20 px-1 rounded">
                 {metricas.percentuais.concluidos}%
               </span>
               <div className="flex items-center justify-center mb-1">
-                <Award className="w-4 h-4 text-primary" />
+                <Award className="w-4 h-4 text-conquistas-concluido" />
               </div>
-              <div className="text-lg font-semibold text-primary">{metricas.concluidos}</div>
-              <div className="text-xs text-primary/80">Concluídos</div>
+              <div className="text-lg font-semibold text-conquistas-concluido">{metricas.concluidos}</div>
+              <div className="text-xs text-conquistas-concluido/80">Concluídos</div>
             </div>
             
-            <div className="text-center p-2 bg-blue-50 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-blue-600 bg-blue-100 px-1 rounded">
+            <div className="text-center p-2 bg-conquistas-faltando/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-conquistas-faltando bg-conquistas-faltando/20 px-1 rounded">
                 {metricas.percentuais.faltando}%
               </span>
               <div className="flex items-center justify-center mb-1">
-                <Target className="w-4 h-4 text-blue-600" />
+                <Target className="w-4 h-4 text-conquistas-faltando" />
               </div>
-              <div className="text-lg font-semibold text-blue-700">{metricas.faltando}</div>
-              <div className="text-xs text-blue-600">Faltando</div>
+              <div className="text-lg font-semibold text-conquistas-faltando">{metricas.faltando}</div>
+              <div className="text-xs text-conquistas-faltando/80">Faltando</div>
             </div>
             
-            <div className="text-center p-2 bg-destructive/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-destructive bg-destructive/20 px-1 rounded">
+            <div className="text-center p-2 bg-conquistas-atrasado/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-conquistas-atrasado bg-conquistas-atrasado/20 px-1 rounded">
                 {metricas.percentuais.atrasados}%
               </span>
               <div className="flex items-center justify-center mb-1">
-                <Clock className="w-4 h-4 text-destructive" />
+                <Clock className="w-4 h-4 text-conquistas-atrasado" />
               </div>
-              <div className="text-lg font-semibold text-destructive">{metricas.atrasados}</div>
-              <div className="text-xs text-destructive/80">Atrasados</div>
+              <div className="text-lg font-semibold text-conquistas-atrasado">{metricas.atrasados}</div>
+              <div className="text-xs text-conquistas-atrasado/80">Atrasados</div>
             </div>
             
-            <div className="text-center p-2 bg-muted rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-muted-foreground bg-muted-foreground/20 px-1 rounded">
+            <div className="text-center p-2 bg-conquistas-cancelado/10 rounded-lg relative">
+              <span className="absolute top-1 right-1 text-xs text-conquistas-cancelado bg-conquistas-cancelado/20 px-1 rounded">
                 {metricas.percentuais.cancelados}%
               </span>
               <div className="flex items-center justify-center mb-1">
-                <XCircle className="w-4 h-4 text-muted-foreground" />
+                <XCircle className="w-4 h-4 text-conquistas-cancelado" />
               </div>
-              <div className="text-lg font-semibold text-muted-foreground">{metricas.cancelados}</div>
-              <div className="text-xs text-muted-foreground">Cancelados</div>
+              <div className="text-lg font-semibold text-conquistas-cancelado">{metricas.cancelados}</div>
+              <div className="text-xs text-conquistas-cancelado/80">Cancelados</div>
             </div>
           </div>
 
           <Button 
             onClick={scrollToGraficos} 
-            className="w-full"
-            variant="outline"
+            className="w-full bg-conquistas-concluido hover:bg-conquistas-concluido/90 text-conquistas-concluido-foreground"
           >
             Ver análise detalhada
+            <ChevronRight className="w-4 h-4 ml-2" />
           </Button>
         </CardContent>
       </Card>
@@ -277,21 +282,21 @@ export default function Conquistas() {
 
     return (
       <div className="space-y-4 mb-8">
-        <h3 className="text-lg font-semibold">Progresso por Categoria</h3>
+        <h3 className="text-lg font-semibold text-conquistas-concluido">Progresso - Hoje</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {categorias.map((categoria) => {
             return (
-              <Card key={categoria.key} className="p-4">
+              <Card key={categoria.key} className="p-4 bg-conquistas-card-bg">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{categoria.label}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {categoria.concluidos}/{categoria.planejados}
+                  <span className="font-medium text-foreground">{categoria.label}</span>
+                  <span className="text-sm text-conquistas-concluido font-medium">
+                    {categoria.planejados} planejados / {categoria.concluidos} concluídos - {categoria.aderencia}%
                   </span>
                 </div>
-                <Progress value={categoria.aderencia} className="h-2" />
-                <div className="text-xs text-muted-foreground mt-1">
-                  {categoria.aderencia}% concluído
-                </div>
+                <Progress 
+                  value={categoria.aderencia} 
+                  className="h-2" 
+                />
               </Card>
             );
           })}
@@ -317,10 +322,10 @@ export default function Conquistas() {
       if (!metricas) return null;
 
       const pieData = [
-        { name: 'Concluídos', value: metricas.concluidos, color: 'hsl(var(--primary))' },
-        { name: 'Faltando', value: metricas.faltando, color: '#3b82f6' },
-        { name: 'Atrasados', value: metricas.atrasados, color: 'hsl(var(--destructive))' },
-        { name: 'Cancelados', value: metricas.cancelados, color: 'hsl(var(--muted-foreground))' }
+        { name: 'Concluídos', value: metricas.concluidos, color: 'hsl(var(--conquistas-concluido))' },
+        { name: 'Faltando', value: metricas.faltando, color: 'hsl(var(--conquistas-faltando))' },
+        { name: 'Atrasados', value: metricas.atrasados, color: 'hsl(var(--conquistas-atrasado))' },
+        { name: 'Cancelados', value: metricas.cancelados, color: 'hsl(var(--conquistas-cancelado))' }
       ].filter(item => item.value > 0);
 
       if (pieData.length === 0) {
@@ -396,7 +401,10 @@ export default function Conquistas() {
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col space-y-4">
-            <h1 className="text-2xl font-bold">Conquistas</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Minhas Conquistas</h1>
+              <p className="text-sm text-conquistas-concluido font-medium">Resumo de compromissos concluídos</p>
+            </div>
             
             {/* Chips de período */}
             {renderPeriodChips()}

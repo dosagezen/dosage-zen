@@ -91,13 +91,24 @@
   --vibrant-green: 142 69% 58%; /* Fresh green */
   --vibrant-yellow: 48 89% 60%; /* Bright yellow */
   
-  /* Status colors - soft and pastel */
-  --status-active: 120 60% 90%; /* Soft green background */
-  --status-active-foreground: 120 60% 25%; /* Dark green text */
-  --status-inactive: 0 60% 92%; /* Soft red background */
-  --status-inactive-foreground: 0 60% 35%; /* Dark red text */
-  --status-pending: 45 86% 83%; /* Soft yellow background */
-  --status-pending-foreground: 45 86% 25%; /* Dark yellow text */
+    /* Status colors - soft and pastel */
+    --status-active: 120 60% 90%; /* Soft green background */
+    --status-active-foreground: 120 60% 25%; /* Dark green text */
+    --status-inactive: 0 60% 92%; /* Soft red background */
+    --status-inactive-foreground: 0 60% 35%; /* Dark red text */
+    --status-pending: 45 86% 83%; /* Soft yellow background */
+    --status-pending-foreground: 45 86% 25%; /* Dark yellow text */
+    
+    /* Cores específicas para conquistas */
+    --conquistas-concluido: 146 42% 22%; /* Verde escuro para concluídos */
+    --conquistas-concluido-foreground: 0 0% 98%;
+    --conquistas-faltando: 217 91% 60%; /* Azul claro para faltando */
+    --conquistas-faltando-foreground: 0 0% 98%;
+    --conquistas-atrasado: 25 95% 53%; /* Laranja para atrasados */
+    --conquistas-atrasado-foreground: 0 0% 98%;
+    --conquistas-cancelado: 340 82% 67%; /* Rosa para cancelados */
+    --conquistas-cancelado-foreground: 0 0% 98%;
+    --conquistas-card-bg: 220 20% 96%; /* Fundo cinza claro para cards */
   }
 
   .dark {
