@@ -134,12 +134,14 @@ serve(async (req) => {
       }
 
       case 'update': {
-        const { id, ...updateData } = body;
+        const { id, context_id, ...updateData } = body;
 
+        // Verify user has permission to update this appointment
         const { data: appointment, error } = await supabaseClient
           .from('appointments')
           .update(updateData)
           .eq('id', id)
+          .eq('patient_profile_id', context_id || profile.id)
           .select()
           .single();
 
@@ -151,13 +153,14 @@ serve(async (req) => {
       }
 
       case 'delete': {
-        const { id } = body;
+        const { id, context_id } = body;
 
-        // Soft delete - set status to cancelled
+        // Soft delete - set status to cancelled with permission check
         const { data: appointment, error } = await supabaseClient
           .from('appointments')
           .update({ status: 'cancelado' })
           .eq('id', id)
+          .eq('patient_profile_id', context_id || profile.id)
           .select()
           .single();
 
@@ -169,7 +172,7 @@ serve(async (req) => {
       }
 
       case 'complete': {
-        const { id } = body;
+        const { id, context_id } = body;
 
         const { data: appointment, error } = await supabaseClient
           .from('appointments')
@@ -178,6 +181,7 @@ serve(async (req) => {
             updated_at: new Date().toISOString()
           })
           .eq('id', id)
+          .eq('patient_profile_id', context_id || profile.id)
           .select()
           .single();
 
@@ -228,7 +232,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in manage-agenda function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
