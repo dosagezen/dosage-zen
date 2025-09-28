@@ -14,44 +14,7 @@ import { useConquests, ConquestPeriod, ConquestCategory } from "@/hooks/useConqu
 type Periodo = ConquestPeriod;
 type Categoria = ConquestCategory;
 
-// Mock data for development
-const MOCK_DATA = {
-  hoje: {
-    planejados: 12,
-    concluidos: 7,
-    faltando: 3,
-    atrasados: 1,
-    cancelados: 1,
-    aderencia_pct: 58,
-    by_category: {
-      medicacao: { planejados: 6, concluidos: 5, faltando: 1, atrasados: 0, cancelados: 0, aderencia_pct: 83 },
-      consulta: { planejados: 1, concluidos: 1, faltando: 0, atrasados: 0, cancelados: 0, aderencia_pct: 100 },
-      exame: { planejados: 0, concluidos: 0, faltando: 0, atrasados: 0, cancelados: 0, aderencia_pct: 0 },
-      atividade: { planejados: 5, concluidos: 1, faltando: 2, atrasados: 1, cancelados: 1, aderencia_pct: 20 }
-    }
-  },
-  semana: [
-    { dia: 'Seg', concluidos: 8, faltando: 2 },
-    { dia: 'Ter', concluidos: 6, faltando: 2 },
-    { dia: 'Qua', concluidos: 9, faltando: 1 },
-    { dia: 'Qui', concluidos: 7, faltando: 3 },
-    { dia: 'Sex', concluidos: 11, faltando: 1 },
-    { dia: 'Sáb', concluidos: 5, faltando: 2 },
-    { dia: 'Dom', concluidos: 6, faltando: 1 }
-  ],
-  mes: [
-    { semana: 'Sem 1', aderencia: 75 },
-    { semana: 'Sem 2', aderencia: 82 },
-    { semana: 'Sem 3', aderencia: 78 },
-    { semana: 'Sem 4', aderencia: 85 }
-  ],
-  historico: [
-    { mes: 'Jul', aderencia: 68 },
-    { mes: 'Ago', aderencia: 75 },
-    { mes: 'Set', aderencia: 78 },
-    { mes: 'Out', aderencia: 82 }
-  ]
-};
+// Labels for category selection
 
 const CATEGORIA_LABELS = {
   todas: 'Todas as categorias',
@@ -108,18 +71,8 @@ export default function Conquistas() {
     setSearchParams(params);
   };
 
-  // Use real data from useConquests hook
-  const dadosFiltrados = useMemo(() => {
-    // Always use real data from summary for all periods
-    if (summary) {
-      return summary;
-    }
-    // Only fallback to mock data during loading
-    if (periodoSelecionado === 'hoje') {
-      return null; // Show loading state instead of mock
-    }
-    return MOCK_DATA[periodoSelecionado];
-  }, [summary, periodoSelecionado]);
+  // Use real data from useConquests hook for all periods
+  const dadosFiltrados = summary;
 
   const scrollToGraficos = () => {
     const elemento = document.getElementById('graficos');
@@ -348,56 +301,69 @@ export default function Conquistas() {
   };
 
   const renderGraficos = () => {
-    // For today, show informative message
-    if (periodoSelecionado === 'hoje') {
+    if (!dadosFiltrados || typeof dadosFiltrados !== 'object') {
       return (
         <div className="space-y-6">
           <p className="text-muted-foreground text-center">
-            Gráficos detalhados disponíveis para períodos: Semana, Mês, Histórico
+            Dados não disponíveis para gráficos detalhados
           </p>
         </div>
       );
     }
 
-    // For other periods, use mock data for now (will be replaced with real data later)
-    const data = MOCK_DATA[periodoSelecionado];
+    // For "hoje", show current summary in a visual format
+    if (periodoSelecionado === 'hoje') {
+      const metricas = calcularMetricas();
+      if (!metricas) return null;
 
-    if (periodoSelecionado === 'semana' && Array.isArray(data)) {
+      const pieData = [
+        { name: 'Concluídos', value: metricas.concluidos, color: 'hsl(var(--primary))' },
+        { name: 'Faltando', value: metricas.faltando, color: '#3b82f6' },
+        { name: 'Atrasados', value: metricas.atrasados, color: 'hsl(var(--destructive))' },
+        { name: 'Cancelados', value: metricas.cancelados, color: 'hsl(var(--muted-foreground))' }
+      ].filter(item => item.value > 0);
+
+      if (pieData.length === 0) {
+        return (
+          <div className="space-y-6">
+            <p className="text-muted-foreground text-center">
+              Nenhum compromisso registrado para hoje
+            </p>
+          </div>
+        );
+      }
+
       return (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="dia" />
-            <YAxis />
+          <PieChart>
+            <Pie
+              data={pieData}
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              dataKey="value"
+              label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+            >
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
             <Tooltip />
-            <Bar dataKey="concluidos" fill="hsl(var(--primary))" name="Concluídos" />
-            <Bar dataKey="faltando" fill="#3b82f6" name="Faltando" />
-          </BarChart>
+          </PieChart>
         </ResponsiveContainer>
       );
     }
 
-    if ((periodoSelecionado === 'mes' || periodoSelecionado === 'historico') && Array.isArray(data)) {
-      return (
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={periodoSelecionado === 'mes' ? 'semana' : 'mes'} />
-            <YAxis />
-            <Tooltip />
-            <Line 
-              type="monotone" 
-              dataKey="aderencia" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth={2}
-              name="Aderência (%)"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    }
-
-    return null;
+    // For other periods, show informative message about future chart implementations
+    return (
+      <div className="space-y-6">
+        <p className="text-muted-foreground text-center">
+          Gráficos históricos para {periodoSelecionado} serão implementados em breve.
+          <br />
+          Use os dados resumidos acima para acompanhar seu progresso.
+        </p>
+      </div>
+    );
   };
 
   if (isLoading) {
