@@ -108,12 +108,16 @@ export default function Conquistas() {
     setSearchParams(params);
   };
 
-  // Use real data or fallback to mock for visual development
+  // Use real data from useConquests hook
   const dadosFiltrados = useMemo(() => {
-    if (summary && periodoSelecionado === 'hoje') {
+    // Always use real data from summary for all periods
+    if (summary) {
       return summary;
     }
-    // Fallback to mock data for development
+    // Only fallback to mock data during loading
+    if (periodoSelecionado === 'hoje') {
+      return null; // Show loading state instead of mock
+    }
     return MOCK_DATA[periodoSelecionado];
   }, [summary, periodoSelecionado]);
 
@@ -168,7 +172,7 @@ export default function Conquistas() {
     const dados = dadosFiltrados;
     if (!dados || Array.isArray(dados) || typeof dados !== 'object') return null;
     
-    // Type guard to ensure we have the right data structure for 'hoje'
+    // Type guard to ensure we have the right data structure
     if (!('planejados' in dados)) return null;
     
     const total = dados.planejados;
@@ -344,8 +348,7 @@ export default function Conquistas() {
   };
 
   const renderGraficos = () => {
-    const data = MOCK_DATA[periodoSelecionado];
-    
+    // For today, show informative message
     if (periodoSelecionado === 'hoje') {
       return (
         <div className="space-y-6">
@@ -355,6 +358,9 @@ export default function Conquistas() {
         </div>
       );
     }
+
+    // For other periods, use mock data for now (will be replaced with real data later)
+    const data = MOCK_DATA[periodoSelecionado];
 
     if (periodoSelecionado === 'semana' && Array.isArray(data)) {
       return (
