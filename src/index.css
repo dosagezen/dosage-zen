@@ -100,15 +100,18 @@
     --status-pending-foreground: 45 86% 25%; /* Dark yellow text */
     
     /* Cores específicas para conquistas - exatas da imagem */
-    --conquistas-concluido: 146 59% 47%; /* Verde mais forte para concluídos */
+    --conquistas-concluido: 134 66% 30%; /* Verde mais escuro para concluídos */
     --conquistas-concluido-foreground: 0 0% 98%;
-    --conquistas-faltando: 146 42% 65%; /* Verde mais claro para faltando */
+    --conquistas-faltando: 142 76% 50%; /* Verde mais claro para faltando */
     --conquistas-faltando-foreground: 0 0% 98%;
     --conquistas-atrasado: 25 95% 53%; /* Laranja para atrasados */
     --conquistas-atrasado-foreground: 0 0% 98%;
-    --conquistas-cancelado: 340 82% 67%; /* Rosa para cancelados */
+    --conquistas-cancelado: 350 89% 60%; /* Rosa para cancelados */
     --conquistas-cancelado-foreground: 0 0% 98%;
     --conquistas-card-bg: 220 20% 96%; /* Fundo cinza claro para cards */
+    
+    /* Filter neutral for inactive chips */
+    --filter-neutral: 210 20% 94%;
   }
 
   .dark {
@@ -181,6 +184,26 @@
   .touch-scroll {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+  }
+}
+
+/* Chip styles for filters */
+@layer utilities {
+  .filter-chip {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer;
+  }
+  
+  .filter-chip-active {
+    @apply bg-primary text-primary-foreground;
+  }
+  
+  .filter-chip-inactive {
+    @apply text-muted-foreground;
+    background-color: hsl(var(--filter-neutral));
+  }
+  
+  .status-chip {
+    @apply inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold;
   }
 }
 
