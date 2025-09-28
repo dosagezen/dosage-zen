@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronRight, Filter } from 'lucide-react';
+import { ChevronRight, Filter, BarChart3 } from 'lucide-react';
 import { useConquests } from '@/hooks/useConquests';
 import { toast } from 'sonner';
 
@@ -110,150 +110,184 @@ export default function Conquistas() {
   const renderResumoCard = () => {
     if (isLoading) {
       return (
-        <Card className="w-full">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <Skeleton className="h-6 w-32" />
+        <Card className="relative p-6 bg-gradient-to-br from-white to-emerald-50/40 shadow-lg rounded-[20px]">
+          <div className="pr-24 md:pr-32 space-y-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-20 w-full" />
+            <div className="grid grid-cols-4 gap-2">
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
+              <Skeleton className="h-16" />
             </div>
-            <div className="space-y-4">
-              <Skeleton className="h-32 w-32 rounded-full mx-auto" />
-              <Skeleton className="h-4 w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-20 w-full" />
-                ))}
-              </div>
-            </div>
-          </CardContent>
+          </div>
         </Card>
       );
     }
 
     const metricas = calcularMetricas();
     
+    // Calculate segment widths for stacked bar
+    const segmentWidths = metricas.total > 0 ? {
+      concluidos: (metricas.concluidos / metricas.total) * 100,
+      faltando: (metricas.faltando / metricas.total) * 100,
+      atrasados: (metricas.atrasados / metricas.total) * 100,
+      cancelados: (metricas.cancelados / metricas.total) * 100
+    } : { concluidos: 0, faltando: 0, atrasados: 0, cancelados: 0 };
+    
     return (
-      <Card className="w-full shadow-sm border border-gray-100 bg-white">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">Resumo Hoje</h3>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded-xl h-3 overflow-hidden">
-                <div className="h-full flex">
-                  <div 
-                    className="bg-[hsl(var(--conquistas-concluido))]" 
-                    style={{ width: `${(metricas.concluidos / metricas.total * 100) || 0}%` }}
-                  />
-                  <div 
-                    className="bg-[hsl(var(--conquistas-faltando))]" 
-                    style={{ width: `${(metricas.faltando / metricas.total * 100) || 0}%` }}
-                  />
-                  <div 
-                    className="bg-[hsl(var(--conquistas-atrasado))]" 
-                    style={{ width: `${(metricas.atrasados / metricas.total * 100) || 0}%` }}
-                  />
-                  <div 
-                    className="bg-[hsl(var(--conquistas-cancelado))]" 
-                    style={{ width: `${(metricas.cancelados / metricas.total * 100) || 0}%` }}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[hsl(var(--conquistas-concluido))]" />
-                  <span className="text-gray-600">Concluídos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[hsl(var(--conquistas-faltando))]" />
-                  <span className="text-gray-600">Faltando</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[hsl(var(--conquistas-atrasado))]" />
-                  <span className="text-gray-600">Atrasados</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[hsl(var(--conquistas-cancelado))]" />
-                  <span className="text-gray-600">Cancelados</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative w-24 h-24 mb-2">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    stroke="currentColor"
-                    strokeWidth="10"
-                    fill="none"
-                    className="text-gray-100"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="42"
-                    stroke="currentColor"
-                    strokeWidth="10"
-                    fill="none"
-                    strokeDasharray={`${metricas.percentual * 2.638} 264`}
-                    className="text-[hsl(var(--conquistas-concluido))] transition-all duration-500"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-gray-900">{metricas.percentual}%</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-500 text-center">Progresso diário</p>
+      <Card className="relative p-6 bg-gradient-to-br from-white to-emerald-50/40 shadow-lg rounded-[20px]">
+        {/* Progress Ring - Positioned absolutely at top-right */}
+        <div className="absolute top-4 right-4 md:top-6 md:right-6">
+          <div className="relative">
+            <svg className="w-20 h-20 md:w-24 md:h-24 transform -rotate-90" viewBox="0 0 100 100">
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                stroke="currentColor"
+                strokeWidth="10"
+                fill="none"
+                className="text-gray-200"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="42"
+                stroke="hsl(var(--conquistas-concluido))"
+                strokeWidth="10"
+                fill="none"
+                strokeDasharray={`${2 * Math.PI * 42}`}
+                strokeDashoffset={`${2 * Math.PI * 42 * (1 - metricas.percentual / 100)}`}
+                className="transition-all duration-500 ease-out"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xl md:text-2xl font-bold text-primary">{Math.round(metricas.percentual)}%</span>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm">
-              <div className="status-chip bg-[hsl(var(--conquistas-concluido))] text-white mb-3 w-fit">
-                {metricas.percentual}%
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{metricas.concluidos}</div>
-              <div className="text-sm text-gray-500">Concluídos</div>
-            </div>
-            
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm">
-              <div className="status-chip bg-[hsl(var(--conquistas-faltando))] text-white mb-3 w-fit">
-                {Math.round((metricas.faltando / metricas.total * 100) || 0)}%
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{metricas.faltando}</div>
-              <div className="text-sm text-gray-500">Faltando</div>
-            </div>
-            
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm">
-              <div className="status-chip bg-[hsl(var(--conquistas-atrasado))] text-white mb-3 w-fit">
-                {Math.round((metricas.atrasados / metricas.total * 100) || 0)}%
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{metricas.atrasados}</div>
-              <div className="text-sm text-gray-500">Atrasados</div>
-            </div>
-            
-            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 shadow-sm">
-              <div className="status-chip bg-[hsl(var(--conquistas-cancelado))] text-white mb-3 w-fit">
-                {Math.round((metricas.cancelados / metricas.total * 100) || 0)}%
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{metricas.cancelados}</div>
-              <div className="text-sm text-gray-500">Cancelados</div>
-            </div>
+        </div>
+
+        {/* Main content - Reserve space for ring */}
+        <div className="pr-24 md:pr-32 space-y-4">
+          {/* Header */}
+          <div>
+            <h3 className="text-xl font-bold text-primary mb-1">Resumo Hoje</h3>
+            <p className="text-sm text-primary/70">Progresso diário</p>
           </div>
           
-          <Button 
-            className="w-full h-12 rounded-full bg-[hsl(var(--conquistas-concluido))] hover:bg-[hsl(var(--conquistas-concluido))]/90 text-white font-medium text-base"
-            onClick={() => toast.info("Análise detalhada em desenvolvimento")}
-          >
+          {/* Progress line */}
+          <div className="flex items-center justify-between text-sm text-primary/70">
+            <span>Progresso</span>
+            <span className="font-medium">{metricas.concluidos} de {metricas.total}</span>
+          </div>
+          
+          {/* Stacked progress bar */}
+          <div className="space-y-2">
+            <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+              {metricas.total > 0 ? (
+                <>
+                  {segmentWidths.concluidos > 0 && (
+                    <div 
+                      className="h-full bg-[hsl(var(--conquistas-concluido))]"
+                      style={{ width: `${segmentWidths.concluidos}%` }}
+                    />
+                  )}
+                  {segmentWidths.faltando > 0 && (
+                    <div 
+                      className="h-full bg-[hsl(var(--conquistas-faltando))]"
+                      style={{ width: `${segmentWidths.faltando}%` }}
+                    />
+                  )}
+                  {segmentWidths.atrasados > 0 && (
+                    <div 
+                      className="h-full bg-[hsl(var(--conquistas-atrasado))]"
+                      style={{ width: `${segmentWidths.atrasados}%` }}
+                    />
+                  )}
+                  {segmentWidths.cancelados > 0 && (
+                    <div 
+                      className="h-full bg-[hsl(var(--conquistas-cancelado))]"
+                      style={{ width: `${segmentWidths.cancelados}%` }}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full bg-gray-200" />
+              )}
+            </div>
+            
+            {/* Legend */}
+            <div className="flex items-center justify-between text-xs text-primary/60">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-concluido))]" />
+                <span>Concluídos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-faltando))]" />
+                <span>Faltando</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-atrasado))]" />
+                <span>Atrasados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-cancelado))]" />
+                <span>Cancelados</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mini cards - 4 columns even on mobile */}
+          <div className="grid grid-cols-4 gap-2 md:gap-3">
+            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-emerald-100">
+              <div className="flex items-center justify-center mb-1 md:mb-2">
+                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-concluido))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.concluidos / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-lg md:text-2xl font-bold text-primary text-center">{metricas.concluidos}</div>
+              <div className="text-xs text-primary/60 text-center">Concluídos</div>
+            </div>
+
+            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-green-100">
+              <div className="flex items-center justify-center mb-1 md:mb-2">
+                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-faltando))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.faltando / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-lg md:text-2xl font-bold text-primary text-center">{metricas.faltando}</div>
+              <div className="text-xs text-primary/60 text-center">Faltando</div>
+            </div>
+
+            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-orange-100">
+              <div className="flex items-center justify-center mb-1 md:mb-2">
+                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-atrasado))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.atrasados / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-lg md:text-2xl font-bold text-primary text-center">{metricas.atrasados}</div>
+              <div className="text-xs text-primary/60 text-center">Atrasados</div>
+            </div>
+
+            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-pink-100">
+              <div className="flex items-center justify-center mb-1 md:mb-2">
+                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.cancelados / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-lg md:text-2xl font-bold text-primary text-center">{metricas.cancelados}</div>
+              <div className="text-xs text-primary/60 text-center">Cancelados</div>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <Button className="w-full h-12 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium">
+            <BarChart3 className="w-4 h-4 mr-2" />
             Ver análise detalhada
-            <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
-        </CardContent>
+        </div>
       </Card>
     );
   };
