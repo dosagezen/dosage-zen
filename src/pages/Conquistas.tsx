@@ -166,28 +166,43 @@ export default function Conquistas() {
                       periodoSelecionado === 'mes' ? 'Mês' : 'Histórico'}
             </h3>
             
-            {/* Circular Progress */}
-            <div className="relative w-24 h-24 mx-auto mb-4">
-              <div className="absolute inset-0 rounded-full border-4 border-muted"></div>
-              <div 
-                className="absolute inset-0 rounded-full border-4 border-conquistas-concluido border-l-transparent transform rotate-90"
-                style={{
-                  background: `conic-gradient(from 90deg, hsl(var(--conquistas-concluido)) ${metricas.aderencia * 3.6}deg, transparent 0deg)`
-                }}
-              ></div>
+            {/* Circular Progress - mais simples */}
+            <div className="relative w-20 h-20 mx-auto mb-3">
+              <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="40" 
+                  stroke="currentColor" 
+                  strokeWidth="8" 
+                  fill="transparent"
+                  className="text-gray-200"
+                />
+                <circle 
+                  cx="50" 
+                  cy="50" 
+                  r="40" 
+                  stroke="currentColor" 
+                  strokeWidth="8" 
+                  fill="transparent"
+                  strokeDasharray={`${metricas.aderencia * 2.51} 251`}
+                  className="text-conquistas-concluido"
+                />
+              </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xl font-bold text-conquistas-concluido">{metricas.aderencia}%</span>
+                <span className="text-lg font-bold text-conquistas-concluido">{metricas.aderencia}%</span>
               </div>
             </div>
             
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-2">Progresso diário</p>
+            <p className="text-sm font-medium text-foreground">
               {metricas.concluidos} de {metricas.total}
             </p>
           </div>
 
-          {/* Barra empilhada */}
+          {/* Barra empilhada com legenda inline */}
           <div className="mb-4">
-            <div className="h-3 rounded-full overflow-hidden bg-muted flex">
+            <div className="h-2 rounded-full overflow-hidden bg-gray-200 flex">
               <div 
                 className="bg-conquistas-concluido h-full"
                 style={{ width: `${metricas.percentuais.concluidos}%` }}
@@ -205,52 +220,52 @@ export default function Conquistas() {
                 style={{ width: `${metricas.percentuais.cancelados}%` }}
               ></div>
             </div>
+            
+            {/* Legenda inline */}
+            <div className="flex items-center justify-center gap-4 mt-2 text-xs">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-conquistas-concluido"></div>
+                <span>Concluídos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-conquistas-faltando"></div>
+                <span>Faltando</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-conquistas-atrasado"></div>
+                <span>Atrasados</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-conquistas-cancelado"></div>
+                <span>Cancelados</span>
+              </div>
+            </div>
           </div>
 
-          {/* Métricas em linha */}
+          {/* Métricas em linha - simples como na imagem */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            <div className="text-center p-2 bg-conquistas-concluido/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-conquistas-concluido bg-conquistas-concluido/20 px-1 rounded">
-                {metricas.percentuais.concluidos}%
-              </span>
-              <div className="flex items-center justify-center mb-1">
-                <Award className="w-4 h-4 text-conquistas-concluido" />
-              </div>
-              <div className="text-lg font-semibold text-conquistas-concluido">{metricas.concluidos}</div>
-              <div className="text-xs text-conquistas-concluido/80">Concluídos</div>
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-conquistas-concluido mb-1">{metricas.percentuais.concluidos}%</div>
+              <div className="text-sm font-medium text-conquistas-concluido">{metricas.concluidos}</div>
+              <div className="text-xs text-muted-foreground">Concluídos</div>
             </div>
             
-            <div className="text-center p-2 bg-conquistas-faltando/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-conquistas-faltando bg-conquistas-faltando/20 px-1 rounded">
-                {metricas.percentuais.faltando}%
-              </span>
-              <div className="flex items-center justify-center mb-1">
-                <Target className="w-4 h-4 text-conquistas-faltando" />
-              </div>
-              <div className="text-lg font-semibold text-conquistas-faltando">{metricas.faltando}</div>
-              <div className="text-xs text-conquistas-faltando/80">Faltando</div>
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-conquistas-faltando mb-1">{metricas.percentuais.faltando}%</div>
+              <div className="text-sm font-medium text-conquistas-faltando">{metricas.faltando}</div>
+              <div className="text-xs text-muted-foreground">Faltando</div>
             </div>
             
-            <div className="text-center p-2 bg-conquistas-atrasado/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-conquistas-atrasado bg-conquistas-atrasado/20 px-1 rounded">
-                {metricas.percentuais.atrasados}%
-              </span>
-              <div className="flex items-center justify-center mb-1">
-                <Clock className="w-4 h-4 text-conquistas-atrasado" />
-              </div>
-              <div className="text-lg font-semibold text-conquistas-atrasado">{metricas.atrasados}</div>
-              <div className="text-xs text-conquistas-atrasado/80">Atrasados</div>
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-conquistas-atrasado mb-1">{metricas.percentuais.atrasados}%</div>
+              <div className="text-sm font-medium text-conquistas-atrasado">{metricas.atrasados}</div>
+              <div className="text-xs text-muted-foreground">Atrasados</div>
             </div>
             
-            <div className="text-center p-2 bg-conquistas-cancelado/10 rounded-lg relative">
-              <span className="absolute top-1 right-1 text-xs text-conquistas-cancelado bg-conquistas-cancelado/20 px-1 rounded">
-                {metricas.percentuais.cancelados}%
-              </span>
-              <div className="flex items-center justify-center mb-1">
-                <XCircle className="w-4 h-4 text-conquistas-cancelado" />
-              </div>
-              <div className="text-lg font-semibold text-conquistas-cancelado">{metricas.cancelados}</div>
-              <div className="text-xs text-conquistas-cancelado/80">Cancelados</div>
+            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="text-2xl font-bold text-conquistas-cancelado mb-1">{metricas.percentuais.cancelados}%</div>
+              <div className="text-sm font-medium text-conquistas-cancelado">{metricas.cancelados}</div>
+              <div className="text-xs text-muted-foreground">Cancelados</div>
             </div>
           </div>
 

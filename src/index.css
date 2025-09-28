@@ -99,10 +99,10 @@
     --status-pending: 45 86% 83%; /* Soft yellow background */
     --status-pending-foreground: 45 86% 25%; /* Dark yellow text */
     
-    /* Cores específicas para conquistas */
-    --conquistas-concluido: 146 42% 22%; /* Verde escuro para concluídos */
+    /* Cores específicas para conquistas - exatas da imagem */
+    --conquistas-concluido: 146 59% 47%; /* Verde mais forte para concluídos */
     --conquistas-concluido-foreground: 0 0% 98%;
-    --conquistas-faltando: 217 91% 60%; /* Azul claro para faltando */
+    --conquistas-faltando: 146 42% 65%; /* Verde mais claro para faltando */
     --conquistas-faltando-foreground: 0 0% 98%;
     --conquistas-atrasado: 25 95% 53%; /* Laranja para atrasados */
     --conquistas-atrasado-foreground: 0 0% 98%;
