@@ -136,16 +136,48 @@ serve(async (req) => {
       case 'update': {
         const { id, context_id, ...updateData } = body;
 
-        // Verify user has permission to update this appointment
-        const { data: appointment, error } = await supabaseClient
+        // Validação de entrada
+        if (!id || typeof id !== 'string') {
+          throw new Error('ID do compromisso é obrigatório e deve ser uma string válida');
+        }
+
+        // Limpar dados de entrada
+        const cleanedData = Object.fromEntries(
+          Object.entries(updateData).filter(([_, value]) => value !== undefined && value !== null)
+        );
+
+        console.log('Updating appointment:', id, 'with data:', cleanedData);
+
+        // Verificar se o compromisso existe e pertence ao usuário
+        const { data: existingAppointment, error: checkError } = await supabaseClient
           .from('appointments')
-          .update(updateData)
+          .select('id, patient_profile_id')
           .eq('id', id)
           .eq('patient_profile_id', context_id || profile.id)
+          .single();
+
+        if (checkError || !existingAppointment) {
+          console.error('Appointment not found or access denied:', checkError);
+          throw new Error('Compromisso não encontrado ou acesso negado');
+        }
+
+        // Atualizar o compromisso
+        const { data: appointment, error } = await supabaseClient
+          .from('appointments')
+          .update({
+            ...cleanedData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
           .select()
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw new Error(`Erro ao atualizar: ${error.message}`);
+        }
+
+        console.log('Appointment updated successfully:', appointment?.id);
 
         return new Response(JSON.stringify({ appointment }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

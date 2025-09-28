@@ -96,17 +96,40 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
 
   const createMutation = useMutation({
     mutationFn: async (appointmentData: CreateAppointmentData) => {
-      const { data, error } = await supabase.functions.invoke('manage-agenda', {
-        body: { action: 'create', context_id, ...appointmentData },
-      });
-
-      if (error) {
-        console.error('Error creating appointment:', error);
-        throw error;
+      // Validação básica
+      if (!appointmentData.titulo?.trim()) {
+        throw new Error('Título é obrigatório');
+      }
+      if (!appointmentData.data_agendamento) {
+        throw new Error('Data de agendamento é obrigatória');
       }
 
-      return data.appointment;
+      try {
+        const { data, error } = await supabase.functions.invoke('manage-agenda', {
+          body: { 
+            action: 'create', 
+            context_id: context_id || undefined,
+            ...appointmentData 
+          },
+        });
+
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(error.message || 'Erro na criação do compromisso');
+        }
+
+        if (!data?.appointment) {
+          throw new Error('Resposta inválida do servidor');
+        }
+
+        return data.appointment;
+      } catch (error) {
+        console.error('Create mutation error:', error);
+        throw error;
+      }
     },
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast({
@@ -116,9 +139,13 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
     },
     onError: (error: any) => {
       console.error('Error creating appointment:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Falha ao criar compromisso. Tente novamente.';
+      
       toast({
         title: 'Erro',
-        description: 'Falha ao criar compromisso.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
@@ -126,17 +153,38 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, ...appointmentData }: Partial<Appointment> & { id: string }) => {
-      const { data, error } = await supabase.functions.invoke('manage-agenda', {
-        body: { action: 'update', id, context_id, ...appointmentData },
-      });
-
-      if (error) {
-        console.error('Error updating appointment:', error);
-        throw error;
+      // Validação básica
+      if (!id) {
+        throw new Error('ID do compromisso é obrigatório');
       }
 
-      return data.appointment;
+      try {
+        const { data, error } = await supabase.functions.invoke('manage-agenda', {
+          body: { 
+            action: 'update', 
+            id: id.trim(), 
+            context_id: context_id || undefined,
+            ...appointmentData 
+          },
+        });
+
+        if (error) {
+          console.error('Edge function error:', error);
+          throw new Error(error.message || 'Erro na atualização do compromisso');
+        }
+
+        if (!data?.appointment) {
+          throw new Error('Resposta inválida do servidor');
+        }
+
+        return data.appointment;
+      } catch (error) {
+        console.error('Update mutation error:', error);
+        throw error;
+      }
     },
+    retry: 2,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 5000),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast({
@@ -146,9 +194,13 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
     },
     onError: (error: any) => {
       console.error('Error updating appointment:', error);
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Falha ao atualizar compromisso. Tente novamente.';
+      
       toast({
         title: 'Erro',
-        description: 'Falha ao atualizar compromisso.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
