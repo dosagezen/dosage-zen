@@ -340,30 +340,35 @@ const Dashboard = () => {
           <CardContent className="space-y-4">
             {proximasMedicacoes.length > 0 ? (
               proximasMedicacoes.map((med, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-accent/10 rounded-lg">
+                <div 
+                  key={index} 
+                  className="flex items-center justify-between p-3 bg-accent/10 rounded-lg hover-scale transition-all duration-200 hover:bg-accent/20"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-gradient-accent rounded-full flex items-center justify-center shrink-0">
                       <Pill className="w-5 h-5 text-white" />
                     </div>
-                    <div>
-                      <p className="font-medium text-primary">{med.nome}</p>
-                      <p className="text-sm text-muted-foreground">{med.dosagem}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-primary truncate">{med.nome}</p>
+                      <p className="text-sm text-muted-foreground truncate">{med.dosagem}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-primary">{formatTime24h(typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A')}</p>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-semibold text-primary whitespace-nowrap">
+                      {formatTime24h(typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A')}
+                    </p>
                     <Badge 
                       variant={
                         med.status === 'pendente' ? 'secondary' : 
                         med.status === 'atrasado' ? 'destructive' : 
                         med.status === 'concluido' ? 'default' : 'outline'
                       }
-                      className={
+                      className={`text-xs whitespace-nowrap ${
                         med.status === 'pendente' ? "bg-orange-500 text-white hover:bg-orange-600" :
                         med.status === 'atrasado' ? "bg-red-500 text-white hover:bg-red-600" :
                         med.status === 'concluido' ? "bg-green-500 text-white hover:bg-green-600" :
                         "bg-gray-500 text-white hover:bg-gray-600"
-                      }
+                      }`}
                     >
                       {med.status === 'pendente' ? 'Pendente' :
                        med.status === 'atrasado' ? 'Atrasado' :
@@ -436,17 +441,27 @@ const Dashboard = () => {
                 const { icon: Icon, bgClass, iconBg, iconText } = getIconAndStyle(apt.tipo);
 
                 return (
-                  <div key={index} className={`flex items-center gap-3 p-3 rounded-lg ${bgClass}`}>
-                    <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center`}>
-                      <Icon className={`w-5 h-5 ${iconText}`} />
+                  <div 
+                    key={index} 
+                    className={`flex items-center justify-between p-3 rounded-lg hover-scale transition-all duration-200 ${bgClass} hover:opacity-80`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center shrink-0`}>
+                        <Icon className={`w-5 h-5 ${iconText}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-primary truncate">{apt.titulo}</p>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {apt.medico_profissional ? `${apt.medico_profissional} • ` : ''}
+                          {dataFormatada}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-primary">{apt.titulo}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {apt.medico_profissional ? `${apt.medico_profissional} • ` : ''}
-                        {dataFormatada} às {horaFormatada}
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-primary whitespace-nowrap">
+                        {horaFormatada}
                       </p>
-                      <Badge variant="secondary" className="text-xs capitalize">
+                      <Badge variant="secondary" className="text-xs whitespace-nowrap capitalize">
                         {apt.tipo}
                       </Badge>
                     </div>
