@@ -131,9 +131,10 @@ const Dashboard = () => {
           9999 // Valor alto para colocar no final
       };
     })
+    .filter(med => med.status !== 'concluido') // Remover medicações que já foram totalmente concluídas
     .sort((a, b) => {
-      // Priorizar por status: pendente > atrasado > concluido > sem-horario
-      const statusPriority = { 'pendente': 1, 'atrasado': 2, 'concluido': 3, 'sem-horario': 4 };
+      // Priorizar por status: atrasado > pendente > sem-horario
+      const statusPriority = { 'atrasado': 1, 'pendente': 2, 'sem-horario': 3 };
       if (statusPriority[a.status] !== statusPriority[b.status]) {
         return statusPriority[a.status] - statusPriority[b.status];
       }
