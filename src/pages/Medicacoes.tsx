@@ -557,7 +557,7 @@ const Medicacoes = () => {
         if (a.isOptimistic && !b.isOptimistic) return -1;
         if (!a.isOptimistic && b.isOptimistic) return 1;
         
-        // Medicações pendentes primeiro
+        // Medicações pendentes primeiro, depois concluídas
         const aCompleted = isAllDosesCompleted(a)
         const bCompleted = isAllDosesCompleted(b)
         
@@ -565,7 +565,44 @@ const Medicacoes = () => {
           return aCompleted ? 1 : -1
         }
         
-        // Então por ordem alfabética
+        // Ordenar por horários - encontrar o próximo horário relevante
+        const getNextScheduledTime = (medicacao: MedicacaoCompleta): number => {
+          const validHorarios = medicacao.horarios.filter(h => h.hora && h.hora !== '-');
+          if (validHorarios.length === 0) return 24 * 60; // Se não tem horários, vai para o final
+          
+          // Se a medicação está completa, usar o primeiro horário para ordenação consistente
+          if (isAllDosesCompleted(medicacao)) {
+            const [hours, minutes] = validHorarios[0].hora.split(':').map(Number);
+            return hours * 60 + minutes;
+          }
+          
+          // Para medicações pendentes, encontrar o próximo horário pendente
+          const pendingHorarios = validHorarios
+            .filter(h => h.status === 'pendente')
+            .sort((h1, h2) => {
+              const [h1Hours, h1Minutes] = h1.hora.split(':').map(Number);
+              const [h2Hours, h2Minutes] = h2.hora.split(':').map(Number);
+              return (h1Hours * 60 + h1Minutes) - (h2Hours * 60 + h2Minutes);
+            });
+          
+          if (pendingHorarios.length > 0) {
+            const [hours, minutes] = pendingHorarios[0].hora.split(':').map(Number);
+            return hours * 60 + minutes;
+          }
+          
+          // Se não tem pendentes, usar o primeiro horário
+          const [hours, minutes] = validHorarios[0].hora.split(':').map(Number);
+          return hours * 60 + minutes;
+        };
+        
+        const timeA = getNextScheduledTime(a);
+        const timeB = getNextScheduledTime(b);
+        
+        if (timeA !== timeB) {
+          return timeA - timeB; // Ordem crescente por horário
+        }
+        
+        // Se horários iguais, ordem alfabética
         return a.nome.localeCompare(b.nome)
       })
     } catch (error) {
@@ -580,26 +617,65 @@ const Medicacoes = () => {
 
   // Separar medicações baseado no filtro ativo
   const medicacoesPendentes = useMemo(() => {
+    let pendentes;
     if (activeFilter === 'ativas') {
       // For "ativas" filter, use convertedMedications directly to match the counter logic
-      return convertedMedications.filter(med => med && med.status === "ativa" && !med.removed_from_today);
+      pendentes = convertedMedications.filter(med => med && med.status === "ativa" && !med.removed_from_today);
+    } else {
+      pendentes = filteredMedicacoes.filter(med => {
+        if (!med) return false;
+        if (activeFilter === 'hoje') {
+          return !isAllDosesCompleted(med);
+        } else if (activeFilter === 'todas') {
+          return med.status === "ativa";
+        }
+        return med.status === "ativa";
+      });
     }
     
-    return filteredMedicacoes.filter(med => {
-      if (!med) return false;
-      if (activeFilter === 'hoje') {
-        return !isAllDosesCompleted(med);
-      } else if (activeFilter === 'todas') {
-        return med.status === "ativa";
+    // Aplicar ordenação por horários
+    return pendentes.sort((a, b) => {
+      // Optimistic medications first
+      if (a.isOptimistic && !b.isOptimistic) return -1;
+      if (!a.isOptimistic && b.isOptimistic) return 1;
+      
+      const getNextScheduledTime = (medicacao: MedicacaoCompleta): number => {
+        const validHorarios = medicacao.horarios.filter(h => h.hora && h.hora !== '-');
+        if (validHorarios.length === 0) return 24 * 60;
+        
+        const pendingHorarios = validHorarios
+          .filter(h => h.status === 'pendente')
+          .sort((h1, h2) => {
+            const [h1Hours, h1Minutes] = h1.hora.split(':').map(Number);
+            const [h2Hours, h2Minutes] = h2.hora.split(':').map(Number);
+            return (h1Hours * 60 + h1Minutes) - (h2Hours * 60 + h2Minutes);
+          });
+        
+        if (pendingHorarios.length > 0) {
+          const [hours, minutes] = pendingHorarios[0].hora.split(':').map(Number);
+          return hours * 60 + minutes;
+        }
+        
+        const [hours, minutes] = validHorarios[0].hora.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+      
+      const timeA = getNextScheduledTime(a);
+      const timeB = getNextScheduledTime(b);
+      
+      if (timeA !== timeB) {
+        return timeA - timeB;
       }
-      return med.status === "ativa";
+      
+      return a.nome.localeCompare(b.nome);
     });
   }, [filteredMedicacoes, activeFilter, convertedMedications, isAllDosesCompleted])
   
   const medicacoesConcluidas = useMemo(() => {
+    let concluidas;
     if (activeFilter === 'hoje') {
       // Para o filtro "hoje", buscar diretamente na lista completa, não na filtrada
-      return convertedMedications.filter(med => {
+      concluidas = convertedMedications.filter(med => {
         if (!med || med.removed_from_today) return false;
         if (med.status !== "ativa") return false;
         
@@ -611,9 +687,30 @@ const Medicacoes = () => {
         return isAllDosesCompleted(med);
       });
     } else if (activeFilter === 'todas') {
-      return filteredMedicacoes.filter(med => med && med.status === "inativa");
+      concluidas = filteredMedicacoes.filter(med => med && med.status === "inativa");
+    } else {
+      concluidas = []; // For "ativas" filter, no completed list
     }
-    return []; // For "ativas" filter, no completed list
+    
+    // Aplicar ordenação por horários
+    return concluidas.sort((a, b) => {
+      const getFirstScheduledTime = (medicacao: MedicacaoCompleta): number => {
+        const validHorarios = medicacao.horarios.filter(h => h.hora && h.hora !== '-');
+        if (validHorarios.length === 0) return 24 * 60;
+        
+        const [hours, minutes] = validHorarios[0].hora.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+      
+      const timeA = getFirstScheduledTime(a);
+      const timeB = getFirstScheduledTime(b);
+      
+      if (timeA !== timeB) {
+        return timeA - timeB;
+      }
+      
+      return a.nome.localeCompare(b.nome);
+    });
   }, [convertedMedications, filteredMedicacoes, activeFilter, isAllDosesCompleted])
 
   // Calculate counters based on real occurrences
