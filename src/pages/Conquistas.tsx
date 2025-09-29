@@ -200,7 +200,7 @@ export default function Conquistas() {
           </div>
           
           {/* Stacked progress bar */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full mx-auto">
             <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex w-full">
               {metricas.total > 0 ? (
                 <>
