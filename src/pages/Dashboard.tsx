@@ -106,7 +106,7 @@ const Dashboard = () => {
     icone: Pill,
     cor: "success"
   }, {
-    titulo: "Medicações Ativas",
+    titulo: "Minhas Conquistas",
     valor: medicacoesAtivas.length.toString(),
     icone: TrendingUp,
     cor: "primary"
