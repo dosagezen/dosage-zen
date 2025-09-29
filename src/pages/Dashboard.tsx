@@ -333,7 +333,7 @@ const Dashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-primary flex items-center gap-2">
               <Clock className="w-5 h-5" />
-              Próximas Medicações (por horário)
+              Próximas Medicações
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => navigate('/app/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
           </CardHeader>
