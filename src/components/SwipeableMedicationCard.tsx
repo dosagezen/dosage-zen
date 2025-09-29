@@ -194,6 +194,12 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
     }
     
     if (medicacao.removed_from_today) {
+      // Check if removed by completion or exclusion
+      if (medicacao.removal_reason === 'excluded') {
+        return { variant: 'destructive' as const, text: 'Cancelada hoje' }
+      } else if (medicacao.removal_reason === 'completed') {
+        return { variant: 'default' as const, text: 'Concluída hoje' }
+      }
       return { variant: 'default' as const, text: 'Finalizada hoje' }
     }
     
@@ -203,12 +209,21 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
     const excludedCount = validHorarios.filter(h => h.status === 'excluido').length
     const totalCount = validHorarios.length
     
-    if (pendingCount === 0 && (completedCount > 0 || excludedCount > 0)) {
-      return { variant: 'default' as const, text: `Concluída (${completedCount}/${totalCount})` }
+    // All doses finalized
+    if (pendingCount === 0 && totalCount > 0) {
+      if (excludedCount > 0 && completedCount === 0) {
+        return { variant: 'destructive' as const, text: `Cancelada (${excludedCount}/${totalCount})` }
+      } else if (completedCount > 0 && excludedCount === 0) {
+        return { variant: 'default' as const, text: `Concluída (${completedCount}/${totalCount})` }
+      } else if (completedCount > 0 && excludedCount > 0) {
+        return { variant: 'secondary' as const, text: `${completedCount} feitos, ${excludedCount} cancelados` }
+      }
     }
     
-    if (completedCount > 0 && pendingCount > 0) {
-      return { variant: 'secondary' as const, text: `${completedCount}/${totalCount} feitos` }
+    // Partial completion
+    if ((completedCount > 0 || excludedCount > 0) && pendingCount > 0) {
+      const finalizadosCount = completedCount + excludedCount
+      return { variant: 'secondary' as const, text: `${finalizadosCount}/${totalCount} finalizados` }
     }
     
     return { variant: 'secondary' as const, text: `${totalCount} horário${totalCount > 1 ? 's' : ''}` }
