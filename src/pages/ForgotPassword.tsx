@@ -1,24 +1,20 @@
 import { useState } from "react";
-import { ArrowLeft, Mail, Eye, EyeOff, Check } from "lucide-react";
+import { ArrowLeft, Mail, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
-type Step = "email" | "codigo" | "nova-senha" | "sucesso";
+type Step = "email" | "sucesso";
 
 const ForgotPassword = () => {
   const [currentStep, setCurrentStep] = useState<Step>("email");
   const [formData, setFormData] = useState({
-    email: "",
-    codigo: "",
-    novaSenha: "",
-    confirmarSenha: ""
+    email: ""
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -39,38 +35,6 @@ const ForgotPassword = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateCodigo = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.codigo.trim()) {
-      newErrors.codigo = "Código é obrigatório";
-    } else if (formData.codigo.length !== 6) {
-      newErrors.codigo = "Código deve ter 6 dígitos";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateNovaSenha = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.novaSenha) {
-      newErrors.novaSenha = "Nova senha é obrigatória";
-    } else if (formData.novaSenha.length < 8) {
-      newErrors.novaSenha = "Mínimo 8 caracteres";
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.novaSenha)) {
-      newErrors.novaSenha = "Deve conter maiúscula, minúscula e número";
-    }
-
-    if (formData.novaSenha !== formData.confirmarSenha) {
-      newErrors.confirmarSenha = "Senhas não coincidem";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleEnviarEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -79,16 +43,28 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Simular envio de email
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        console.error('Erro ao enviar email de recuperação:', error);
+        toast({
+          title: "Erro ao enviar e-mail",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
       
       toast({
-        title: "E-mail enviado (mock)",
-        description: "Se existir uma conta, enviamos um link de recuperação.",
+        title: "E-mail enviado!",
+        description: "Verifique sua caixa de entrada e spam. O link expira em 1 hora.",
       });
       
-      setCurrentStep("codigo");
+      setCurrentStep("sucesso");
     } catch (error) {
+      console.error('Erro inesperado:', error);
       toast({
         title: "Erro",
         description: "Erro ao enviar e-mail. Tente novamente.",
@@ -99,291 +75,84 @@ const ForgotPassword = () => {
     }
   };
 
-  const handleValidarCodigo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateCodigo()) return;
-
-    setIsLoading(true);
-
-    try {
-      // Simular validação do código
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Código demo: 123456
-      if (formData.codigo === "123456") {
-        setCurrentStep("nova-senha");
-      } else {
-        toast({
-          title: "Código inválido (mock)",
-          description: "Código incorreto. Use 123456 para demonstração.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao validar código. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleNovaSenha = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateNovaSenha()) return;
-
-    setIsLoading(true);
-
-    try {
-      // Simular alteração de senha
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setCurrentStep("sucesso");
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao alterar senha. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const renderStepContent = () => {
-    switch (currentStep) {
-      case "email":
-        return (
-          <form onSubmit={handleEnviarEmail} className="space-y-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
-                <Mail className="w-6 h-6 text-primary" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Digite seu e-mail para receber o código de recuperação
-              </p>
+    if (currentStep === "email") {
+      return (
+        <form onSubmit={handleEnviarEmail} className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
+              <Mail className="w-6 h-6 text-primary" />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Ex.: usuario@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className={errors.email ? "border-destructive" : ""}
-                disabled={isLoading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary-hover"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Enviando...
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Enviar Link de Recuperação
-                </div>
-              )}
-            </Button>
-          </form>
-        );
-
-      case "codigo":
-        return (
-          <form onSubmit={handleValidarCodigo} className="space-y-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
-                <Mail className="w-6 h-6 text-primary" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Digite o código enviado para <strong>{formData.email}</strong>
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="codigo">Código de Verificação</Label>
-              <Input
-                id="codigo"
-                type="text"
-                placeholder="000000"
-                value={formData.codigo}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                  setFormData(prev => ({ ...prev, codigo: value }));
-                }}
-                className={`text-center text-lg tracking-widest ${errors.codigo ? "border-destructive" : ""}`}
-                disabled={isLoading}
-                maxLength={6}
-              />
-              {errors.codigo && (
-                <p className="text-sm text-destructive">{errors.codigo}</p>
-              )}
-              <p className="text-xs text-muted-foreground text-center">
-                Use <strong>123456</strong> para demonstração
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                type="submit"
-                className="w-full bg-primary hover:bg-primary-hover"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                    Validando...
-                  </div>
-                ) : (
-                  "Validar Código"
-                )}
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full text-sm"
-                onClick={() => setCurrentStep("email")}
-              >
-                Reenviar código
-              </Button>
-            </div>
-          </form>
-        );
-
-      case "nova-senha":
-        return (
-          <form onSubmit={handleNovaSenha} className="space-y-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full mb-4">
-                <Check className="w-6 h-6 text-primary" />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Código validado! Agora defina uma nova senha
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {/* Nova Senha */}
-              <div className="space-y-2">
-                <Label htmlFor="novaSenha">Nova Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="novaSenha"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Ex.: ********"
-                    value={formData.novaSenha}
-                    onChange={(e) => setFormData(prev => ({ ...prev, novaSenha: e.target.value }))}
-                    className={errors.novaSenha ? "border-destructive pr-10" : "pr-10"}
-                    disabled={isLoading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={isLoading}
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-                {errors.novaSenha && (
-                  <p className="text-sm text-destructive">{errors.novaSenha}</p>
-                )}
-              </div>
-
-              {/* Confirmar Senha */}
-              <div className="space-y-2">
-                <Label htmlFor="confirmarSenha">Confirmar Nova Senha</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmarSenha"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Ex.: ********"
-                    value={formData.confirmarSenha}
-                    onChange={(e) => setFormData(prev => ({ ...prev, confirmarSenha: e.target.value }))}
-                    className={errors.confirmarSenha ? "border-destructive pr-10" : "pr-10"}
-                    disabled={isLoading}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    disabled={isLoading}
-                    aria-label={showConfirmPassword ? "Ocultar confirmação de senha" : "Mostrar confirmação de senha"}
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-                {errors.confirmarSenha && (
-                  <p className="text-sm text-destructive">{errors.confirmarSenha}</p>
-                )}
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary-hover"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Alterando...
-                </div>
-              ) : (
-                "Salvar Nova Senha"
-              )}
-            </Button>
-          </form>
-        );
-
-      case "sucesso":
-        return (
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-success/10 rounded-full mb-4">
-              <Check className="w-8 h-8 text-success" />
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-success">Senha alterada (mock)!</h3>
-              <p className="text-sm text-muted-foreground">
-                Sua senha foi alterada com sucesso. Vá para o login.
-              </p>
-            </div>
-
-            <Button
-              onClick={() => navigate("/login")}
-              className="w-full bg-primary hover:bg-primary-hover"
-            >
-              Ir para Login
-            </Button>
+            <p className="text-sm text-muted-foreground">
+              Digite seu e-mail para receber o link de recuperação
+            </p>
           </div>
-        );
 
-      default:
-        return null;
+          <div className="space-y-2">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Ex.: usuario@email.com"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className={errors.email ? "border-destructive" : ""}
+              disabled={isLoading}
+            />
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email}</p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-primary hover:bg-primary-hover"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                Enviando...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Enviar Link de Recuperação
+              </div>
+            )}
+          </Button>
+        </form>
+      );
     }
+
+    if (currentStep === "sucesso") {
+      return (
+        <div className="text-center space-y-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-success/10 rounded-full mb-4">
+            <Check className="w-8 h-8 text-success" />
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold text-success">E-mail enviado!</h3>
+            <p className="text-sm text-muted-foreground">
+              Verifique sua caixa de entrada e clique no link para redefinir sua senha.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Não esqueça de verificar a pasta de spam.
+            </p>
+          </div>
+
+          <Button
+            onClick={() => navigate("/login")}
+            className="w-full bg-primary hover:bg-primary-hover"
+          >
+            Voltar para Login
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -404,10 +173,7 @@ const ForgotPassword = () => {
         <Card className="shadow-floating">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl text-primary">
-              {currentStep === "email" && "Esqueci a Senha"}
-              {currentStep === "codigo" && "Validar Código"}
-              {currentStep === "nova-senha" && "Nova Senha"}
-              {currentStep === "sucesso" && "Sucesso!"}
+              {currentStep === "email" ? "Esqueci a Senha" : "E-mail Enviado!"}
             </CardTitle>
           </CardHeader>
           <CardContent>

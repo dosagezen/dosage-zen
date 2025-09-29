@@ -16,6 +16,7 @@ import Admin from "./pages/Admin";
 import AdminSignup from "./pages/AdminSignup";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/admin/signup" element={<AdminSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/app/*" element={<AppLayout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
