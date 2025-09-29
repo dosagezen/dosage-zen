@@ -290,6 +290,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                       .sort((a, b) => a.hora.localeCompare(b.hora))
                       .map((horario, index) => (
                         <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs bg-muted/50 px-2 py-1 rounded">
+                          <Clock className="w-3 h-3 text-muted-foreground" />
                           <span className={`font-medium ${
                             horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
                             horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
