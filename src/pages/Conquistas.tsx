@@ -270,16 +270,6 @@ export default function Conquistas() {
               <div className="text-xs text-primary/60 text-center">Concluídos</div>
             </div>
 
-            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-green-100 flex flex-col items-center">
-              <div className="mb-2">
-                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
-                  {metricas.total > 0 ? Math.round((metricas.cancelados / metricas.total) * 100) : 0}%
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-primary text-center">{metricas.cancelados}</div>
-              <div className="text-xs text-primary/60 text-center">Cancelados</div>
-            </div>
-
             <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-orange-100 flex flex-col items-center">
               <div className="mb-2">
                 <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-faltando))' }}>
@@ -298,6 +288,16 @@ export default function Conquistas() {
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.atrasados}</div>
               <div className="text-xs text-primary/60 text-center">Atrasados</div>
+            </div>
+
+            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-green-100 flex flex-col items-center">
+              <div className="mb-2">
+                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.cancelados / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-primary text-center">{metricas.cancelados}</div>
+              <div className="text-xs text-primary/60 text-center">Cancelados</div>
             </div>
           </div>
 
