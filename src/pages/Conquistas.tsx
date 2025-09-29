@@ -423,7 +423,7 @@ export default function Conquistas() {
           </div>
         ) : (
           <div className="flex flex-col items-center space-y-4 sm:space-y-6 w-full">
-            <div className="w-full max-w-2xl px-0">
+            <div className="w-full px-0">
               {renderResumoCard()}
             </div>
             <div className="w-full">
