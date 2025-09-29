@@ -363,7 +363,7 @@ const Dashboard = () => {
                         med.status === 'atrasado' ? 'destructive' : 
                         med.status === 'concluido' ? 'default' : 'outline'
                       }
-                      className={`text-xs whitespace-nowrap ${
+                      className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${
                         med.status === 'pendente' ? "bg-orange-500 text-white hover:bg-orange-600" :
                         med.status === 'atrasado' ? "bg-red-500 text-white hover:bg-red-600" :
                         med.status === 'concluido' ? "bg-green-500 text-white hover:bg-green-600" :
