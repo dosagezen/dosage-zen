@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronRight, Filter, BarChart3 } from 'lucide-react';
+import { ChevronRight, BarChart3 } from 'lucide-react';
 import { useConquests } from '@/hooks/useConquests';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 type Period = 'hoje' | 'semana' | 'mes' | 'historico';
 type Category = 'todas' | 'medicacao' | 'consulta' | 'exame' | 'atividade';
@@ -45,7 +46,7 @@ export default function Conquistas() {
     setSelectedCategory(newCategory);
   };
 
-  const renderPeriodChips = () => {
+  const renderFilterChips = () => {
     const periods = [
       { value: 'hoje' as Period, label: 'Hoje' },
       { value: 'semana' as Period, label: 'Semana' },
@@ -53,40 +54,95 @@ export default function Conquistas() {
       { value: 'historico' as Period, label: 'Histórico' }
     ];
 
+    const categories = [
+      { value: 'todas' as Category, label: 'Todas' },
+      { value: 'medicacao' as Category, label: 'Medicações' },
+      { value: 'consulta' as Category, label: 'Consultas' },
+      { value: 'exame' as Category, label: 'Exames' },
+      { value: 'atividade' as Category, label: 'Atividades' }
+    ];
+
+    const getCount = (type: 'period' | 'category', value: string) => {
+      if (!summary) return 0;
+      
+      if (type === 'period') {
+        // Para períodos, sempre mostrar total planejados
+        return summary.planejados || 0;
+      } else {
+        // Para categorias
+        if (value === 'todas') {
+          return summary.planejados || 0;
+        }
+        const categoryData = summary.by_category?.[value];
+        return (categoryData as any)?.planejados || 0;
+      }
+    };
+
     return (
-      <div className="flex items-center gap-3 flex-wrap">
-        <Filter className="w-5 h-5 text-muted-foreground" />
-        {periods.map((period) => (
-          <div
-            key={period.value}
-            className={`filter-chip ${
-              selectedPeriod === period.value 
-                ? 'filter-chip-active' 
-                : 'filter-chip-inactive'
-            }`}
-            onClick={() => updateFilters(period.value, selectedCategory)}
-          >
-            {period.label}
-          </div>
-        ))}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Period chips */}
+        {periods.map((period) => {
+          const count = getCount('period', period.value);
+          const isActive = selectedPeriod === period.value;
+          
+          return (
+            <button
+              key={period.value}
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                isActive
+                  ? "bg-[#344E41] text-white"
+                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+              )}
+              onClick={() => updateFilters(period.value, selectedCategory)}
+            >
+              {period.label}
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-semibold",
+                isActive
+                  ? "bg-white/20 text-white"
+                  : "bg-[#344E41]/10 text-[#344E41]"
+              )}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+        
+        {/* Separator */}
+        <div className="w-px h-6 bg-border mx-2" />
+        
+        {/* Category chips */}
+        {categories.map((category) => {
+          const count = getCount('category', category.value);
+          const isActive = selectedCategory === category.value;
+          
+          return (
+            <button
+              key={category.value}
+              className={cn(
+                "inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                isActive
+                  ? "bg-[#344E41] text-white"
+                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
+              )}
+              onClick={() => updateFilters(selectedPeriod, category.value)}
+            >
+              {category.label}
+              <span className={cn(
+                "px-2 py-0.5 rounded-full text-xs font-semibold",
+                isActive
+                  ? "bg-white/20 text-white"
+                  : "bg-[#344E41]/10 text-[#344E41]"
+              )}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
     );
   };
-
-  const renderCategoriaSelect = () => (
-    <Select value={selectedCategory} onValueChange={(value: Category) => updateFilters(selectedPeriod, value)}>
-      <SelectTrigger className="w-[220px] h-12 rounded-2xl border-border/50 focus:ring-1 focus:ring-primary/20">
-        <SelectValue placeholder="Todas as categorias" />
-      </SelectTrigger>
-      <SelectContent>
-        {Object.entries(CATEGORIA_LABELS).map(([value, label]) => (
-          <SelectItem key={value} value={value}>
-            {label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
 
   const calcularMetricas = () => {
     if (!summary) return { concluidos: 0, faltando: 0, atrasados: 0, cancelados: 0, total: 0, percentual: 0 };
@@ -367,9 +423,8 @@ export default function Conquistas() {
             <h1 className="text-3xl font-extrabold text-primary mb-2">Conquistas</h1>
             <p className="text-base text-primary/70">Acompanhe seu progresso e conquistas</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            {renderPeriodChips()}
-            {renderCategoriaSelect()}
+          <div className="flex flex-wrap gap-2">
+            {renderFilterChips()}
           </div>
         </div>
       </div>
