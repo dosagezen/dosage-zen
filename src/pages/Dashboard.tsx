@@ -364,7 +364,6 @@ const Dashboard = () => {
                 </div>) : <div className="text-center py-8 text-muted-foreground">
                 <Pill className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Nenhuma medicação prevista no momento</p>
-                <p className="text-sm">Adicione sua primeira medicação</p>
               </div>}
           </CardContent>
         </Card>
