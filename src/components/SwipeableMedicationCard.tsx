@@ -216,6 +216,34 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
 
   const statusInfo = getStatusInfo()
 
+  // Helper function to pluralize forma based on estoque
+  const getFormaGramatical = (forma: string, estoque: number) => {
+    if (estoque === 1) return forma;
+    
+    // Handle common medication forms
+    const formas: { [key: string]: string } = {
+      'comprimido': 'comprimidos',
+      'cápsula': 'cápsulas',
+      'capsula': 'cápsulas',
+      'gota': 'gotas',
+      'ml': 'ml',
+      'mg': 'mg',
+      'ampola': 'ampolas',
+      'frasco': 'frascos',
+      'sachê': 'sachês',
+      'sache': 'sachês',
+      'adesivo': 'adesivos',
+      'supositório': 'supositórios',
+      'supositorio': 'supositórios',
+      'spray': 'sprays',
+      'inalação': 'inalações',
+      'inalacao': 'inalações',
+    };
+    
+    const formaLower = forma.toLowerCase().trim();
+    return formas[formaLower] || forma;
+  }
+
   return (
     <div className="relative">
       {getBackgroundOverlay()}
@@ -243,12 +271,10 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                   {medicacao.nome}
                 </h3>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  {medicacao.dosagem} • {medicacao.forma}
+                  {medicacao.dosagem} • {medicacao.estoque} {getFormaGramatical(medicacao.forma, medicacao.estoque)}
                 </p>
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
                   <span>{medicacao.frequencia}</span>
-                  <span>•</span>
-                  <span>Estoque: {medicacao.estoque}</span>
                 </div>
               </div>
             </div>
