@@ -220,14 +220,17 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
   const getFormaGramatical = (forma: string, estoque: number) => {
     if (estoque === 1) return forma;
     
-    // Handle common medication forms
+    // Handle common medication forms with proper plural and gender agreement
     const formas: { [key: string]: string } = {
       'comprimido': 'comprimidos',
       'cápsula': 'cápsulas',
       'capsula': 'cápsulas',
+      'pílula': 'pílulas',
+      'pilula': 'pílulas',
       'gota': 'gotas',
       'ml': 'ml',
       'mg': 'mg',
+      'g': 'g',
       'ampola': 'ampolas',
       'frasco': 'frascos',
       'sachê': 'sachês',
@@ -238,10 +241,22 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
       'spray': 'sprays',
       'inalação': 'inalações',
       'inalacao': 'inalações',
+      'aplicação': 'aplicações',
+      'aplicacao': 'aplicações',
+      'dose': 'doses',
+      'unidade': 'unidades',
+      'pastilha': 'pastilhas',
+      'drágea': 'drágeas',
+      'dragea': 'drágeas',
+      'envelope': 'envelopes',
+      'bisnaga': 'bisnagas',
+      'tubo': 'tubos',
+      'bomba': 'bombas',
+      'seringa': 'seringas',
     };
     
     const formaLower = forma.toLowerCase().trim();
-    return formas[formaLower] || forma;
+    return formas[formaLower] || `${forma}s`;
   }
 
   return (
