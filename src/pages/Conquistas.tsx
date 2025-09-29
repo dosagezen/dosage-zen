@@ -302,7 +302,15 @@ export default function Conquistas() {
           </div>
 
           {/* CTA Button */}
-          <Button className="w-full h-10 sm:h-12 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-sm sm:text-base">
+          <Button 
+            onClick={() => {
+              const element = document.getElementById('progresso-categorias');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
+            className="w-full h-10 sm:h-12 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium text-sm sm:text-base"
+          >
             <BarChart3 className="w-4 h-4 mr-2 flex-shrink-0" />
             Ver análise detalhada
           </Button>
@@ -428,7 +436,7 @@ export default function Conquistas() {
             <div className="w-full px-0">
               {renderResumoCard()}
             </div>
-            <div className="w-full">
+            <div id="progresso-categorias" className="w-full">
               {renderProgressoPorCategorias()}
             </div>
           </div>
