@@ -188,7 +188,11 @@ const Dashboard = () => {
   };
 
   const estatisticas = [{
-    titulo: "Compromissos do Dia",
+    titulo: (
+      <>
+        Compromissos<br className="md:hidden" /> do Dia
+      </>
+    ),
     valor: restantes.toString(),
     icone: Pill,
     cor: "success"
