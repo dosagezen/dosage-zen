@@ -10,6 +10,7 @@ import CompromissosModal from "@/components/CompromissosModal";
 import { useMedications } from "@/hooks/useMedications";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useCompromissosDodia } from "@/hooks/useCompromissosDodia";
+import { useConquests } from "@/hooks/useConquests";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatTime24h } from "@/lib/utils";
 
@@ -43,6 +44,9 @@ const Dashboard = () => {
   const { appointments: consultas } = useAppointments('consulta', currentContext);
   const { appointments: exames } = useAppointments('exame', currentContext);
   const { total, concluidos, restantes } = useCompromissosDodia();
+  
+  // Hook para conquistas da semana
+  const { summary: conquistasSemana } = useConquests({ period: 'semana', category: 'todas' });
 
   // Detectar parâmetro modal=compromissos para reabrir o modal
   useEffect(() => {
@@ -100,6 +104,14 @@ const Dashboard = () => {
   const diasProximoExame = proximoExame ? 
     Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
+  // Calcular percentual de conquistas da semana
+  const calcularPercentualConquistas = () => {
+    if (!conquistasSemana) return 0;
+    const { concluidos, planejados } = conquistasSemana;
+    if (planejados === 0) return 0;
+    return Math.round((concluidos / planejados) * 100);
+  };
+
   const estatisticas = [{
     titulo: "Compromissos do Dia",
     valor: restantes.toString(),
@@ -107,7 +119,7 @@ const Dashboard = () => {
     cor: "success"
   }, {
     titulo: "Minhas Conquistas",
-    valor: medicacoesAtivas.length.toString(),
+    valor: `${calcularPercentualConquistas()}%`,
     icone: TrendingUp,
     cor: "primary"
   }, {
