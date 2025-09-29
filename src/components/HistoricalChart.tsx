@@ -96,9 +96,9 @@ export function HistoricalChart() {
                 type="monotone" 
                 dataKey="aderencia" 
                 stroke="hsl(var(--primary))" 
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+                strokeWidth={3}
+                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 2 }}
+                activeDot={{ r: 4, stroke: 'hsl(var(--primary))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
               />
             </LineChart>
           </ResponsiveContainer>
