@@ -425,6 +425,7 @@ export type Database = {
           celular: string | null
           codigo: string
           created_at: string
+          data_nascimento: string | null
           email: string
           id: string
           is_gestor: boolean | null
@@ -437,6 +438,7 @@ export type Database = {
           celular?: string | null
           codigo: string
           created_at?: string
+          data_nascimento?: string | null
           email: string
           id?: string
           is_gestor?: boolean | null
@@ -449,6 +451,7 @@ export type Database = {
           celular?: string | null
           codigo?: string
           created_at?: string
+          data_nascimento?: string | null
           email?: string
           id?: string
           is_gestor?: boolean | null
@@ -618,6 +621,29 @@ export type Database = {
         Args: { p_medication_id: string }
         Returns: string
       }
+      fn_profile_update: {
+        Args: {
+          p_avatar_url?: string
+          p_celular?: string
+          p_data_nascimento?: string
+          p_email?: string
+          p_is_gestor?: boolean
+          p_nome?: string
+        }
+        Returns: {
+          avatar_url: string | null
+          celular: string | null
+          codigo: string
+          created_at: string
+          data_nascimento: string | null
+          email: string
+          id: string
+          is_gestor: boolean | null
+          nome: string
+          updated_at: string
+          user_id: string
+        }
+      }
       fn_restore_card_for_today: {
         Args: { p_day_local: string; p_med_id: string; p_tz: string }
         Returns: number
@@ -625,6 +651,20 @@ export type Database = {
       fn_undo_last_occurrence: {
         Args: { p_occ_id: string }
         Returns: Json
+      }
+      fn_update_user_main_role: {
+        Args: { p_new_role: Database["public"]["Enums"]["app_role"] }
+        Returns: {
+          context_patient_id: string | null
+          created_at: string
+          email_confirmed: boolean | null
+          id: string
+          is_active: boolean | null
+          profile_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+          user_id: string
+        }
       }
       fn_upsert_medication_occurrences: {
         Args:

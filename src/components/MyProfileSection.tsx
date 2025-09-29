@@ -14,6 +14,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import DeleteAccountDialog from "./DeleteAccountDialog";
 import ConfirmDeleteDialog from "./ConfirmDeleteDialog";
 
@@ -31,33 +33,35 @@ interface MyProfileData {
 
 const MyProfileSection = () => {
   const { toast } = useToast();
+  const { user, profile, userRoles, refreshProfile } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Simula o usuário logado
+  // Estado do perfil carregado do Supabase
   const [profileData, setProfileData] = useState<MyProfileData>({
-    id: "1",
-    codigo: "X7M2A9",
-    nome: "Maria Oliveira",
-    email: "maria@email.com",
-    celular: "(81) 98888-8888",
+    id: "",
+    codigo: "",
+    nome: "",
+    email: "",
+    celular: "",
     papel: "paciente",
-    isGestor: true,
-    perfil: "Acompanhante",
-    dataNascimento: new Date("1990-05-15")
+    isGestor: false,
+    perfil: "Paciente",
+    dataNascimento: undefined
   });
 
   const [formData, setFormData] = useState({
-    nome: profileData.nome,
-    email: profileData.email,
-    celular: profileData.celular,
+    nome: "",
+    email: "",
+    celular: "",
     senha: "",
     confirmarSenha: "",
-    perfil: profileData.perfil,
-    isGestor: profileData.isGestor,
-    dataNascimento: profileData.dataNascimento
+    perfil: "Paciente",
+    isGestor: false,
+    dataNascimento: undefined as Date | undefined
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -68,27 +72,58 @@ const MyProfileSection = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  // Carregar dados reais do Supabase via AuthContext
   useEffect(() => {
-    setFormData({
-      nome: profileData.nome,
-      email: profileData.email,
-      celular: profileData.celular,
-      senha: "",
-      confirmarSenha: "",
-      perfil: profileData.perfil,
-      isGestor: profileData.isGestor,
-      dataNascimento: profileData.dataNascimento
-    });
-    
-    // Sincronizar inputValue com a data
-    if (profileData.dataNascimento) {
-      setInputValue(format(profileData.dataNascimento, "dd/MM/yyyy"));
-      setCurrentMonth(profileData.dataNascimento);
-    } else {
-      setInputValue('');
-      setCurrentMonth(new Date());
+    if (profile && userRoles) {
+      // Determinar o papel principal do usuário
+      const mainRole = userRoles.find(r => r.profile_id === profile.id && r.is_active);
+      
+      // Mapear role para o formato da UI
+      const mapRoleToUI = (role?: string) => {
+        switch (role) {
+          case 'paciente': return 'Paciente';
+          case 'acompanhante': return 'Acompanhante';
+          case 'cuidador': return 'Cuidador';
+          default: return 'Paciente';
+        }
+      };
+      
+      const newProfileData = {
+        id: profile.id,
+        codigo: profile.codigo,
+        nome: profile.nome,
+        email: profile.email,
+        celular: profile.celular || '',
+        papel: mainRole?.role || 'paciente',
+        isGestor: profile.is_gestor,
+        perfil: mapRoleToUI(mainRole?.role),
+        dataNascimento: (profile as any).data_nascimento ? new Date((profile as any).data_nascimento) : undefined
+      };
+      
+      setProfileData(newProfileData);
+      
+      // Atualizar formData também
+      setFormData(prev => ({
+        ...prev,
+        nome: profile.nome,
+        email: profile.email,
+        celular: profile.celular || '',
+        perfil: mapRoleToUI(mainRole?.role),
+        isGestor: profile.is_gestor,
+        dataNascimento: (profile as any).data_nascimento ? new Date((profile as any).data_nascimento) : undefined
+      }));
+      
+      // Sincronizar inputValue com a data
+      if ((profile as any).data_nascimento) {
+        const birthDate = new Date((profile as any).data_nascimento);
+        setInputValue(format(birthDate, "dd/MM/yyyy"));
+        setCurrentMonth(birthDate);
+      } else {
+        setInputValue('');
+        setCurrentMonth(new Date());
+      }
     }
-  }, [profileData]);
+  }, [profile, userRoles]);
 
   // Sincronizar inputValue quando formData.dataNascimento mudar
   useEffect(() => {
@@ -160,31 +195,96 @@ const MyProfileSection = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) return;
-
-    // Atualizar dados do perfil
-    setProfileData(prev => ({
-      ...prev,
-      nome: formData.nome,
-      email: formData.email,
-      celular: formData.celular,
-      perfil: formData.perfil,
-      isGestor: formData.isGestor,
-      dataNascimento: formData.dataNascimento
-    }));
-
-    setIsEditing(false);
-    setFormData(prev => ({ ...prev, senha: "", confirmarSenha: "" }));
     
-    toast({
-      title: "Perfil atualizado",
-      description: "Seus dados foram atualizados com sucesso.",
-    });
+    setIsLoading(true);
+    
+    try {
+      // 1. Atualizar perfil via RPC
+      const { data: updatedProfile, error: profileError } = await supabase.rpc(
+        'fn_profile_update',
+        {
+          p_nome: formData.nome.trim(),
+          p_email: formData.email.trim(),
+          p_celular: formData.celular,
+          p_avatar_url: null, // Implementar upload futuramente
+          p_is_gestor: formData.isGestor,
+          p_data_nascimento: formData.dataNascimento 
+            ? format(formData.dataNascimento, 'yyyy-MM-dd') 
+            : null
+        }
+      );
+      
+      if (profileError) {
+        console.error('Erro ao atualizar perfil:', profileError);
+        throw new Error(profileError.message || 'Erro ao atualizar perfil');
+      }
+      
+      // 2. Atualizar papel principal (se mudou)
+      const mapUIToRole = (perfil: string): 'paciente' | 'acompanhante' | 'cuidador' => {
+        switch (perfil) {
+          case 'Paciente': return 'paciente';
+          case 'Acompanhante': return 'acompanhante';
+          case 'Cuidador': return 'cuidador';
+          default: return 'paciente';
+        }
+      };
+      
+      const newRole = mapUIToRole(formData.perfil);
+      
+      if (newRole !== profileData.papel) {
+        const { error: roleError } = await supabase.rpc(
+          'fn_update_user_main_role',
+          { p_new_role: newRole }
+        );
+        
+        if (roleError) {
+          console.error('Erro ao atualizar papel:', roleError);
+          throw new Error(roleError.message || 'Erro ao atualizar papel');
+        }
+      }
+      
+      // 3. Atualizar senha (se fornecida)
+      if (formData.senha && formData.senha.trim().length >= 6) {
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: formData.senha
+        });
+        
+        if (passwordError) {
+          console.error('Erro ao atualizar senha:', passwordError);
+          throw new Error('Erro ao atualizar senha: ' + passwordError.message);
+        }
+      }
+      
+      // 4. Atualizar contexto local
+      await refreshProfile();
+      
+      // 5. Limpar formulário e sair do modo de edição
+      setIsEditing(false);
+      setFormData(prev => ({ ...prev, senha: "", confirmarSenha: "" }));
+      setErrors({});
+      
+      toast({
+        title: "Perfil atualizado",
+        description: "Seus dados foram salvos com sucesso.",
+      });
+      
+    } catch (error: any) {
+      console.error('Erro completo ao salvar:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: error.message || "Não foi possível salvar as alterações. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
+    setIsLoading(false);
     setFormData({
       nome: profileData.nome,
       email: profileData.email,
@@ -614,10 +714,21 @@ const MyProfileSection = () => {
 
               {/* Ações */}
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button onClick={handleSave} className="bg-primary hover:bg-primary-hover">
-                  Salvar Alterações
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-primary hover:bg-primary-hover"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="animate-spin mr-2">⏳</span>
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Alterações'
+                  )}
                 </Button>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
                   Cancelar
                 </Button>
               </div>
