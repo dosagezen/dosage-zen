@@ -78,17 +78,17 @@ const Configuracoes = () => {
     <div className="min-h-screen bg-background">
       {/* Header Mobile */}
       <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border md:hidden">
-        <div className="flex items-center gap-3 p-4">
-          <Settings className="w-6 h-6 text-primary" />
+        <div className="p-4">
           <h1 className="text-xl font-semibold text-primary">Configurações</h1>
+          <p className="text-sm text-muted-foreground">Gerencie suas preferências</p>
         </div>
       </div>
 
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
         {/* Header Desktop */}
-        <div className="hidden md:flex items-center gap-3 mb-6">
-          <Settings className="w-8 h-8 text-primary" />
+        <div className="hidden md:block mb-6">
           <h1 className="text-3xl font-bold text-primary">Configurações</h1>
+          <p className="text-muted-foreground">Gerencie suas preferências e configurações da conta</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
