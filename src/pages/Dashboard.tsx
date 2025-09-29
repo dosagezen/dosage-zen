@@ -159,9 +159,9 @@ const Dashboard = () => {
     const agora = new Date();
     
     if (dataApt < agora) {
-      return { label: 'Atrasado', variant: 'destructive' as const, className: 'bg-red-500 text-white hover:bg-red-600' };
+      return { label: 'Atrasado', className: 'bg-red-500 text-white hover:bg-red-600' };
     } else {
-      return { label: 'Agendado', variant: 'secondary' as const, className: 'bg-green-500 text-white hover:bg-green-600' };
+      return { label: 'Agendado', className: 'bg-green-500 text-white hover:bg-green-600' };
     }
   };
 
@@ -480,8 +480,7 @@ const Dashboard = () => {
                         {horaFormatada}
                       </p>
                       <Badge 
-                        variant={getCompromissoStatus(apt.data_agendamento).variant}
-                        className={`text-xs whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}
+                        className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}
                       >
                         {getCompromissoStatus(apt.data_agendamento).label}
                       </Badge>
