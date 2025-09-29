@@ -1315,7 +1315,36 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
 
                     const getSubtitle = () => {
                       switch (itemType) {
-                        case 'medicacao': return `${item.dosagem} • ${item.forma}`
+                        case 'medicacao': {
+                          // Helper function to pluralize forma based on estoque
+                          const getFormaGramatical = (forma: string, estoque: number) => {
+                            if (estoque === 1) return forma;
+                            
+                            // Handle common medication forms
+                            const formas: { [key: string]: string } = {
+                              'comprimido': 'comprimidos',
+                              'cápsula': 'cápsulas',
+                              'capsula': 'cápsulas',
+                              'gota': 'gotas',
+                              'ml': 'ml',
+                              'mg': 'mg',
+                              'ampola': 'ampolas',
+                              'frasco': 'frascos',
+                              'sachê': 'sachês',
+                              'sache': 'sachês',
+                              'adesivo': 'adesivos',
+                              'supositório': 'supositórios',
+                              'supositorio': 'supositórios',
+                              'spray': 'sprays',
+                              'inalação': 'inalações',
+                              'inalacao': 'inalações',
+                            };
+                            
+                            const formaLower = forma.toLowerCase().trim();
+                            return formas[formaLower] || forma;
+                          }
+                          return `${item.dosagem} • ${item.estoque} ${getFormaGramatical(item.forma, item.estoque)}`
+                        }
                         case 'consulta': return item.profissional
                         case 'exame': return item.local
                         case 'atividade': return `${item.local} • ${item.duracao}`
