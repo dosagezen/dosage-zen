@@ -354,7 +354,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="font-semibold text-primary whitespace-nowrap">
+                    <p className="text-sm font-semibold text-primary whitespace-nowrap">
                       {formatTime24h(typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A')}
                     </p>
                     <Badge 
