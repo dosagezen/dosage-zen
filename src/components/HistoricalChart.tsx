@@ -77,7 +77,7 @@ export function HistoricalChart() {
         <div className="w-full">
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={historicalData} margin={{ top: 20, right: 8, left: -24, bottom: 20 }}>
+              <LineChart data={historicalData} margin={{ top: 20, right: 8, left: -20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="mes" 
