@@ -37,33 +37,51 @@ export function useHistoricalData() {
           throw error;
         }
 
-        // For now, generate mock data based on the current month
-        // In a real implementation, this would aggregate the data by month
-        const mockData: HistoricalDataPoint[] = [];
-        const currentDate = new Date();
+        // Se não há dados, retornar array vazio
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          return [];
+        }
+
+        // Agregar dados por mês
+        const monthlyData = new Map<string, { concluidos: number; total: number }>();
         
-        for (let i = 11; i >= 0; i--) {
-          const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        (data as any[]).forEach((item: any) => {
+          if (!item.data_referencia) return;
           
-          // Formatar diretamente no padrão mmaa
+          const date = new Date(item.data_referencia);
           const month = date.toLocaleDateString('pt-BR', { month: 'short' }).toLowerCase().replace('.', '');
           const year = date.getFullYear().toString().slice(-2);
           const monthYear = `${month}${year}`;
           
-          // Generate realistic mock data with some variation
-          const baseAderencia = 65 + Math.random() * 30; // 65-95%
-          const total = 25 + Math.floor(Math.random() * 15); // 25-40 total items
-          const concluidos = Math.floor((total * baseAderencia) / 100);
+          if (!monthlyData.has(monthYear)) {
+            monthlyData.set(monthYear, { concluidos: 0, total: 0 });
+          }
           
-          mockData.push({
-            mes: monthYear,
-            aderencia: Math.round(baseAderencia),
-            concluidos,
-            total
-          });
-        }
+          const monthStats = monthlyData.get(monthYear)!;
+          monthStats.total += 1;
+          if (item.status === 'concluido' || item.status === 'realizado') {
+            monthStats.concluidos += 1;
+          }
+        });
 
-        return mockData;
+        // Converter para array e calcular aderência
+        const historicalData: HistoricalDataPoint[] = Array.from(monthlyData.entries())
+          .map(([mes, stats]) => ({
+            mes,
+            concluidos: stats.concluidos,
+            total: stats.total,
+            aderencia: stats.total > 0 ? Math.round((stats.concluidos / stats.total) * 100) : 0
+          }))
+          .sort((a, b) => {
+            // Ordenar por data (extrair mês e ano do formato "mmaa")
+            const [mesA, anoA] = [a.mes.slice(0, 3), a.mes.slice(3)];
+            const [mesB, anoB] = [b.mes.slice(0, 3), b.mes.slice(3)];
+            
+            if (anoA !== anoB) return anoA.localeCompare(anoB);
+            return mesA.localeCompare(mesB);
+          });
+
+        return historicalData;
       } catch (err) {
         console.error('Error fetching historical data:', err);
         throw err;

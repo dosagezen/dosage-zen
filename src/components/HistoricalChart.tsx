@@ -40,7 +40,7 @@ export function HistoricalChart() {
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Não há dados históricos suficientes para exibir o gráfico
+            Aguardando dados
           </div>
         </CardContent>
       </Card>
