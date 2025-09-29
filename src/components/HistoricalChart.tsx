@@ -9,26 +9,27 @@ import { ptBR } from 'date-fns/locale';
 
 const formatMonthYear = (dateString: string) => {
   try {
-    // Tenta diferentes formatos de data
     let date;
+    
+    // Tenta diferentes formatos de data
     if (dateString.includes('-')) {
       // Formato YYYY-MM ou YYYY-MM-DD
-      date = parse(dateString.split('-').slice(0, 2).join('-'), 'yyyy-MM', new Date());
+      const yearMonth = dateString.split('-').slice(0, 2).join('-');
+      date = parse(yearMonth, 'yyyy-MM', new Date());
     } else {
       // Outros formatos
       date = new Date(dateString);
     }
     
     if (isNaN(date.getTime())) {
-      return dateString; // Retorna o original se não conseguir parsear
+      return dateString;
     }
     
-    return format(date, 'MMMy', { locale: ptBR }).toLowerCase()
-      .replace('jan', 'jan').replace('fev', 'fev').replace('mar', 'mar')
-      .replace('abr', 'abr').replace('mai', 'mai').replace('jun', 'jun')
-      .replace('jul', 'jul').replace('ago', 'ago').replace('set', 'set')
-      .replace('out', 'out').replace('nov', 'nov').replace('dez', 'dez')
-      .replace('20', ''); // Remove "20" do ano para ficar apenas os 2 dígitos
+    // Formatação consistente para mmaa
+    const formattedDate = format(date, 'MMMy', { locale: ptBR }).toLowerCase();
+    
+    // Remove "20" do ano apenas se estiver no final da string
+    return formattedDate.replace(/20(\d{2})$/, '$1');
   } catch (error) {
     return dateString;
   }
