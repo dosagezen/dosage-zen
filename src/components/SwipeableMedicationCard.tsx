@@ -346,7 +346,10 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => onRemove(medicacao.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onRemove(medicacao.id)
+                    }}
                     className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                     disabled={isLoading}
                   >
@@ -357,7 +360,10 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => onEdit(medicacao)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit(medicacao)
+                      }}
                       className="h-8 text-xs"
                       disabled={isLoading}
                     >
@@ -368,7 +374,10 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                   <Button 
                     variant="default" 
                     size="sm"
-                    onClick={() => onComplete(medicacao.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onComplete(medicacao.id)
+                    }}
                     className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
                     disabled={isLoading}
                   >
