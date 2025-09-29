@@ -188,7 +188,7 @@ export default function Conquistas() {
                 />
               </svg>
               <div className="absolute inset-[25%] flex items-center justify-center">
-                <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{Math.round(metricas.percentual)}%</span>
+                <span className="text-sm sm:text-base md:text-lg font-bold text-primary">{Math.round(metricas.percentual)}%</span>
               </div>
             </div>
           </div>
