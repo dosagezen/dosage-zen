@@ -58,14 +58,89 @@ const Dashboard = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  // Processar medicações ativas
-  const medicacoesAtivas = medications?.filter(med => med.ativo) || [];
-  const proximasMedicacoes = medicacoesAtivas.slice(0, 3).map(med => ({
-    nome: med.nome,
-    dosagem: med.dosagem,
-    horario: med.horarios?.[0] || "Sem horário",
-    status: "pendente"
-  }));
+  // Processar medicações ativas e ordená-las por próximo horário
+  const medicacoesAtivas = medications?.filter(med => {
+    if (!med.ativo) return false;
+    
+    // Verificar se tem horários válidos
+    if (!Array.isArray(med.horarios) || med.horarios.length === 0) return false;
+    
+    // Verificar se está dentro do período de validade
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = med.data_inicio ? new Date(med.data_inicio) : null;
+    const endDate = med.data_fim ? new Date(med.data_fim) : null;
+    
+    if (startDate && startDate > today) return false;
+    if (endDate && endDate < today) return false;
+    
+    return true;
+  }) || [];
+
+  // Calcular próximo horário pendente para cada medicação
+  const calcularProximoHorario = (horarios: any[]) => {
+    const pendentes = horarios
+      .filter(h => h.status === 'pendente' && h.hora !== '-')
+      .sort((a, b) => {
+        const timeA = a.hora.split(':').map(Number);
+        const timeB = b.hora.split(':').map(Number);
+        return (timeA[0] * 60 + timeA[1]) - (timeB[0] * 60 + timeB[1]);
+      });
+
+    return pendentes.length > 0 ? pendentes[0] : null;
+  };
+
+  // Determinar status da medicação baseado nos horários
+  const determinarStatus = (horarios: any[]) => {
+    const horariosValidos = horarios.filter(h => h.hora !== '-');
+    if (horariosValidos.length === 0) return "sem-horario";
+    
+    const agora = new Date();
+    const horaAtual = agora.getHours() * 60 + agora.getMinutes();
+    
+    // Verificar se tem horários atrasados
+    const atrasados = horariosValidos.filter(h => {
+      if (h.status !== 'pendente') return false;
+      const [hora, min] = h.hora.split(':').map(Number);
+      const horarioMinutos = hora * 60 + min;
+      return horarioMinutos < horaAtual;
+    });
+    
+    if (atrasados.length > 0) return "atrasado";
+    
+    // Verificar se tem pendentes
+    const pendentes = horariosValidos.filter(h => h.status === 'pendente');
+    if (pendentes.length > 0) return "pendente";
+    
+    return "concluido";
+  };
+
+  // Ordenar medicações por próximo horário e pegar as 4 primeiras
+  const proximasMedicacoes = medicacoesAtivas
+    .map(med => {
+      const proximoHorario = calcularProximoHorario(med.horarios || []);
+      const status = determinarStatus(med.horarios || []);
+      
+      return {
+        nome: med.nome,
+        dosagem: med.dosagem,
+        horario: proximoHorario ? proximoHorario.hora : "Sem horário",
+        status: status,
+        proximoHorarioMinutos: proximoHorario ? 
+          proximoHorario.hora.split(':').map(Number).reduce((h, m) => h * 60 + m) : 
+          9999 // Valor alto para colocar no final
+      };
+    })
+    .sort((a, b) => {
+      // Priorizar por status: pendente > atrasado > concluido > sem-horario
+      const statusPriority = { 'pendente': 1, 'atrasado': 2, 'concluido': 3, 'sem-horario': 4 };
+      if (statusPriority[a.status] !== statusPriority[b.status]) {
+        return statusPriority[a.status] - statusPriority[b.status];
+      }
+      // Se mesmo status, ordenar por horário
+      return a.proximoHorarioMinutos - b.proximoHorarioMinutos;
+    })
+    .slice(0, 4); // Mostrar 4 medicações
 
   // Processar próximos compromissos (próximos 7 dias)
   const hoje = new Date();
@@ -258,7 +333,7 @@ const Dashboard = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-primary flex items-center gap-2">
               <Clock className="w-5 h-5" />
-              Próximas Medicações
+              Próximas Medicações (por horário)
             </CardTitle>
             <Button variant="outline" size="sm" onClick={() => navigate('/app/medicacoes')} aria-label="Ver todas as medicações">Ver Todas</Button>
           </CardHeader>
@@ -277,8 +352,23 @@ const Dashboard = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-primary">{formatTime24h(typeof med.horario === 'string' ? med.horario : med.horario?.hora || 'N/A')}</p>
-                    <Badge variant="secondary" className="bg-orange-500 text-white hover:bg-orange-600">
-                      Pendente
+                    <Badge 
+                      variant={
+                        med.status === 'pendente' ? 'secondary' : 
+                        med.status === 'atrasado' ? 'destructive' : 
+                        med.status === 'concluido' ? 'default' : 'outline'
+                      }
+                      className={
+                        med.status === 'pendente' ? "bg-orange-500 text-white hover:bg-orange-600" :
+                        med.status === 'atrasado' ? "bg-red-500 text-white hover:bg-red-600" :
+                        med.status === 'concluido' ? "bg-green-500 text-white hover:bg-green-600" :
+                        "bg-gray-500 text-white hover:bg-gray-600"
+                      }
+                    >
+                      {med.status === 'pendente' ? 'Pendente' :
+                       med.status === 'atrasado' ? 'Atrasado' :
+                       med.status === 'concluido' ? 'Concluído' :
+                       'Sem horário'}
                     </Badge>
                   </div>
                 </div>
