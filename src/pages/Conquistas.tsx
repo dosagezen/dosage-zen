@@ -402,8 +402,10 @@ export default function Conquistas() {
         <div className="flex flex-col space-y-4">
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-primary">Minhas Conquistas</h1>
-              <p className="text-sm sm:text-base text-primary/70">Acompanhe seu progresso e conquistas</p>
+              <h1 className="text-2xl font-bold tracking-tight">Minhas Conquistas</h1>
+              <p className="text-muted-foreground">
+                Acompanhe seu progresso e conquistas
+              </p>
             </div>
             <div className="w-full">
               {renderFilterSection()}
