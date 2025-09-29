@@ -4,6 +4,35 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { useHistoricalData, HistoricalDataPoint } from '@/hooks/useHistoricalData';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format, parse } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+const formatMonthYear = (dateString: string) => {
+  try {
+    // Tenta diferentes formatos de data
+    let date;
+    if (dateString.includes('-')) {
+      // Formato YYYY-MM ou YYYY-MM-DD
+      date = parse(dateString.split('-').slice(0, 2).join('-'), 'yyyy-MM', new Date());
+    } else {
+      // Outros formatos
+      date = new Date(dateString);
+    }
+    
+    if (isNaN(date.getTime())) {
+      return dateString; // Retorna o original se não conseguir parsear
+    }
+    
+    return format(date, 'MMMy', { locale: ptBR }).toLowerCase()
+      .replace('jan', 'jan').replace('fev', 'fev').replace('mar', 'mar')
+      .replace('abr', 'abr').replace('mai', 'mai').replace('jun', 'jun')
+      .replace('jul', 'jul').replace('ago', 'ago').replace('set', 'set')
+      .replace('out', 'out').replace('nov', 'nov').replace('dez', 'dez')
+      .replace('20', ''); // Remove "20" do ano para ficar apenas os 2 dígitos
+  } catch (error) {
+    return dateString;
+  }
+};
 
 export function HistoricalChart() {
   const { data: historicalData, isLoading } = useHistoricalData();
@@ -77,6 +106,7 @@ export function HistoricalChart() {
                 dataKey="mes" 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
+                tickFormatter={formatMonthYear}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
