@@ -149,7 +149,11 @@ const Dashboard = () => {
   
   const compromissosProximos = allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
-    return dataApt >= hoje && dataApt <= proximosDias;
+    // Filtrar apenas compromissos futuros/hoje E que não foram concluídos ou cancelados
+    return dataApt >= hoje && 
+           dataApt <= proximosDias && 
+           apt.status !== 'realizado' && 
+           apt.status !== 'cancelado';
   })
   .sort((a, b) => new Date(a.data_agendamento).getTime() - new Date(b.data_agendamento).getTime())
   .slice(0, 3) || [];
