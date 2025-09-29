@@ -1388,12 +1388,12 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                                 {item.removal_reason === 'excluded' && (
                                   <Badge 
                                     variant="secondary"
-                                    className="text-xs sm:text-sm bg-orange-100 text-orange-800"
+                                    className="text-xs sm:text-sm bg-red-100 text-red-800"
                                   >
-                                    Excluído
+                                    Cancelado
                                   </Badge>
                                 )}
-                                {isCompleted && (
+                                {item.removal_reason === 'completed' && (
                                   <Badge 
                                     variant="secondary"
                                     className="text-xs sm:text-sm bg-green-100 text-green-800"
