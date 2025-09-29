@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronRight, BarChart3 } from 'lucide-react';
+import { ChevronRight, BarChart3, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useConquests } from '@/hooks/useConquests';
 import { HistoricalChart } from '@/components/HistoricalChart';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ export default function Conquistas() {
     setSelectedPeriod(newPeriod);
   };
 
-  const renderFilterChips = () => {
+  const renderFilterSection = () => {
     const periods = [
       { value: 'hoje' as Period, label: 'Hoje' },
       { value: 'semana' as Period, label: 'Semana' },
@@ -48,25 +49,47 @@ export default function Conquistas() {
     ];
 
     return (
-      <div className="flex items-center gap-2 flex-wrap">
-        {periods.map((period) => {
-          const isActive = selectedPeriod === period.value;
-          
-          return (
-            <button
-              key={period.value}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                isActive
-                  ? "bg-[#344E41] text-white"
-                  : "bg-[#DAD7CD] text-[#344E41] hover:bg-[#B8B5A7]"
-              )}
-              onClick={() => updateFilters(period.value)}
-            >
-              {period.label}
-            </button>
-          );
-        })}
+      <div className="space-y-3">
+        {/* Linha superior: Ícone filtro + chips de período */}
+        <div className="flex items-center gap-3">
+          <Filter className="w-5 h-5 text-primary flex-shrink-0" />
+          <div className="flex items-center gap-2 flex-wrap">
+            {periods.map((period) => {
+              const isActive = selectedPeriod === period.value;
+              
+              return (
+                <button
+                  key={period.value}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  )}
+                  onClick={() => updateFilters(period.value)}
+                >
+                  {period.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        
+        {/* Linha inferior: Dropdown "Todas as categorias" */}
+        <div className="flex items-start">
+          <Select defaultValue="todas">
+            <SelectTrigger className="w-48 h-9">
+              <SelectValue placeholder="Todas as categorias" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as categorias</SelectItem>
+              <SelectItem value="medicacao">Medicações</SelectItem>
+              <SelectItem value="consulta">Consultas</SelectItem>
+              <SelectItem value="exame">Exames</SelectItem>
+              <SelectItem value="atividade">Atividades</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     );
   };
@@ -177,8 +200,8 @@ export default function Conquistas() {
           </div>
           
           {/* Stacked progress bar */}
-          <div className="space-y-2 w-full min-w-0">
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+          <div className="space-y-2">
+            <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex w-full">
               {metricas.total > 0 ? (
                 <>
                   {segmentWidths.concluidos > 0 && (
@@ -232,46 +255,46 @@ export default function Conquistas() {
             </div>
           </div>
 
-          {/* Mini cards - 4 columns even on mobile */}
-          <div className="grid grid-cols-4 gap-1 sm:gap-2 md:gap-3 w-full">
-            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-emerald-100 min-w-0">
-              <div className="flex items-center justify-center mb-1 md:mb-2">
-                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-concluido))' }}>
+          {/* Mini cards - 4 columns ocupando toda largura */}
+          <div className="grid grid-cols-4 gap-2 w-full">
+            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-emerald-100 flex flex-col items-center">
+              <div className="mb-2">
+                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-concluido))' }}>
                   {metricas.total > 0 ? Math.round((metricas.concluidos / metricas.total) * 100) : 0}%
                 </div>
               </div>
-              <div className="text-sm sm:text-lg md:text-2xl font-bold text-primary text-center truncate">{metricas.concluidos}</div>
-              <div className="text-xs text-primary/60 text-center truncate">Concluídos</div>
+              <div className="text-2xl font-bold text-primary text-center">{metricas.concluidos}</div>
+              <div className="text-xs text-primary/60 text-center">Concluídos</div>
             </div>
 
-            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-green-100 min-w-0">
-              <div className="flex items-center justify-center mb-1 md:mb-2">
-                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-faltando))' }}>
-                  {metricas.total > 0 ? Math.round((metricas.faltando / metricas.total) * 100) : 0}%
-                </div>
-              </div>
-              <div className="text-sm sm:text-lg md:text-2xl font-bold text-primary text-center truncate">{metricas.faltando}</div>
-              <div className="text-xs text-primary/60 text-center truncate">Faltando</div>
-            </div>
-
-            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-orange-100 min-w-0">
-              <div className="flex items-center justify-center mb-1 md:mb-2">
-                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-atrasado))' }}>
-                  {metricas.total > 0 ? Math.round((metricas.atrasados / metricas.total) * 100) : 0}%
-                </div>
-              </div>
-              <div className="text-sm sm:text-lg md:text-2xl font-bold text-primary text-center truncate">{metricas.atrasados}</div>
-              <div className="text-xs text-primary/60 text-center truncate">Atrasados</div>
-            </div>
-
-            <div className="p-2 md:p-3 rounded-2xl bg-white shadow-sm border border-pink-100 min-w-0">
-              <div className="flex items-center justify-center mb-1 md:mb-2">
-                <div className="status-chip-soft text-xs" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
+            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-green-100 flex flex-col items-center">
+              <div className="mb-2">
+                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
                   {metricas.total > 0 ? Math.round((metricas.cancelados / metricas.total) * 100) : 0}%
                 </div>
               </div>
-              <div className="text-sm sm:text-lg md:text-2xl font-bold text-primary text-center truncate">{metricas.cancelados}</div>
-              <div className="text-xs text-primary/60 text-center truncate">Cancelados</div>
+              <div className="text-2xl font-bold text-primary text-center">{metricas.cancelados}</div>
+              <div className="text-xs text-primary/60 text-center">Cancelados</div>
+            </div>
+
+            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-orange-100 flex flex-col items-center">
+              <div className="mb-2">
+                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-faltando))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.faltando / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-primary text-center">{metricas.faltando}</div>
+              <div className="text-xs text-primary/60 text-center">Faltando</div>
+            </div>
+
+            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-pink-100 flex flex-col items-center">
+              <div className="mb-2">
+                <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-atrasado))' }}>
+                  {metricas.total > 0 ? Math.round((metricas.atrasados / metricas.total) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-2xl font-bold text-primary text-center">{metricas.atrasados}</div>
+              <div className="text-xs text-primary/60 text-center">Atrasados</div>
             </div>
           </div>
 
@@ -376,13 +399,11 @@ export default function Conquistas() {
         <div className="flex flex-col space-y-4">
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-primary">Conquistas</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-primary">Minhas Conquistas</h1>
               <p className="text-sm sm:text-base text-primary/70">Acompanhe seu progresso e conquistas</p>
             </div>
-            <div className="w-full overflow-x-auto">
-              <div className="flex gap-2 pb-2 min-w-max">
-                {renderFilterChips()}
-              </div>
+            <div className="w-full">
+              {renderFilterSection()}
             </div>
           </div>
         </div>
