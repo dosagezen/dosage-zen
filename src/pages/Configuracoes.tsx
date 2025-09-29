@@ -79,15 +79,15 @@ const Configuracoes = () => {
       {/* Header Mobile */}
       <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border md:hidden">
         <div className="p-4">
-          <h1 className="text-xl font-semibold text-primary">Configurações</h1>
-          <p className="text-sm text-muted-foreground">Gerencie suas preferências</p>
+          <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
+          <p className="text-muted-foreground">Gerencie suas preferências</p>
         </div>
       </div>
 
       <div className="container mx-auto p-4 md:p-6 max-w-7xl">
         {/* Header Desktop */}
         <div className="hidden md:block mb-6">
-          <h1 className="text-3xl font-bold text-primary">Configurações</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
           <p className="text-muted-foreground">Gerencie suas preferências e configurações da conta</p>
         </div>
 

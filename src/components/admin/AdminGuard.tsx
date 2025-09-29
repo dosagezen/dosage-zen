@@ -20,7 +20,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
               <Shield className="w-8 h-8 text-destructive" />
             </div>
             
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
+            <h1 className="text-2xl font-bold tracking-tight mb-2">
               Acesso Restrito
             </h1>
             

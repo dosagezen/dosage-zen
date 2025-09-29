@@ -286,7 +286,7 @@ const Dashboard = () => {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-primary">
+          <h1 className="text-2xl font-bold tracking-tight">
             {getGreetingByTime()}, {profile?.nome?.split(' ')[0] || user?.email?.split('@')[0] || 'Márcio'}!
           </h1>
           <p className="text-muted-foreground">

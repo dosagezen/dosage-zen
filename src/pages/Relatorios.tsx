@@ -100,7 +100,7 @@ export default function Relatorios() {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-primary-foreground" />
               </div>
-              <h1 className="text-2xl font-bold text-primary">Relatórios</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Relatórios</h1>
             </div>
             
             {/* Export/Share Actions */}

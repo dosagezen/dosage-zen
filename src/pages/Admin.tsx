@@ -13,7 +13,7 @@ export default function Admin() {
               <Shield className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Admin</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
               <p className="text-muted-foreground">Console administrativo do DosageZen</p>
             </div>
           </div>
