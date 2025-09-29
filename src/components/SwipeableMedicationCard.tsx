@@ -274,7 +274,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                   {medicacao.dosagem} • {medicacao.estoque} {getFormaGramatical(medicacao.forma, medicacao.estoque)}
                 </p>
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
-                  <span>{medicacao.frequencia}</span>
+                  <span>Frequência: {medicacao.frequencia}</span>
                 </div>
               </div>
             </div>
