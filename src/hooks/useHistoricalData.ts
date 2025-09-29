@@ -44,7 +44,11 @@ export function useHistoricalData() {
         
         for (let i = 11; i >= 0; i--) {
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          const monthName = date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+          
+          // Formatar diretamente no padrão mmaa
+          const month = date.toLocaleDateString('pt-BR', { month: 'short' }).toLowerCase().replace('.', '');
+          const year = date.getFullYear().toString().slice(-2);
+          const monthYear = `${month}${year}`;
           
           // Generate realistic mock data with some variation
           const baseAderencia = 65 + Math.random() * 30; // 65-95%
@@ -52,7 +56,7 @@ export function useHistoricalData() {
           const concluidos = Math.floor((total * baseAderencia) / 100);
           
           mockData.push({
-            mes: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+            mes: monthYear,
             aderencia: Math.round(baseAderencia),
             concluidos,
             total

@@ -4,35 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { useHistoricalData, HistoricalDataPoint } from '@/hooks/useHistoricalData';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format, parse } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 const formatMonthYear = (dateString: string) => {
-  try {
-    let date;
-    
-    // Tenta diferentes formatos de data
-    if (dateString.includes('-')) {
-      // Formato YYYY-MM ou YYYY-MM-DD
-      const yearMonth = dateString.split('-').slice(0, 2).join('-');
-      date = parse(yearMonth, 'yyyy-MM', new Date());
-    } else {
-      // Outros formatos
-      date = new Date(dateString);
-    }
-    
-    if (isNaN(date.getTime())) {
-      return dateString;
-    }
-    
-    // Formatação consistente para mmaa
-    const formattedDate = format(date, 'MMMy', { locale: ptBR }).toLowerCase();
-    
-    // Remove "20" do ano apenas se estiver no final da string
-    return formattedDate.replace(/20(\d{2})$/, '$1');
-  } catch (error) {
-    return dateString;
-  }
+  // Os dados já vêm no formato correto "mmaa" do hook
+  return dateString;
 };
 
 export function HistoricalChart() {
