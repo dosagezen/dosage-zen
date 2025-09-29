@@ -142,14 +142,28 @@ const Dashboard = () => {
     })
     .slice(0, 4); // Mostrar 4 medicações
 
-  // Processar próximos compromissos (próximos 7 dias)
+  // Processar próximos compromissos (próximos 21 dias)
   const hoje = new Date();
-  const proximosDias = new Date(hoje.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const proximosDias = new Date(hoje.getTime() + 21 * 24 * 60 * 60 * 1000);
   
   const compromissosProximos = allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
     return dataApt >= hoje && dataApt <= proximosDias;
-  }).slice(0, 5) || [];
+  })
+  .sort((a, b) => new Date(a.data_agendamento).getTime() - new Date(b.data_agendamento).getTime())
+  .slice(0, 3) || [];
+  
+  // Função para determinar status do compromisso
+  const getCompromissoStatus = (dataAgendamento: string) => {
+    const dataApt = new Date(dataAgendamento);
+    const agora = new Date();
+    
+    if (dataApt < agora) {
+      return { label: 'Atrasado', variant: 'destructive' as const, className: 'bg-red-500 text-white hover:bg-red-600' };
+    } else {
+      return { label: 'Agendado', variant: 'secondary' as const, className: 'bg-green-500 text-white hover:bg-green-600' };
+    }
+  };
 
   // Calcular estatísticas - medicações com horários pendentes hoje + compromissos agendados para hoje
   const medicacoesHoje = medicacoesAtivas.filter(med => {
@@ -465,8 +479,11 @@ const Dashboard = () => {
                       <p className="font-semibold text-primary whitespace-nowrap">
                         {horaFormatada}
                       </p>
-                      <Badge variant="secondary" className="text-xs whitespace-nowrap capitalize">
-                        {apt.tipo}
+                      <Badge 
+                        variant={getCompromissoStatus(apt.data_agendamento).variant}
+                        className={`text-xs whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}
+                      >
+                        {getCompromissoStatus(apt.data_agendamento).label}
                       </Badge>
                     </div>
                   </div>
