@@ -211,7 +211,7 @@ const Dashboard = () => {
     icone: Pill,
     cor: "success"
   }, {
-    titulo: "Minhas Conquistas",
+    titulo: "Conquistas Semanais",
     valor: `${calcularPercentualConquistas()}%`,
     icone: TrendingUp,
     cor: "primary"
