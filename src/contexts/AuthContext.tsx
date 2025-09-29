@@ -197,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
         data: {
           nome: userData.nome,
+          sobrenome: userData.sobrenome,
           celular: userData.celular,
         }
       }

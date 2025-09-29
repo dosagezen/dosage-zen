@@ -161,6 +161,7 @@ const Signup = () => {
     try {
       const userData = {
         nome: formData.nome.trim(),
+        sobrenome: formData.sobrenome.trim(),
         celular: formData.celular,
         initialRole: initialProfile,
       };
