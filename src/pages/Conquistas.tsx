@@ -291,6 +291,70 @@ export default function Conquistas() {
     return <HistoricalChart />;
   };
 
+  const renderProgressoPorCategorias = () => {
+    if (!summary?.by_category || selectedPeriod === 'historico') return null;
+
+    const categorias = [
+      { key: 'medicacao', label: 'Medicações', color: 'hsl(var(--conquistas-concluido))' },
+      { key: 'consulta', label: 'Consultas', color: 'hsl(var(--primary))' },
+      { key: 'exame', label: 'Exames', color: 'hsl(var(--secondary))' },
+      { key: 'atividade', label: 'Atividades', color: 'hsl(var(--accent))' }
+    ];
+
+    const categoriasComDados = categorias.filter(categoria => {
+      const dados = summary.by_category[categoria.key];
+      return dados && typeof dados === 'object' && 'planejados' in dados && typeof dados.planejados === 'number' && dados.planejados > 0;
+    });
+
+    if (categoriasComDados.length === 0) return null;
+
+    const periodoLabel = {
+      hoje: 'Hoje',
+      semana: 'Semana',
+      mes: 'Mês'
+    }[selectedPeriod];
+
+    return (
+      <div className="w-full max-w-2xl space-y-4">
+        <h2 className="text-xl font-bold text-primary">
+          Progresso - {periodoLabel}
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {categoriasComDados.map((categoria) => {
+            const dados = summary.by_category[categoria.key] as { planejados: number; concluidos: number; faltando: number; atrasados: number; cancelados: number; aderencia_pct: number };
+            const percentual = dados.planejados > 0 ? Math.round((dados.concluidos / dados.planejados) * 100) : 0;
+            
+            return (
+              <Card key={categoria.key} className="p-4 bg-white shadow-sm rounded-2xl border border-gray-100">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-primary">{categoria.label}</h3>
+                    <span className="text-2xl font-bold text-primary">{percentual}%</span>
+                  </div>
+                  
+                  <p className="text-sm text-primary/70">
+                    {dados.planejados} planejados / {dados.concluidos} concluídos
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <Progress 
+                      value={percentual} 
+                      className="h-2"
+                      style={{ 
+                        '--progress-background': categoria.color 
+                      } as React.CSSProperties}
+                    />
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto p-6 space-y-6">
@@ -331,10 +395,11 @@ export default function Conquistas() {
           </div>
         </div>
       ) : (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center space-y-6">
           <div className="w-full max-w-2xl">
             {renderResumoCard()}
           </div>
+          {renderProgressoPorCategorias()}
         </div>
       )}
     </div>
