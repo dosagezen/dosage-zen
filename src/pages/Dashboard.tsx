@@ -349,7 +349,7 @@ const Dashboard = () => {
                       <Pill className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-primary truncate">{med.nome}</p>
+                      <p className="font-medium text-primary break-words leading-tight">{med.nome}</p>
                       <p className="text-sm text-muted-foreground truncate">{med.dosagem}</p>
                     </div>
                   </div>
