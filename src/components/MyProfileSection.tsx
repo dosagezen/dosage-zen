@@ -23,6 +23,7 @@ interface MyProfileData {
   id: string;
   codigo: string;
   nome: string;
+  sobrenome: string;
   email: string;
   celular: string;
   papel: string;
@@ -45,6 +46,7 @@ const MyProfileSection = () => {
     id: "",
     codigo: "",
     nome: "",
+    sobrenome: "",
     email: "",
     celular: "",
     papel: "paciente",
@@ -55,6 +57,7 @@ const MyProfileSection = () => {
 
   const [formData, setFormData] = useState({
     nome: "",
+    sobrenome: "",
     email: "",
     celular: "",
     senha: "",
@@ -92,6 +95,7 @@ const MyProfileSection = () => {
         id: profile.id,
         codigo: profile.codigo,
         nome: profile.nome,
+        sobrenome: (profile as any).sobrenome || '',
         email: profile.email,
         celular: profile.celular || '',
         papel: mainRole?.role || 'paciente',
@@ -106,6 +110,7 @@ const MyProfileSection = () => {
       setFormData(prev => ({
         ...prev,
         nome: profile.nome,
+        sobrenome: (profile as any).sobrenome || '',
         email: profile.email,
         celular: profile.celular || '',
         perfil: mapRoleToUI(mainRole?.role),
@@ -173,6 +178,10 @@ const MyProfileSection = () => {
       newErrors.nome = "Nome é obrigatório";
     }
 
+    if (!formData.sobrenome.trim()) {
+      newErrors.sobrenome = "Sobrenome é obrigatório";
+    }
+
     if (!formData.email.trim()) {
       newErrors.email = "E-mail é obrigatório";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -206,6 +215,7 @@ const MyProfileSection = () => {
         'fn_profile_update',
         {
           p_nome: formData.nome.trim(),
+          p_sobrenome: formData.sobrenome.trim(),
           p_email: formData.email.trim(),
           p_celular: formData.celular,
           p_avatar_url: null, // Implementar upload futuramente
@@ -287,6 +297,7 @@ const MyProfileSection = () => {
     setIsLoading(false);
     setFormData({
       nome: profileData.nome,
+      sobrenome: profileData.sobrenome,
       email: profileData.email,
       celular: profileData.celular,
       senha: "",
@@ -357,12 +368,12 @@ const MyProfileSection = () => {
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16 bg-gradient-primary">
                 <AvatarFallback className="bg-gradient-primary text-primary-foreground font-bold text-lg">
-                  {profileData.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  {`${profileData.nome} ${profileData.sobrenome}`.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <CardTitle className="text-xl text-primary flex items-center gap-2">
-                  {profileData.nome}
+                  {profileData.nome} {profileData.sobrenome}
                   {profileData.isGestor && (
                     <span className="text-xs bg-gradient-to-r from-amber-400 to-yellow-500 text-white px-2 py-1 rounded-full font-semibold">
                       Gestor
@@ -469,21 +480,41 @@ const MyProfileSection = () => {
                 </div>
               </div>
 
-              {/* Nome */}
-              <div className="space-y-2">
-                <Label htmlFor="nome" className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Nome Completo
-                </Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className={errors.nome ? "border-destructive" : ""}
-                />
-                {errors.nome && (
-                  <p className="text-xs text-destructive">{errors.nome}</p>
-                )}
+              {/* Nome e Sobrenome */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Nome */}
+                <div className="space-y-2">
+                  <Label htmlFor="nome" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Nome
+                  </Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    className={errors.nome ? "border-destructive" : ""}
+                  />
+                  {errors.nome && (
+                    <p className="text-xs text-destructive">{errors.nome}</p>
+                  )}
+                </div>
+
+                {/* Sobrenome */}
+                <div className="space-y-2">
+                  <Label htmlFor="sobrenome" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Sobrenome
+                  </Label>
+                  <Input
+                    id="sobrenome"
+                    value={formData.sobrenome}
+                    onChange={(e) => setFormData({ ...formData, sobrenome: e.target.value })}
+                    className={errors.sobrenome ? "border-destructive" : ""}
+                  />
+                  {errors.sobrenome && (
+                    <p className="text-xs text-destructive">{errors.sobrenome}</p>
+                  )}
+                </div>
               </div>
 
               {/* E-mail */}
@@ -773,6 +804,13 @@ const MyProfileSection = () => {
                     Nome
                   </Label>
                   <p className="font-medium">{profileData.nome}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2 text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    Sobrenome
+                  </Label>
+                  <p className="font-medium">{profileData.sobrenome || '-'}</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2 text-muted-foreground">

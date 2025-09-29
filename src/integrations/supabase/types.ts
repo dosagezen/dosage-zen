@@ -430,6 +430,7 @@ export type Database = {
           id: string
           is_gestor: boolean | null
           nome: string
+          sobrenome: string | null
           updated_at: string
           user_id: string
         }
@@ -443,6 +444,7 @@ export type Database = {
           id?: string
           is_gestor?: boolean | null
           nome: string
+          sobrenome?: string | null
           updated_at?: string
           user_id: string
         }
@@ -456,6 +458,7 @@ export type Database = {
           id?: string
           is_gestor?: boolean | null
           nome?: string
+          sobrenome?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -629,6 +632,7 @@ export type Database = {
           p_email?: string
           p_is_gestor?: boolean
           p_nome?: string
+          p_sobrenome?: string
         }
         Returns: {
           avatar_url: string | null
@@ -640,6 +644,7 @@ export type Database = {
           id: string
           is_gestor: boolean | null
           nome: string
+          sobrenome: string | null
           updated_at: string
           user_id: string
         }
