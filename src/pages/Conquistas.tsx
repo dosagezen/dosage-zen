@@ -144,41 +144,10 @@ export default function Conquistas() {
     
     return (
       <Card className="relative p-4 sm:p-6 bg-gradient-to-br from-white to-emerald-50/40 shadow-lg rounded-[20px] w-full overflow-hidden">
-        {/* Progress Ring - Positioned absolutely at top-right */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-6 md:right-6">
-          <div className="relative">
-            <svg className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke="currentColor"
-                strokeWidth="10"
-                fill="none"
-                className="text-gray-200"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke="hsl(var(--conquistas-concluido))"
-                strokeWidth="10"
-                fill="none"
-                strokeDasharray={`${2 * Math.PI * 42}`}
-                strokeDashoffset={`${2 * Math.PI * 42 * (1 - metricas.percentual / 100)}`}
-                className="transition-all duration-500 ease-out"
-              />
-            </svg>
-            <div className="absolute inset-[25%] flex items-center justify-center">
-              <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{Math.round(metricas.percentual)}%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Main content - Reserve space for ring */}
-        <div className="pr-20 sm:pr-24 md:pr-32 space-y-3 sm:space-y-4 w-full min-w-0">
-          {/* Header */}
-          <div>
+        {/* Two-column layout: Title/Subtitle and Progress Ring */}
+        <div className="flex items-start justify-between gap-4">
+          {/* First column: Title and Subtitle */}
+          <div className="flex-1 min-w-0">
             <h3 className="text-lg sm:text-xl font-bold text-primary mb-1">
               {selectedPeriod === 'hoje' && 'Resumo Hoje'}
               {selectedPeriod === 'semana' && 'Resumo da Semana'}
@@ -192,7 +161,41 @@ export default function Conquistas() {
               {selectedPeriod === 'historico' && 'Visão geral histórica'}
             </p>
           </div>
-          
+
+          {/* Second column: Progress Ring */}
+          <div className="flex-shrink-0">
+            <div className="relative">
+              <svg className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 transform -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  stroke="currentColor"
+                  strokeWidth="10"
+                  fill="none"
+                  className="text-gray-200"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  stroke="hsl(var(--conquistas-concluido))"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeDasharray={`${2 * Math.PI * 42}`}
+                  strokeDashoffset={`${2 * Math.PI * 42 * (1 - metricas.percentual / 100)}`}
+                  className="transition-all duration-500 ease-out"
+                />
+              </svg>
+              <div className="absolute inset-[25%] flex items-center justify-center">
+                <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{Math.round(metricas.percentual)}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content section */}
+        <div className="space-y-3 sm:space-y-4 w-full mt-4">
           {/* Progress line */}
           <div className="flex items-center justify-between text-xs sm:text-sm text-primary/70">
             <span>Progresso</span>
