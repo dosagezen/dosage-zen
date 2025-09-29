@@ -33,7 +33,7 @@ interface MyProfileData {
 
 const MyProfileSection = () => {
   const { toast } = useToast();
-  const { user, profile, userRoles, refreshProfile } = useAuth();
+  const { user, profile, userRoles, refreshProfile, signOut } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -303,18 +303,49 @@ const MyProfileSection = () => {
     setShowConfirmDialog(true);
   };
 
-  const handleConfirmDelete = () => {
-    // Mock da exclusão da conta
-    toast({
-      title: "Conta excluída",
-      description: "Sua conta foi excluída com sucesso. Redirecionando...",
-      variant: "destructive"
-    });
+  const handleConfirmDelete = async () => {
+    setIsLoading(true);
     
-    // Simular redirecionamento para login após 2 segundos
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 2000);
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        method: 'POST'
+      });
+
+      if (error) {
+        console.error('Error deleting account:', error);
+        toast({
+          title: "Erro ao excluir conta",
+          description: error.message || "Não foi possível excluir sua conta. Tente novamente.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Sucesso - mostrar mensagem e fazer logout
+      toast({
+        title: "Conta excluída",
+        description: "Sua conta foi excluída com sucesso. Redirecionando...",
+        variant: "destructive"
+      });
+
+      // Fazer logout
+      await signOut();
+      
+      // Redirecionar para login após 2 segundos
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Unexpected error deleting account:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao excluir sua conta. Tente novamente.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
