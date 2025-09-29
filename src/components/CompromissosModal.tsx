@@ -1386,9 +1386,6 @@ const CompromissosModal: React.FC<CompromissosModalProps> = ({ isOpen, onClose }
                             <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
                               <div className="flex items-center justify-start sm:justify-end text-muted-foreground/50">
                                 <Clock className="w-4 h-4 mr-1" />
-                                <span className="font-medium text-sm sm:text-base">
-                                  {getStatusText(item, itemType as any)}
-                                </span>
                               </div>
                               <div className="flex items-center justify-start sm:justify-end gap-2">
                                 {item.removal_reason === 'excluded' && (
