@@ -11,6 +11,7 @@ import { useConquests } from '@/hooks/useConquests';
 import { HistoricalChart } from '@/components/HistoricalChart';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { StatusInfoDialog } from '@/components/StatusInfoDialog';
 
 type Period = 'hoje' | 'semana' | 'mes' | 'historico';
 
@@ -28,10 +29,18 @@ export default function Conquistas() {
     return (searchParams.get('periodo') as Period) || 'hoje';
   });
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<'concluidos' | 'pendentes' | 'atrasados' | 'cancelados'>('concluidos');
+
   const { summary, isLoading, error } = useConquests({
     period: selectedPeriod,
     category: 'todas'
   });
+
+  const handleOpenDialog = (type: 'concluidos' | 'pendentes' | 'atrasados' | 'cancelados') => {
+    setDialogType(type);
+    setDialogOpen(true);
+  };
 
   const updateFilters = (newPeriod: Period) => {
     const params = new URLSearchParams(searchParams);
@@ -260,7 +269,10 @@ export default function Conquistas() {
 
           {/* Mini cards - 4 columns ocupando toda largura */}
           <div className="grid grid-cols-4 gap-2 w-full">
-            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-emerald-100 flex flex-col items-center">
+            <button 
+              onClick={() => handleOpenDialog('concluidos')}
+              className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-emerald-100 flex flex-col items-center hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
               <div className="mb-2">
                 <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-concluido))' }}>
                   {metricas.total > 0 ? Math.round((metricas.concluidos / metricas.total) * 100) : 0}%
@@ -268,9 +280,12 @@ export default function Conquistas() {
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.concluidos}</div>
               <div className="text-xs text-primary/60 text-center">Concluídos</div>
-            </div>
+            </button>
 
-            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-orange-100 flex flex-col items-center">
+            <button 
+              onClick={() => handleOpenDialog('pendentes')}
+              className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-orange-100 flex flex-col items-center hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
               <div className="mb-2">
                 <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-faltando))' }}>
                   {metricas.total > 0 ? Math.round((metricas.faltando / metricas.total) * 100) : 0}%
@@ -278,9 +293,12 @@ export default function Conquistas() {
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.faltando}</div>
               <div className="text-xs text-primary/60 text-center">Pendentes</div>
-            </div>
+            </button>
 
-            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-pink-100 flex flex-col items-center">
+            <button 
+              onClick={() => handleOpenDialog('atrasados')}
+              className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-pink-100 flex flex-col items-center hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
               <div className="mb-2">
                 <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-atrasado))' }}>
                   {metricas.total > 0 ? Math.round((metricas.atrasados / metricas.total) * 100) : 0}%
@@ -288,9 +306,12 @@ export default function Conquistas() {
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.atrasados}</div>
               <div className="text-xs text-primary/60 text-center">Atrasados</div>
-            </div>
+            </button>
 
-            <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-green-100 flex flex-col items-center">
+            <button 
+              onClick={() => handleOpenDialog('cancelados')}
+              className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-green-100 flex flex-col items-center hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
               <div className="mb-2">
                 <div className="text-xs font-medium" style={{ color: 'hsl(var(--conquistas-cancelado))' }}>
                   {metricas.total > 0 ? Math.round((metricas.cancelados / metricas.total) * 100) : 0}%
@@ -298,7 +319,7 @@ export default function Conquistas() {
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.cancelados}</div>
               <div className="text-xs text-primary/60 text-center">Cancelados</div>
-            </div>
+            </button>
           </div>
 
           {/* CTA Button */}
@@ -442,6 +463,12 @@ export default function Conquistas() {
           </div>
         )}
       </div>
+
+      <StatusInfoDialog 
+        type={dialogType}
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+      />
     </div>
   );
 }
