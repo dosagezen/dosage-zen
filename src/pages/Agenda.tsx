@@ -334,8 +334,12 @@ export default function Agenda() {
                 
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>{date}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    <span>{time} - {date}</span>
+                    <span>{time}</span>
                   </div>
                   
                   {appointment.local_endereco && (
