@@ -193,10 +193,14 @@ export default function Agenda() {
 
   const handleAddAppointment = () => {
     setEditingAppointment(null);
+    // Set default time to 9:00 AM if creating new appointment
+    const defaultDateTime = selectedDate 
+      ? format(selectedDate, "yyyy-MM-dd") + 'T09:00'
+      : '';
     setFormData({
       tipo: selectedCategory,
       titulo: '',
-      data_agendamento: selectedDate ? format(selectedDate, "yyyy-MM-dd'T'HH:mm") : '',
+      data_agendamento: defaultDateTime,
       duracao_minutos: 60,
     });
     setShowAddDialog(true);
@@ -205,13 +209,18 @@ export default function Agenda() {
   const handleEditAppointment = (appointment: Appointment) => {
     setEditingAppointment(appointment);
     setSelectedCategory(appointment.tipo);
+    
+    // Convert UTC timestamp to local datetime-local format (YYYY-MM-DDTHH:mm)
+    const appointmentDate = new Date(appointment.data_agendamento);
+    const localDateTimeString = format(appointmentDate, "yyyy-MM-dd'T'HH:mm");
+    
     setFormData({
       tipo: appointment.tipo,
       titulo: appointment.titulo,
       especialidade: appointment.especialidade,
       medico_profissional: appointment.medico_profissional,
       local_endereco: appointment.local_endereco,
-      data_agendamento: appointment.data_agendamento,
+      data_agendamento: localDateTimeString,
       duracao_minutos: appointment.duracao_minutos,
       observacoes: appointment.observacoes,
       dias_semana: appointment.dias_semana,
@@ -222,10 +231,20 @@ export default function Agenda() {
 
   const handleSubmit = async () => {
     try {
+      // Convert datetime-local format to ISO string with timezone
+      // The datetime-local input returns "yyyy-MM-ddTHH:mm" in local timezone
+      // We need to convert it to proper ISO format for the backend
+      const dataToSave = {
+        ...formData,
+        data_agendamento: formData.data_agendamento 
+          ? new Date(formData.data_agendamento).toISOString()
+          : formData.data_agendamento
+      };
+      
       if (editingAppointment) {
-        await updateAppointment({ id: editingAppointment.id, ...formData });
+        await updateAppointment({ id: editingAppointment.id, ...dataToSave });
       } else {
-        await createAppointment(formData);
+        await createAppointment(dataToSave);
       }
       setShowAddDialog(false);
       setFormData({
