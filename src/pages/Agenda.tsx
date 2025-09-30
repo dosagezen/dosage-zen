@@ -313,12 +313,6 @@ export default function Agenda() {
                   </Badge>
                 </div>
                 
-                {appointment.especialidade && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {appointment.especialidade}
-                  </p>
-                )}
-                
                 {appointment.medico_profissional && (
                   <p className="text-sm text-muted-foreground">
                     {appointment.medico_profissional}
