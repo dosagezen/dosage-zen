@@ -203,31 +203,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    if (!error && userData.initialRole) {
-      // The profile creation is handled by the database trigger
-      // We'll create the initial role after the profile is created
-      setTimeout(async () => {
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', email)
-            .single();
-
-          if (profileData) {
-            await supabase.from('user_roles').insert({
-              user_id: (await supabase.auth.getUser()).data.user?.id,
-              profile_id: profileData.id,
-              role: userData.initialRole,
-              context_patient_id: userData.initialRole === 'paciente' ? profileData.id : null,
-            });
-          }
-        } catch (roleError) {
-          console.error('Error creating initial role:', roleError);
-        }
-      }, 1000);
-    }
-
+    // Profile and role creation are now handled automatically by database triggers
+    // No manual intervention needed
     return { error };
   };
 
