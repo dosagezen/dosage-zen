@@ -43,13 +43,13 @@ const statusColors = {
 } as const;
 
 const weekdays = [
-  { value: 0, label: 'Domingo' },
-  { value: 1, label: 'Segunda' },
-  { value: 2, label: 'Terça' },
-  { value: 3, label: 'Quarta' },
-  { value: 4, label: 'Quinta' },
-  { value: 5, label: 'Sexta' },
-  { value: 6, label: 'Sábado' },
+  { value: 1, label: 'Segunda', shortLabel: 'Seg' },
+  { value: 2, label: 'Terça', shortLabel: 'Ter' },
+  { value: 3, label: 'Quarta', shortLabel: 'Qua' },
+  { value: 4, label: 'Quinta', shortLabel: 'Qui' },
+  { value: 5, label: 'Sexta', shortLabel: 'Sex' },
+  { value: 6, label: 'Sábado', shortLabel: 'Sáb' },
+  { value: 0, label: 'Domingo', shortLabel: 'Dom' },
 ];
 
 const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
@@ -734,11 +734,72 @@ export default function Agenda() {
               {formData.repeticao === 'weekly' && (
                 <div className="space-y-2">
                   <Label>Dias da semana</Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  {/* Desktop: 2 colunas */}
+                  <div className="hidden md:grid md:grid-cols-2 gap-x-6 gap-y-2">
+                    {/* Primeira coluna: Segunda a Quinta */}
+                    <div className="space-y-2">
+                      {weekdays.slice(0, 4).map(day => (
+                        <div key={day.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`day-${day.value}`}
+                            checked={formData.dias_semana?.includes(day.value) || false}
+                            onCheckedChange={(checked) => {
+                              const current = formData.dias_semana || [];
+                              if (checked) {
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  dias_semana: [...current, day.value] 
+                                }));
+                              } else {
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  dias_semana: current.filter(d => d !== day.value) 
+                                }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`day-${day.value}`} className="text-sm font-normal cursor-pointer">
+                            {day.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Segunda coluna: Sexta a Domingo */}
+                    <div className="space-y-2">
+                      {weekdays.slice(4, 7).map(day => (
+                        <div key={day.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`day-${day.value}`}
+                            checked={formData.dias_semana?.includes(day.value) || false}
+                            onCheckedChange={(checked) => {
+                              const current = formData.dias_semana || [];
+                              if (checked) {
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  dias_semana: [...current, day.value] 
+                                }));
+                              } else {
+                                setFormData(prev => ({ 
+                                  ...prev, 
+                                  dias_semana: current.filter(d => d !== day.value) 
+                                }));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`day-${day.value}`} className="text-sm font-normal cursor-pointer">
+                            {day.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Mobile: 1 linha horizontal com abreviações */}
+                  <div className="flex md:hidden flex-wrap gap-2">
                     {weekdays.map(day => (
-                      <div key={day.value} className="flex items-center space-x-2">
+                      <div key={day.value} className="flex items-center space-x-1.5 bg-muted/50 px-3 py-2 rounded-md min-h-[44px]">
                         <Checkbox
-                          id={`day-${day.value}`}
+                          id={`day-mobile-${day.value}`}
                           checked={formData.dias_semana?.includes(day.value) || false}
                           onCheckedChange={(checked) => {
                             const current = formData.dias_semana || [];
@@ -755,8 +816,8 @@ export default function Agenda() {
                             }
                           }}
                         />
-                        <Label htmlFor={`day-${day.value}`} className="text-sm">
-                          {day.label}
+                        <Label htmlFor={`day-mobile-${day.value}`} className="text-sm font-medium cursor-pointer">
+                          {day.shortLabel}
                         </Label>
                       </div>
                     ))}
