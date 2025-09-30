@@ -231,6 +231,19 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
 
   const statusInfo = getStatusInfo()
 
+  // Helper function to format frequency display
+  const formatFrequency = (freq: string) => {
+    const frequencyMap: { [key: string]: string } = {
+      '4h': '4 em 4 horas',
+      '6h': '6 em 6 horas',
+      '8h': '8 em 8 horas',
+      '12h': '12 em 12 horas',
+      '24h': '1 vez ao dia',
+      '12h_bis': '2 vezes ao dia',
+    };
+    return frequencyMap[freq] || freq;
+  };
+
   // Helper function to pluralize forma based on estoque
   const getFormaGramatical = (forma: string, estoque: number) => {
     if (estoque === 1) return forma;
@@ -304,7 +317,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                   {medicacao.dosagem} • {medicacao.estoque} {getFormaGramatical(medicacao.forma, medicacao.estoque)}
                 </p>
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
-                  <span>Frequência: {medicacao.frequencia}</span>
+                  <span>Frequência: {formatFrequency(medicacao.frequencia)}</span>
                 </div>
               </div>
             </div>
