@@ -34,11 +34,12 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
     return new Date().toLocaleDateString('pt-BR', { timeZone: timezone });
   }, []);
 
-  // Get today's date for filtering
+  // Get today's date for filtering (always in user's timezone)
   const today = useMemo(() => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const now = new Date();
-    return new Date(now.toLocaleDateString('en-CA', { timeZone: timezone }));
+    // Create a date object at midnight today (start of day)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return todayStart;
   }, []);
 
   // Convert medications to compromisso items
@@ -87,12 +88,21 @@ export function useCompromissosDodia(): CompromissosDia & { refetch: () => void 
   const appointmentItems = useMemo((): CompromissoItem[] => {
     if (!appointments || appointments.length === 0) return [];
 
+    // Get today's date in local timezone (YYYY-MM-DD)
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+    const todayDate = today.getDate();
+
     return appointments
       .filter(appointment => {
-        // Verificar se é hoje
+        // Get appointment date in local timezone
         const appointmentDate = new Date(appointment.data_agendamento);
-        const appointmentLocalDate = new Date(appointmentDate.toLocaleDateString('en-CA'));
-        const isSameDay = appointmentLocalDate.getTime() === today.getTime();
+        const aptYear = appointmentDate.getFullYear();
+        const aptMonth = appointmentDate.getMonth();
+        const aptDate = appointmentDate.getDate();
+        
+        // Compare only dates in local timezone (ignore time)
+        const isSameDay = aptYear === todayYear && aptMonth === todayMonth && aptDate === todayDate;
         
         // Filtrar apenas compromissos pendentes (não finalizados)
         const status = appointment.status || 'agendado';
