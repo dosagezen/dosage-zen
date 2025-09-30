@@ -304,19 +304,6 @@ export default function Agenda() {
               </div>
               
               <div className="flex-1 min-w-0">
-                <Badge 
-                  variant="outline" 
-                  className={`mb-2 w-fit ${
-                    appointment.tipo === 'consulta' 
-                      ? 'bg-green-50 text-green-700 border-green-200' 
-                      : appointment.tipo === 'exame'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-teal-50 text-teal-700 border-teal-200'
-                  }`}
-                >
-                  {categoryLabels[appointment.tipo]}
-                </Badge>
-                
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-foreground truncate">
                     {appointment.titulo || categoryLabels[appointment.tipo]}
@@ -331,6 +318,19 @@ export default function Agenda() {
                     {appointment.medico_profissional}
                   </p>
                 )}
+                
+                <Badge 
+                  variant="outline" 
+                  className={`mt-2 w-fit ${
+                    appointment.tipo === 'consulta' 
+                      ? 'bg-green-50 text-green-700 border-green-200' 
+                      : appointment.tipo === 'exame'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : 'bg-teal-50 text-teal-700 border-teal-200'
+                  }`}
+                >
+                  {categoryLabels[appointment.tipo]}
+                </Badge>
                 
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
