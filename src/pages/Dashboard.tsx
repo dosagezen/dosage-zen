@@ -222,7 +222,7 @@ const Dashboard = () => {
     icone: Pill,
     cor: "success"
   }, {
-    titulo: "Conquistas Semanais",
+    titulo: "Aderência Semanal",
     valor: `${calcularPercentualConquistas()}%`,
     icone: TrendingUp,
     cor: "primary"
