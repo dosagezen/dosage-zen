@@ -693,9 +693,25 @@ export default function Agenda() {
                 <Input
                   id="duracao"
                   type="number"
-                  value={formData.duracao_minutos || 60}
-                  onChange={(e) => setFormData(prev => ({ ...prev, duracao_minutos: parseInt(e.target.value) || 60 }))}
-                  placeholder="60"
+                  inputMode="numeric"
+                  min="1"
+                  max="1440"
+                  value={formData.duracao_minutos ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      duracao_minutos: value === '' ? undefined : parseInt(value) 
+                    }));
+                  }}
+                  onBlur={(e) => {
+                    // Garante valor mínimo de 1 ao perder foco se estiver vazio
+                    if (!e.target.value || parseInt(e.target.value) < 1) {
+                      setFormData(prev => ({ ...prev, duracao_minutos: 60 }));
+                    }
+                  }}
+                  placeholder="Ex: 60"
+                  className="min-h-[44px]"
                 />
               </div>
               
