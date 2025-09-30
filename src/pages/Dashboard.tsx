@@ -231,12 +231,12 @@ const Dashboard = () => {
     cor: "primary"
   }, {
     titulo: "Próxima Consulta",
-    valor: diasProximaConsulta ? `${diasProximaConsulta} dias` : "Nenhuma",
+    valor: diasProximaConsulta ? `${diasProximaConsulta} ${diasProximaConsulta === 1 ? 'dia' : 'dias'}` : "Nenhuma",
     icone: User,
     cor: "accent"
   }, {
     titulo: "Próximo Exame",
-    valor: diasProximoExame ? `${diasProximoExame} dias` : "Nenhum",
+    valor: diasProximoExame ? `${diasProximoExame} ${diasProximoExame === 1 ? 'dia' : 'dias'}` : "Nenhum",
     icone: Stethoscope,
     cor: "muted"
   }];
