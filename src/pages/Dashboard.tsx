@@ -160,10 +160,12 @@ const Dashboard = () => {
 
   // Processar próximos compromissos (próximos 21 dias)
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0); // Zerar horas para comparar apenas datas
   const proximosDias = new Date(hoje.getTime() + 21 * 24 * 60 * 60 * 1000);
   const compromissosProximos = allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
-    // Filtrar apenas compromissos futuros/hoje E que não foram concluídos ou cancelados
+    dataApt.setHours(0, 0, 0, 0); // Zerar horas para comparar apenas datas
+    // Filtrar compromissos de hoje em diante (incluindo hoje) E que não foram concluídos ou cancelados
     return dataApt >= hoje && dataApt <= proximosDias && apt.status !== 'realizado' && apt.status !== 'cancelado';
   }).sort((a, b) => new Date(a.data_agendamento).getTime() - new Date(b.data_agendamento).getTime()).slice(0, 3) || [];
 
@@ -185,6 +187,7 @@ const Dashboard = () => {
   };
 
   // Calcular estatísticas - medicações com horários pendentes hoje + compromissos agendados para hoje
+  const hojeComHora = new Date(); // Data com hora para outras comparações
   const medicacoesHoje = medicacoesAtivas.filter(med => {
     // Verificar se tem horários pendentes para hoje
     if (!Array.isArray(med.horarios) || med.horarios.length === 0) return false;
@@ -197,12 +200,12 @@ const Dashboard = () => {
   }).length;
   const compromissosHoje = (allAppointments?.filter(apt => {
     const dataApt = new Date(apt.data_agendamento);
-    return dataApt.toDateString() === hoje.toDateString() && ['agendado', 'confirmado'].includes(apt.status);
+    return dataApt.toDateString() === hojeComHora.toDateString() && ['agendado', 'confirmado'].includes(apt.status);
   }).length || 0) + medicacoesHoje;
-  const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hoje);
-  const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hoje);
-  const diasProximaConsulta = proximaConsulta ? Math.ceil((new Date(proximaConsulta.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
-  const diasProximoExame = proximoExame ? Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hojeComHora);
+  const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hojeComHora);
+  const diasProximaConsulta = proximaConsulta ? Math.ceil((new Date(proximaConsulta.data_agendamento).getTime() - hojeComHora.getTime()) / (1000 * 60 * 60 * 24)) : null;
+  const diasProximoExame = proximoExame ? Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hojeComHora.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   // Calcular percentual de conquistas da semana
   const calcularPercentualConquistas = () => {
