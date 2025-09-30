@@ -245,7 +245,7 @@ export default function Conquistas() {
               </div>
               <div className="flex items-center gap-1 whitespace-nowrap">
                 <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-faltando))] flex-shrink-0" />
-                <span className="text-xs">Faltando</span>
+                <span className="text-xs">Pendentes</span>
               </div>
               <div className="flex items-center gap-1 whitespace-nowrap">
                 <div className="w-2 h-2 rounded-full bg-[hsl(var(--conquistas-atrasado))] flex-shrink-0" />
@@ -277,7 +277,7 @@ export default function Conquistas() {
                 </div>
               </div>
               <div className="text-2xl font-bold text-primary text-center">{metricas.faltando}</div>
-              <div className="text-xs text-primary/60 text-center">Faltando</div>
+              <div className="text-xs text-primary/60 text-center">Pendentes</div>
             </div>
 
             <div className="flex-1 p-3 rounded-2xl bg-white shadow-sm border border-pink-100 flex flex-col items-center">
