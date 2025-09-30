@@ -795,9 +795,9 @@ export default function Agenda() {
                   </div>
                   
                   {/* Mobile: 1 linha horizontal com abreviações */}
-                  <div className="flex md:hidden flex-wrap gap-2">
+                  <div className="flex md:hidden overflow-x-auto gap-2 pb-2">
                     {weekdays.map(day => (
-                      <div key={day.value} className="flex items-center space-x-1.5 bg-muted/50 px-3 py-2 rounded-md min-h-[44px]">
+                      <div key={day.value} className="flex flex-col items-center justify-center gap-1.5 bg-muted/50 px-4 py-2.5 rounded-md min-h-[44px] flex-shrink-0">
                         <Checkbox
                           id={`day-mobile-${day.value}`}
                           checked={formData.dias_semana?.includes(day.value) || false}
@@ -816,7 +816,7 @@ export default function Agenda() {
                             }
                           }}
                         />
-                        <Label htmlFor={`day-mobile-${day.value}`} className="text-sm font-medium cursor-pointer">
+                        <Label htmlFor={`day-mobile-${day.value}`} className="text-xs font-medium cursor-pointer text-center whitespace-nowrap">
                           {day.shortLabel}
                         </Label>
                       </div>
