@@ -662,17 +662,6 @@ export default function Agenda() {
                   placeholder="Ex: Hemograma"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="preparos">Preparos</Label>
-                <Textarea
-                  id="preparos"
-                  value={formData.observacoes || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
-                  placeholder="Instruções de preparo"
-                  rows={3}
-                />
-              </div>
             </div>
           )}
           
