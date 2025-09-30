@@ -323,10 +323,10 @@ export default function Agenda() {
                   variant="outline" 
                   className={`mt-2 w-fit ${
                     appointment.tipo === 'consulta' 
-                      ? 'bg-green-50 text-green-700 border-green-200' 
+                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
                       : appointment.tipo === 'exame'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-teal-50 text-teal-700 border-teal-200'
+                      ? 'bg-green-50 text-green-700 border-green-200'
+                      : 'bg-rose-50 text-rose-700 border-rose-200'
                   }`}
                 >
                   {categoryLabels[appointment.tipo]}
