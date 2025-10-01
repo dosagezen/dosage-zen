@@ -517,8 +517,8 @@ export default function Agenda() {
           <CardContent>
             <div className="grid grid-cols-7 gap-0 border border-border/20 rounded-lg overflow-hidden">
               {/* Header row with weekday labels */}
-              {weekdayLabels.map(day => (
-                <div key={day} className="py-3 text-sm font-medium text-muted-foreground text-center bg-muted/30 border-r border-b border-border/20 last:border-r-0">
+              {weekdayLabels.map((day, index) => (
+                <div key={day} className={`py-3 text-sm font-medium text-muted-foreground text-center ${index < 5 ? 'bg-muted/40' : 'bg-muted/30'} border-r border-b border-border/20 last:border-r-0`}>
                   {day}
                 </div>
               ))}
