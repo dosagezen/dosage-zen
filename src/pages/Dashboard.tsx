@@ -253,12 +253,12 @@ const Dashboard = () => {
     cor: "primary"
   }, {
     titulo: "Próxima Consulta",
-    valor: diasProximaConsulta ? `${diasProximaConsulta} ${diasProximaConsulta === 1 ? 'dia' : 'dias'}` : "Sem agendamento",
+    valor: diasProximaConsulta ? `${diasProximaConsulta} ${diasProximaConsulta === 1 ? 'dia' : 'dias'}` : "-",
     icone: User,
     cor: "accent"
   }, {
     titulo: "Próximo Exame",
-    valor: diasProximoExame ? `${diasProximoExame} ${diasProximoExame === 1 ? 'dia' : 'dias'}` : "Sem agendamento",
+    valor: diasProximoExame ? `${diasProximoExame} ${diasProximoExame === 1 ? 'dia' : 'dias'}` : "-",
     icone: Stethoscope,
     cor: "muted"
   }];
