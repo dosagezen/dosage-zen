@@ -271,7 +271,9 @@ const Signup = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Nome */}
                   <div className="space-y-2">
-                    <Label htmlFor="nome">Nome</Label>
+                    <Label htmlFor="nome">
+                      Nome <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="nome"
                       type="text"
@@ -288,7 +290,9 @@ const Signup = () => {
 
                   {/* Sobrenome */}
                   <div className="space-y-2">
-                    <Label htmlFor="sobrenome">Sobrenome</Label>
+                    <Label htmlFor="sobrenome">
+                      Sobrenome <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="sobrenome"
                       type="text"
@@ -305,7 +309,9 @@ const Signup = () => {
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
+                    <Label htmlFor="email">
+                      E-mail <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -322,7 +328,9 @@ const Signup = () => {
 
                   {/* Celular */}
                   <div className="space-y-2">
-                    <Label htmlFor="celular">Celular</Label>
+                    <Label htmlFor="celular">
+                      Celular <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="celular"
                       type="tel"
@@ -343,7 +351,9 @@ const Signup = () => {
 
                   {/* Senha */}
                   <div className="space-y-2">
-                    <Label htmlFor="senha">Senha</Label>
+                    <Label htmlFor="senha">
+                      Senha <span className="text-destructive">*</span>
+                    </Label>
                     <div className="relative">
                       <Input
                         id="senha"
@@ -373,7 +383,9 @@ const Signup = () => {
 
                   {/* Confirmar Senha */}
                   <div className="space-y-2">
-                    <Label htmlFor="confirmarSenha">Confirmar Senha</Label>
+                    <Label htmlFor="confirmarSenha">
+                      Confirmar Senha <span className="text-destructive">*</span>
+                    </Label>
                     <div className="relative">
                       <Input
                         id="confirmarSenha"
@@ -400,6 +412,11 @@ const Signup = () => {
                       <p className="text-sm text-destructive">{errors.confirmarSenha}</p>
                     )}
                   </div>
+                </div>
+
+                {/* Legenda de campos obrigatórios */}
+                <div className="text-sm text-destructive">
+                  <span className="text-destructive">*</span> Campos obrigatórios
                 </div>
               </div>
 
