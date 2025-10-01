@@ -151,7 +151,20 @@ export default function Agenda() {
   };
 
   const handleDayClick = (date: Date) => {
-    setSelectedDate(isSameDay(date, selectedDate || new Date('1900-01-01')) ? null : date);
+    // Verificar se existe compromisso agendado na data clicada
+    const compromissosNaData = appointments.filter(apt => 
+      isSameDay(new Date(apt.data_agendamento), date) && apt.status === 'agendado'
+    );
+    
+    // Se existir compromisso, abrir dialog de edição com o primeiro
+    if (compromissosNaData.length > 0) {
+      setSelectedDate(date);
+      handleEditAppointment(compromissosNaData[0]);
+    } else {
+      // Se não existir, abrir dialog de novo compromisso
+      setSelectedDate(date);
+      handleAddAppointment();
+    }
   };
 
   const getDayBadges = (date: Date) => {
