@@ -202,8 +202,30 @@ const Dashboard = () => {
     const dataApt = new Date(apt.data_agendamento);
     return dataApt.toDateString() === hojeComHora.toDateString() && ['agendado', 'confirmado'].includes(apt.status);
   }).length || 0) + medicacoesHoje;
-  const proximaConsulta = consultas?.find(apt => new Date(apt.data_agendamento) > hojeComHora);
-  const proximoExame = exames?.find(apt => new Date(apt.data_agendamento) > hojeComHora);
+  
+  // Calcular range de 21 dias (hoje + 20 dias)
+  const dataLimite21Dias = new Date(hojeComHora);
+  dataLimite21Dias.setDate(dataLimite21Dias.getDate() + 20);
+  dataLimite21Dias.setHours(23, 59, 59, 999);
+  
+  // Buscar próxima consulta nos próximos 21 dias (excluindo canceladas e realizadas)
+  const proximaConsulta = consultas?.find(apt => {
+    const dataApt = new Date(apt.data_agendamento);
+    return dataApt > hojeComHora && 
+           dataApt <= dataLimite21Dias && 
+           apt.status !== 'cancelado' && 
+           apt.status !== 'realizado';
+  });
+  
+  // Buscar próximo exame nos próximos 21 dias (excluindo cancelados e realizados)
+  const proximoExame = exames?.find(apt => {
+    const dataApt = new Date(apt.data_agendamento);
+    return dataApt > hojeComHora && 
+           dataApt <= dataLimite21Dias && 
+           apt.status !== 'cancelado' && 
+           apt.status !== 'realizado';
+  });
+  
   const diasProximaConsulta = proximaConsulta ? Math.ceil((new Date(proximaConsulta.data_agendamento).getTime() - hojeComHora.getTime()) / (1000 * 60 * 60 * 24)) : null;
   const diasProximoExame = proximoExame ? Math.ceil((new Date(proximoExame.data_agendamento).getTime() - hojeComHora.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
@@ -231,12 +253,12 @@ const Dashboard = () => {
     cor: "primary"
   }, {
     titulo: "Próxima Consulta",
-    valor: diasProximaConsulta ? `${diasProximaConsulta} ${diasProximaConsulta === 1 ? 'dia' : 'dias'}` : "Nenhuma",
+    valor: diasProximaConsulta ? `${diasProximaConsulta} ${diasProximaConsulta === 1 ? 'dia' : 'dias'}` : "Sem agendamento",
     icone: User,
     cor: "accent"
   }, {
     titulo: "Próximo Exame",
-    valor: diasProximoExame ? `${diasProximoExame} ${diasProximoExame === 1 ? 'dia' : 'dias'}` : "Nenhum",
+    valor: diasProximoExame ? `${diasProximoExame} ${diasProximoExame === 1 ? 'dia' : 'dias'}` : "Sem agendamento",
     icone: Stethoscope,
     cor: "muted"
   }];
