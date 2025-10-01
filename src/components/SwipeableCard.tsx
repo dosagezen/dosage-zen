@@ -24,6 +24,11 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const interactiveRef = useRef(false);
+
+  const isInteractiveElement = (el: HTMLElement | null) => {
+    return !!el?.closest('button,[role="button"],a,input,textarea,select,[contenteditable="true"]');
+  };
 
   useEffect(() => {
     const checkMobile = () => {
@@ -37,6 +42,11 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled) return;
+    interactiveRef.current = isInteractiveElement(e.target as HTMLElement);
+    if (interactiveRef.current) {
+      setIsDragging(false);
+      return;
+    }
     setStartX(e.touches[0].clientX);
     setIsDragging(true);
   };
@@ -89,6 +99,11 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (disabled || isMobile) return;
+    interactiveRef.current = isInteractiveElement(e.target as HTMLElement);
+    if (interactiveRef.current) {
+      setIsDragging(false);
+      return;
+    }
     setStartX(e.clientX);
     setIsDragging(true);
   };
