@@ -572,7 +572,7 @@ export default function Agenda() {
         <Card>
           <CardContent className="p-4">
             <div className="grid grid-cols-4 gap-4 items-end">
-              <div className="relative">
+              <div className="relative col-span-2">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Buscar compromissos..."
