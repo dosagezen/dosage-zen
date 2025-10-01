@@ -557,7 +557,7 @@ export default function Agenda() {
                       ${isLastColumn ? 'border-r-0' : ''}
                       ${isLastRow ? 'border-b-0' : ''}
                       ${isSelected ? 'border-2 border-destructive bg-background' : 'hover:bg-accent/50'}
-                      ${isDayToday && !isSelected ? 'bg-primary/10 ring-2 ring-primary ring-inset' : ''}
+                      ${isDayToday && !isSelected ? 'bg-primary/10 ring-1 ring-primary ring-inset' : ''}
                       ${isOutsideMonth ? 'text-muted-foreground opacity-60' : 'text-foreground'}
                       ${!isOutsideMonth && !isSelected && !isDayToday ? 'hover:bg-accent' : ''}
                     `}
