@@ -150,23 +150,6 @@ export default function Agenda() {
     }
   };
 
-  const handleDayClick = (date: Date) => {
-    // Verificar se existe compromisso agendado na data clicada
-    const compromissosNaData = appointments.filter(apt => 
-      isSameDay(new Date(apt.data_agendamento), date) && apt.status === 'agendado'
-    );
-    
-    // Se existir compromisso, abrir dialog de edição com o primeiro
-    if (compromissosNaData.length > 0) {
-      setSelectedDate(date);
-      handleEditAppointment(compromissosNaData[0]);
-    } else {
-      // Se não existir, abrir dialog de novo compromisso
-      setSelectedDate(date);
-      handleAddAppointment();
-    }
-  };
-
   const getDayBadges = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
     const counts = dayCounts[dateStr];
@@ -207,6 +190,7 @@ export default function Agenda() {
   const handleAddAppointment = () => {
     setEditingAppointment(null);
     // Set default time to 9:00 AM if creating new appointment
+    // Use selectedDate if available, otherwise empty
     const defaultDateTime = selectedDate 
       ? format(selectedDate, "yyyy-MM-dd") + 'T09:00'
       : '';
@@ -217,6 +201,33 @@ export default function Agenda() {
       duracao_minutos: 60,
     });
     setShowAddDialog(true);
+  };
+
+  const handleDayClick = (date: Date) => {
+    // Sempre definir a data selecionada primeiro
+    setSelectedDate(date);
+    
+    // Verificar se existe compromisso agendado na data clicada
+    const compromissosNaData = appointments.filter(apt => 
+      isSameDay(new Date(apt.data_agendamento), date) && apt.status === 'agendado'
+    );
+    
+    // Se existir compromisso, abrir dialog de edição com o primeiro
+    if (compromissosNaData.length > 0) {
+      handleEditAppointment(compromissosNaData[0]);
+    } else {
+      // Se não existir, abrir dialog de novo compromisso com a data pré-preenchida
+      setTimeout(() => {
+        const defaultDateTime = format(date, "yyyy-MM-dd") + 'T09:00';
+        setFormData({
+          tipo: selectedCategory,
+          titulo: '',
+          data_agendamento: defaultDateTime,
+          duracao_minutos: 60,
+        });
+        setShowAddDialog(true);
+      }, 0);
+    }
   };
 
   const handleEditAppointment = (appointment: Appointment) => {
