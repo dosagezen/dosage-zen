@@ -51,6 +51,7 @@
     --filter-active-foreground: 0 0% 98%;
 
     --muted: 220 20% 88%; /* Cinza Médio para Elementos Muted */
+    --muted-darker: 220 20% 78%; /* Cinza 10% mais escuro para dias da semana */
     --muted-foreground: 146 20% 45%;
 
     --destructive: 0 84.2% 60.2%;
@@ -131,6 +132,7 @@
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217.2 32.6% 17.5%;
+    --muted-darker: 217.2 32.6% 7.5%; /* Cinza 10% mais escuro para dark mode */
     --muted-foreground: 215 20.2% 65.1%;
 
     --accent: 217.2 32.6% 17.5%;
