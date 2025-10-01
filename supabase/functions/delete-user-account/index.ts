@@ -61,11 +61,122 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Delete related data first (if ON DELETE CASCADE is not set)
-    // Note: If FK constraints have ON DELETE CASCADE, this is automatic
-    // But we'll be explicit for safety
+    // Get user's profile_id
+    const { data: profileData, error: profileFetchError } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileFetchError || !profileData) {
+      console.error('Error fetching profile:', profileFetchError);
+      return new Response(
+        JSON.stringify({ error: 'Perfil não encontrado' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const profileId = profileData.id;
+    console.log(`Found profile_id: ${profileId}`);
+
+    // Delete related data in correct order to avoid FK constraint violations
+    // 1. Delete medication_occurrences (references medications and profiles)
+    const { error: occurrencesError } = await supabaseAdmin
+      .from('medication_occurrences')
+      .delete()
+      .eq('patient_profile_id', profileId);
     
-    // Delete user_roles
+    if (occurrencesError) {
+      console.error('Error deleting medication_occurrences:', occurrencesError);
+    } else {
+      console.log('Deleted medication_occurrences');
+    }
+
+    // 2. Delete medication_schedules
+    const { error: schedulesError } = await supabaseAdmin
+      .from('medication_schedules')
+      .delete()
+      .eq('patient_profile_id', profileId);
+    
+    if (schedulesError) {
+      console.error('Error deleting medication_schedules:', schedulesError);
+    } else {
+      console.log('Deleted medication_schedules');
+    }
+
+    // 3. Delete medication_check_log
+    const { error: checkLogError } = await supabaseAdmin
+      .from('medication_check_log')
+      .delete()
+      .eq('user_id', user.id);
+    
+    if (checkLogError) {
+      console.error('Error deleting medication_check_log:', checkLogError);
+    } else {
+      console.log('Deleted medication_check_log');
+    }
+
+    // 4. Delete medications
+    const { error: medicationsError } = await supabaseAdmin
+      .from('medications')
+      .delete()
+      .eq('patient_profile_id', profileId);
+    
+    if (medicationsError) {
+      console.error('Error deleting medications:', medicationsError);
+    } else {
+      console.log('Deleted medications');
+    }
+
+    // 5. Delete appointments
+    const { error: appointmentsError } = await supabaseAdmin
+      .from('appointments')
+      .delete()
+      .eq('patient_profile_id', profileId);
+    
+    if (appointmentsError) {
+      console.error('Error deleting appointments:', appointmentsError);
+    } else {
+      console.log('Deleted appointments');
+    }
+
+    // 6. Delete collaborations (both as patient and collaborator)
+    const { error: collabError } = await supabaseAdmin
+      .from('collaborations')
+      .delete()
+      .or(`patient_profile_id.eq.${profileId},collaborator_profile_id.eq.${profileId}`);
+    
+    if (collabError) {
+      console.error('Error deleting collaborations:', collabError);
+    } else {
+      console.log('Deleted collaborations');
+    }
+
+    // 7. Delete invitations
+    const { error: invitationsError } = await supabaseAdmin
+      .from('invitations')
+      .delete()
+      .or(`patient_profile_id.eq.${profileId},created_by.eq.${user.id}`);
+    
+    if (invitationsError) {
+      console.error('Error deleting invitations:', invitationsError);
+    } else {
+      console.log('Deleted invitations');
+    }
+
+    // 8. Delete subscriptions
+    const { error: subscriptionsError } = await supabaseAdmin
+      .from('subscriptions')
+      .delete()
+      .eq('patient_profile_id', profileId);
+    
+    if (subscriptionsError) {
+      console.error('Error deleting subscriptions:', subscriptionsError);
+    } else {
+      console.log('Deleted subscriptions');
+    }
+
+    // 9. Delete user_roles
     const { error: rolesError } = await supabaseAdmin
       .from('user_roles')
       .delete()
@@ -73,21 +184,26 @@ Deno.serve(async (req) => {
     
     if (rolesError) {
       console.error('Error deleting user_roles:', rolesError);
-      // Continue anyway as this might be handled by CASCADE
+    } else {
+      console.log('Deleted user_roles');
     }
 
-    // Delete profile (this should cascade to other tables)
+    // 10. Delete profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .delete()
-      .eq('user_id', user.id);
+      .eq('id', profileId);
     
     if (profileError) {
       console.error('Error deleting profile:', profileError);
-      // Continue anyway
+      return new Response(
+        JSON.stringify({ error: 'Erro ao excluir perfil. Tente novamente.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    console.log('Deleted profile');
 
-    // Finally, delete the auth user using Admin API
+    // 11. Finally, delete the auth user using Admin API
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
 
     if (deleteError) {
