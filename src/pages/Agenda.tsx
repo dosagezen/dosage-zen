@@ -629,6 +629,9 @@ export default function Agenda() {
                 </span>
               )}
             </CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Compromissos do mês de {format(currentDate, 'MMMM', { locale: ptBR })}
+            </p>
           </CardHeader>
           <CardContent className="space-y-6">
             {filteredAppointments.pending.length === 0 && filteredAppointments.completed.length === 0 ? (
