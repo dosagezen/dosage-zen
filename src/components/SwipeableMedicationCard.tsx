@@ -319,46 +319,47 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-1">
                   <span>Frequência: {formatFrequency(medicacao.frequencia)}</span>
                 </div>
+                
+                {/* Horários programados - agora abaixo das descrições */}
+                <div className="flex flex-col items-start gap-1 mt-3">
+                  {medicacao.horarios.filter(h => h.hora !== '-').length > 1 ? (
+                    // Múltiplos horários - mostrar horizontalmente
+                    <div className="flex flex-wrap gap-1 justify-start">
+                      {medicacao.horarios
+                        .filter(h => h.hora !== '-')
+                        .sort((a, b) => a.hora.localeCompare(b.hora))
+                        .map((horario, index) => (
+                          <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs bg-muted/50 px-2 py-1 rounded">
+                            <Clock className="w-3 h-3 text-muted-foreground" />
+                            <span className={`font-medium ${
+                              horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
+                              horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
+                            }`}>
+                              {formatTime24h(horario.hora)}
+                            </span>
+                            {horario.status === 'concluido' && (
+                              <Check className="w-3 h-3 text-green-600" />
+                            )}
+                            {horario.status === 'excluido' && (
+                              <span className="text-destructive text-xs">✗</span>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    // Horário único - mostrar como antes
+                    <div className="flex items-center gap-1 text-primary">
+                      <Clock className="w-4 h-4" />
+                      <span className="font-medium text-sm sm:text-base">
+                        {medicacao.proximaDose === "Todos concluídos hoje" ? "Finalizada" : formatTime24h(medicacao.proximaDose)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             
             <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-              {/* Mostrar todos os horários programados com seus status */}
-              <div className="flex flex-col items-start sm:items-end gap-1">
-                {medicacao.horarios.filter(h => h.hora !== '-').length > 1 ? (
-                  // Múltiplos horários - mostrar horizontalmente
-                  <div className="flex flex-wrap gap-1 justify-start sm:justify-end">
-                    {medicacao.horarios
-                      .filter(h => h.hora !== '-')
-                      .sort((a, b) => a.hora.localeCompare(b.hora))
-                      .map((horario, index) => (
-                        <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs bg-muted/50 px-2 py-1 rounded">
-                          <Clock className="w-3 h-3 text-muted-foreground" />
-                          <span className={`font-medium ${
-                            horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
-                            horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
-                          }`}>
-                            {formatTime24h(horario.hora)}
-                          </span>
-                          {horario.status === 'concluido' && (
-                            <Check className="w-3 h-3 text-green-600" />
-                          )}
-                          {horario.status === 'excluido' && (
-                            <span className="text-destructive text-xs">✗</span>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  // Horário único - mostrar como antes
-                  <div className="flex items-center gap-1 text-primary">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-medium text-sm sm:text-base">
-                      {medicacao.proximaDose === "Todos concluídos hoje" ? "Finalizada" : formatTime24h(medicacao.proximaDose)}
-                    </span>
-                  </div>
-                )}
-              </div>
               <div className="flex items-center justify-start sm:justify-end gap-2">
                 <Badge 
                   variant={statusInfo.variant}
