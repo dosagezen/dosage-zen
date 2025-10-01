@@ -110,9 +110,11 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if (disabled || isMobile || isDragging) return;
+    // Desabilitar clique para editar no desktop, pois agora temos botões explícitos
+    // Mantém apenas para mobile
+    if (disabled || !isMobile || isDragging) return;
     
-    // Only trigger edit on desktop click
+    // Only trigger edit on mobile tap
     if (onEdit && !isDragging) {
       onEdit();
     }
@@ -164,9 +166,7 @@ export const SwipeableCard: React.FC<SwipeableCardProps> = ({
       <div
         ref={cardRef}
         style={getTransformStyle()}
-        className={`relative ${!disabled && isMobile ? 'touch-pan-y' : ''} ${
-          !disabled && !isMobile ? 'cursor-pointer' : ''
-        }`}
+        className={`relative ${!disabled && isMobile ? 'touch-pan-y' : ''}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
