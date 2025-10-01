@@ -169,26 +169,26 @@ export default function Agenda() {
     const isOutsideMonth = !isSameMonth(date, currentDate);
 
     return (
-      <div className={`flex items-center justify-center gap-1 flex-wrap mt-1 ${isOutsideMonth ? 'opacity-60' : ''}`}>
+      <div className={`flex items-center justify-center gap-0.5 md:gap-1 flex-wrap mt-0.5 md:mt-1 ${isOutsideMonth ? 'opacity-60' : ''}`}>
         {counts.consulta > 0 && (
-          <div className="flex items-center gap-0.5 text-xs">
-            <User className="w-3 h-3 text-blue-600" />
+          <div className="flex items-center gap-0 md:gap-0.5 text-[9px] md:text-xs">
+            <User className="w-2 h-2 md:w-3 md:h-3 text-blue-600" />
             <span className="text-blue-600 font-medium">
               {counts.consulta > 9 ? '9+' : counts.consulta}
             </span>
           </div>
         )}
         {counts.exame > 0 && (
-          <div className="flex items-center gap-0.5 text-xs">
-            <Stethoscope className="w-3 h-3 text-green-600" />
+          <div className="flex items-center gap-0 md:gap-0.5 text-[9px] md:text-xs">
+            <Stethoscope className="w-2 h-2 md:w-3 md:h-3 text-green-600" />
             <span className="text-green-600 font-medium">
               {counts.exame > 9 ? '9+' : counts.exame}
             </span>
           </div>
         )}
         {counts.atividade > 0 && (
-          <div className="flex items-center gap-0.5 text-xs">
-            <Heart className="w-3 h-3 text-red-600" />
+          <div className="flex items-center gap-0 md:gap-0.5 text-[9px] md:text-xs">
+            <Heart className="w-2 h-2 md:w-3 md:h-3 text-red-600" />
             <span className="text-red-600 font-medium">
               {counts.atividade > 9 ? '9+' : counts.atividade}
             </span>
@@ -390,8 +390,8 @@ export default function Agenda() {
                   </div>
                   
                   {appointment.local_endereco && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
+                    <div className="flex items-center gap-1 min-w-0">
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{appointment.local_endereco}</span>
                     </div>
                   )}
@@ -465,10 +465,10 @@ export default function Agenda() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-gradient-to-br from-background to-muted/20 overflow-x-hidden">
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="flex-shrink-0 px-3 py-4 md:px-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center justify-between max-w-7xl mx-auto gap-2">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
             <p className="text-muted-foreground">
@@ -495,7 +495,7 @@ export default function Agenda() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto px-3 py-4 md:px-4">
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Calendar */}
         <Card className="mb-8">
@@ -514,11 +514,11 @@ export default function Agenda() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-0 border border-border/20 overflow-hidden">
+          <CardContent className="p-2 md:p-6">
+            <div className="grid grid-cols-7 gap-0 border border-border/20 overflow-hidden rounded-md">
               {/* Header row with weekday labels */}
               {weekdayLabels.map((day, index) => (
-                <div key={day} className={`py-3 text-sm font-medium text-muted-foreground text-center ${index < 5 ? 'bg-muted-darker/30' : 'bg-muted/30'} border-r border-b border-border/20 last:border-r-0`}>
+                <div key={day} className={`py-2 md:py-3 text-[10px] md:text-sm font-medium text-muted-foreground text-center ${index < 5 ? 'bg-muted-darker/30' : 'bg-muted/30'} border-r border-b border-border/20 last:border-r-0`}>
                   {day}
                 </div>
               ))}
@@ -544,7 +544,7 @@ export default function Agenda() {
                     role="gridcell"
                     aria-label={ariaLabel}
                     className={`
-                      relative p-2 text-sm transition-all duration-200 min-h-[70px] flex flex-col items-start justify-start
+                      relative p-1 md:p-2 text-xs md:text-sm transition-all duration-200 min-h-[50px] md:min-h-[70px] flex flex-col items-start justify-start
                       border-r border-b border-border/20 focus:outline-none focus:ring-2 focus:ring-primary focus:z-10
                       ${isLastColumn ? 'border-r-0' : ''}
                       ${isLastRow ? 'border-b-0' : ''}
@@ -555,7 +555,7 @@ export default function Agenda() {
                     `}
                   >
                     {/* Day number */}
-                    <span className={`text-sm ${isDayToday ? 'font-bold' : 'font-medium'} mb-1`}>
+                    <span className={`text-xs md:text-sm ${isDayToday ? 'font-bold' : 'font-medium'} mb-0.5 md:mb-1`}>
                       {format(date, 'd')}
                     </span>
                     
@@ -694,7 +694,7 @@ export default function Agenda() {
           </DialogHeader>
           
           {/* Category selection buttons */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4">
             <button
               onClick={() => {
                 setSelectedCategory('consulta');
@@ -897,9 +897,9 @@ export default function Agenda() {
                   </div>
                   
                   {/* Mobile: 1 linha horizontal com abreviações */}
-                  <div className="flex md:hidden justify-between gap-1">
+                  <div className="flex md:hidden justify-between gap-0.5">
                     {weekdays.map(day => (
-                      <div key={day.value} className="flex flex-col items-center justify-center gap-1 bg-muted/50 px-2 py-1.5 rounded-md min-h-[40px] flex-1">
+                      <div key={day.value} className="flex flex-col items-center justify-center gap-0.5 bg-muted/50 px-1 py-1 rounded-md flex-1 min-w-0">
                         <Checkbox
                           id={`day-mobile-${day.value}`}
                           checked={formData.dias_semana?.includes(day.value) || false}
@@ -917,9 +917,9 @@ export default function Agenda() {
                               }));
                             }
                           }}
-                          className="h-4 w-4"
+                          className="h-3 w-3"
                         />
-                        <Label htmlFor={`day-mobile-${day.value}`} className="text-[10px] font-medium cursor-pointer text-center leading-tight">
+                        <Label htmlFor={`day-mobile-${day.value}`} className="text-[9px] font-medium cursor-pointer text-center leading-none">
                           {day.shortLabel}
                         </Label>
                       </div>
