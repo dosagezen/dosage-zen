@@ -660,7 +660,7 @@ export default function Agenda() {
                 {/* Completed Appointments */}
                 {filteredAppointments.completed.length > 0 && (
                   <Collapsible open={realizadosExpanded} onOpenChange={setRealizadosExpanded}>
-                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group">
+                    <CollapsibleTrigger className="flex items-center gap-2 w-full text-left group mb-[40px]">
                       <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                         Realizados ({filteredAppointments.completed.length})
                       </h3>
