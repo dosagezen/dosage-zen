@@ -498,7 +498,7 @@ export default function Agenda() {
       <div className="flex-1 overflow-auto p-4">
         <div className="max-w-7xl mx-auto space-y-6">
         {/* Calendar */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
