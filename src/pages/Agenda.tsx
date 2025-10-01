@@ -341,21 +341,21 @@ export default function Agenda() {
         onSwipeCancel={() => handleCancel(appointment)}
         onEdit={appointment.status === 'cancelado' || appointment.status === 'realizado' ? undefined : () => handleEditAppointment(appointment)}
       >
-        <Card className="w-full">
+        <Card className="w-full max-w-full overflow-hidden">
           <CardContent className="p-4">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 w-full max-w-full overflow-hidden">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <CategoryIcon className="w-5 h-5 text-primary" />
                 </div>
               </div>
               
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-foreground truncate">
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="flex items-center justify-between min-w-0 gap-2">
+                  <h3 className="font-semibold text-foreground truncate flex-1 min-w-0">
                     {appointment.titulo || categoryLabels[appointment.tipo]}
                   </h3>
-                  <Badge variant={statusColors[appointment.status] as any} className="ml-2">
+                  <Badge variant={statusColors[appointment.status] as any} className="flex-shrink-0">
                     {appointment.status}
                   </Badge>
                 </div>
@@ -379,18 +379,18 @@ export default function Agenda() {
                   {categoryLabels[appointment.tipo]}
                 </Badge>
                 
-                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Calendar className="w-4 h-4" />
                     <span>{date}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Clock className="w-4 h-4" />
                     <span>{time}</span>
                   </div>
                   
                   {appointment.local_endereco && (
-                    <div className="flex items-center gap-1 min-w-0">
+                    <div className="flex items-center gap-1 min-w-0 overflow-hidden">
                       <MapPin className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{appointment.local_endereco}</span>
                     </div>
@@ -572,19 +572,19 @@ export default function Agenda() {
         <Card className="bg-[#dad7cd]">
           <CardContent className="p-3 mt-1.5 bg-[#dad7cd]">
             <p className="text-sm text-muted-foreground mb-2">Pesquise seus compromissos</p>
-            <div className="flex flex-wrap items-end gap-2">
-              <div className="relative w-full md:flex-1">
+            <div className="flex flex-wrap items-end gap-2 w-full min-w-0">
+              <div className="relative w-full md:flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Buscar compromissos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-full min-w-0"
                 />
               </div>
               
               <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                <SelectTrigger className="w-[calc(50%-4px)] md:w-[160px]">
+                <SelectTrigger className="w-[calc(50%-4px)] md:w-[160px] min-w-0">
                   <SelectValue placeholder="Todas categorias" />
                 </SelectTrigger>
                 <SelectContent>
@@ -596,7 +596,7 @@ export default function Agenda() {
               </Select>
               
               <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger className="w-[calc(50%-4px)] md:w-[140px]">
+                <SelectTrigger className="w-[calc(50%-4px)] md:w-[140px] min-w-0">
                   <SelectValue placeholder="Todos status" />
                 </SelectTrigger>
                 <SelectContent>

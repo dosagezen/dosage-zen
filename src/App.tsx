@@ -46,25 +46,27 @@ const AppLayout = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center justify-between border-b border-border/50 bg-card/50 backdrop-blur-sm px-4">
-            <div className="flex items-center">
-              <SidebarTrigger className="mr-4" />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 flex items-center justify-between border-b border-border/50 bg-card/50 backdrop-blur-sm px-3 sm:px-4 gap-2 min-w-0">
+            <div className="flex items-center min-w-0 flex-shrink">
+              <SidebarTrigger className="mr-2 sm:mr-4 flex-shrink-0" />
               <button 
                 onClick={() => navigate('/app/')}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity cursor-pointer min-w-0"
               >
-                <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center flex-shrink-0">
                   <span className="text-primary-foreground text-xs font-bold">D</span>
                 </div>
-                <span className="font-semibold text-primary">DosageZen</span>
+                <span className="font-semibold text-primary hidden sm:inline">DosageZen</span>
               </button>
             </div>
-            <ContextSelector />
+            <div className="min-w-0 flex-shrink">
+              <ContextSelector />
+            </div>
           </header>
-          <main className="flex-1">
+          <main className="flex-1 overflow-x-hidden">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/conquistas" element={<Conquistas />} />

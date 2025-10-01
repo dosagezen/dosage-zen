@@ -54,19 +54,19 @@ export const ContextSelector: React.FC = () => {
   const currentOption = contextOptions.find(opt => opt.id === currentContext);
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">Atuando como:</span>
+    <div className="flex items-center gap-2 min-w-0 flex-shrink">
+      <span className="text-sm text-muted-foreground hidden sm:inline">Atuando como:</span>
       <Select value={currentContext || ''} onValueChange={switchContext}>
-        <SelectTrigger className="w-auto min-w-[200px]">
+        <SelectTrigger className="w-[140px] sm:w-auto sm:min-w-[200px] max-w-[60vw] min-w-0">
           <SelectValue>
             {currentOption && (
-              <div className="flex items-center gap-2">
-                <span className={getRoleColor(currentOption.role)}>
+              <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                <span className={`${getRoleColor(currentOption.role)} flex-shrink-0`}>
                   {getRoleIcon(currentOption.role)}
                 </span>
-                <span className="font-medium">{currentOption.name}</span>
+                <span className="font-medium truncate">{currentOption.name}</span>
                 {currentOption.isGestor && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-xs flex-shrink-0 hidden sm:flex">
                     <Crown className="w-3 h-3 mr-1" />
                     Gestor
                   </Badge>
