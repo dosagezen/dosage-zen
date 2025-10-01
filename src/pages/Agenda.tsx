@@ -583,7 +583,7 @@ export default function Agenda() {
               </div>
               
               <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Todas categorias" />
                 </SelectTrigger>
                 <SelectContent>
@@ -595,7 +595,7 @@ export default function Agenda() {
               </Select>
               
               <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Todos status" />
                 </SelectTrigger>
                 <SelectContent>
