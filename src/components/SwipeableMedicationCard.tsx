@@ -310,9 +310,19 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                 <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-semibold text-primary">
-                  {medicacao.nome}
-                </h3>
+                {/* Header com título e badge em duas colunas no desktop */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-primary">
+                    {medicacao.nome}
+                  </h3>
+                  <Badge 
+                    variant={statusInfo.variant}
+                    className="text-xs sm:text-sm w-fit"
+                  >
+                    {statusInfo.text}
+                  </Badge>
+                </div>
+                
                 <p className="text-sm sm:text-base text-muted-foreground">
                   {medicacao.dosagem} • {medicacao.estoque} {getFormaGramatical(medicacao.forma, medicacao.estoque)}
                 </p>
@@ -360,13 +370,7 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
             </div>
             
             <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-              <div className="flex items-center justify-start sm:justify-end gap-2">
-                <Badge 
-                  variant={statusInfo.variant}
-                  className="text-xs sm:text-sm"
-                >
-                  {statusInfo.text}
-                </Badge>
+              <div className="flex items-center justify-start sm:justify-end gap-2 sm:hidden">
               </div>
               
               {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
