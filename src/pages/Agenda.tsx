@@ -622,7 +622,7 @@ export default function Agenda() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="w-5 h-5" />
-              Compromissos ({filteredAppointments.pending.length + filteredAppointments.completed.length})
+              Total de Compromissos ({filteredAppointments.pending.length + filteredAppointments.completed.length})
               {selectedDate && (
                 <span className="text-sm font-normal text-muted-foreground">
                   - {format(selectedDate, 'dd/MM/yyyy')}
