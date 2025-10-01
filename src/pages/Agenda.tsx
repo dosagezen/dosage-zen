@@ -443,13 +443,13 @@ export default function Agenda() {
                 {!isMobile && (appointment.status === 'cancelado' || appointment.status === 'realizado') && (
                   <div className="flex gap-2 mt-4 pt-3 border-t border-border">
                     <Button 
-                      variant="outline" 
+                      variant="default" 
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRestore(appointment);
                       }}
-                      className="h-8 text-xs"
+                      className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40] text-white"
                     >
                       <span className="mr-1">↻</span>
                       Restaurar
