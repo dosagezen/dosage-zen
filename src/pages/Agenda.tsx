@@ -572,8 +572,8 @@ export default function Agenda() {
         <Card className="bg-[#dad7cd]">
           <CardContent className="p-4 mt-1.5 bg-[#dad7cd]">
             <p className="text-sm text-muted-foreground mb-3">Pesquise seus compromissos</p>
-            <div className="flex items-end gap-4">
-              <div className="relative flex-1">
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="relative w-full md:flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Buscar compromissos..."
@@ -584,7 +584,7 @@ export default function Agenda() {
               </div>
               
               <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-full md:w-[160px]">
                   <SelectValue placeholder="Todas categorias" />
                 </SelectTrigger>
                 <SelectContent>
@@ -596,7 +596,7 @@ export default function Agenda() {
               </Select>
               
               <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full md:w-[140px]">
                   <SelectValue placeholder="Todos status" />
                 </SelectTrigger>
                 <SelectContent>
