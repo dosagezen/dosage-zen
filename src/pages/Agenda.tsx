@@ -583,7 +583,7 @@ export default function Agenda() {
               </div>
               
               <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                <SelectTrigger className="justify-start">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
