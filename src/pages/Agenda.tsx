@@ -339,7 +339,7 @@ export default function Agenda() {
         key={appointment.id}
         onSwipeComplete={() => handleComplete(appointment)}
         onSwipeCancel={() => handleCancel(appointment)}
-        onEdit={() => handleEditAppointment(appointment)}
+        onEdit={appointment.status === 'cancelado' || appointment.status === 'realizado' ? undefined : () => handleEditAppointment(appointment)}
       >
         <Card className="w-full">
           <CardContent className="p-4">
