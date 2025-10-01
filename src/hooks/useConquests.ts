@@ -92,7 +92,8 @@ export function useConquests({ period, category }: UseConquestsParams) {
           p_context_id: profile.id,
           p_range_start: start.toISOString(),
           p_range_end: end.toISOString(),
-          p_tz: timezone
+          p_tz: timezone,
+          p_category: category
         });
 
         if (error) {
@@ -125,35 +126,7 @@ export function useConquests({ period, category }: UseConquestsParams) {
     refetchOnWindowFocus: false,
   });
 
-  // Filter data by category if not 'todas'
-  const filteredSummary = useCallback(() => {
-    if (!summary || category === 'todas') {
-      return summary;
-    }
-
-    const categoryData = summary.by_category[category];
-    if (!categoryData) {
-      return {
-        planejados: 0,
-        concluidos: 0,
-        faltando: 0,
-        atrasados: 0,
-        cancelados: 0,
-        aderencia_pct: 0,
-        by_category: { [category]: categoryData || {} }
-      };
-    }
-
-    return {
-      planejados: categoryData.planejados,
-      concluidos: categoryData.concluidos,
-      faltando: categoryData.faltando,
-      atrasados: categoryData.atrasados,
-      cancelados: categoryData.cancelados,
-      aderencia_pct: categoryData.aderencia_pct,
-      by_category: { [category]: categoryData }
-    };
-  }, [summary, category]);
+  // Backend now handles category filtering, no need for client-side filtering
 
   // Subscribe to real-time updates
   useEffect(() => {
@@ -177,7 +150,7 @@ export function useConquests({ period, category }: UseConquestsParams) {
   }, [error, toast]);
 
   return {
-    summary: filteredSummary(),
+    summary,
     isLoading,
     error,
     refetch

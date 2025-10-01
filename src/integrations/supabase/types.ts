@@ -580,12 +580,20 @@ export type Database = {
     }
     Functions: {
       fn_conquests_summary: {
-        Args: {
-          p_context_id: string
-          p_range_end: string
-          p_range_start: string
-          p_tz?: string
-        }
+        Args:
+          | {
+              p_category?: string
+              p_context_id: string
+              p_range_end: string
+              p_range_start: string
+              p_tz?: string
+            }
+          | {
+              p_context_id: string
+              p_range_end: string
+              p_range_start: string
+              p_tz?: string
+            }
         Returns: Json
       }
       fn_count_medications: {
