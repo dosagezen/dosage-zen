@@ -41,7 +41,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
   return (
     <div className="space-y-3">
       <Label htmlFor="profile-select" className="text-sm font-medium">
-        Perfil Inicial
+        Selecione seu Perfil
       </Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger id="profile-select" className="w-full py-2">
