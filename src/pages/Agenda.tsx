@@ -619,7 +619,7 @@ export default function Agenda() {
         {/* Appointments List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
               <Filter className="w-5 h-5" />
               Total de Compromissos ({filteredAppointments.pending.length + filteredAppointments.completed.length})
               {selectedDate && (
