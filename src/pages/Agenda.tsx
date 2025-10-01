@@ -351,11 +351,11 @@ export default function Agenda() {
               </div>
               
               <div className="flex-1 min-w-0 overflow-hidden">
-                <div className="flex items-center justify-between min-w-0 gap-2">
+                <div className="flex items-start justify-between min-w-0 gap-2">
                   <h3 className="font-semibold text-foreground truncate flex-1 min-w-0">
                     {appointment.titulo || categoryLabels[appointment.tipo]}
                   </h3>
-                  <Badge variant={statusColors[appointment.status] as any} className="flex-shrink-0">
+                  <Badge variant={statusColors[appointment.status] as any} className="flex-shrink-0 hidden md:flex">
                     {appointment.status}
                   </Badge>
                 </div>
@@ -366,18 +366,24 @@ export default function Agenda() {
                   </p>
                 )}
                 
-                <Badge 
-                  variant="outline" 
-                  className={`mt-2 w-fit ${
-                    appointment.tipo === 'consulta' 
-                      ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                      : appointment.tipo === 'exame'
-                      ? 'bg-green-50 text-green-700 border-green-200'
-                      : 'bg-rose-50 text-rose-700 border-rose-200'
-                  }`}
-                >
-                  {categoryLabels[appointment.tipo]}
-                </Badge>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <Badge 
+                    variant="outline" 
+                    className={`w-fit ${
+                      appointment.tipo === 'consulta' 
+                        ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                        : appointment.tipo === 'exame'
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                    }`}
+                  >
+                    {categoryLabels[appointment.tipo]}
+                  </Badge>
+                  <span className="text-muted-foreground md:hidden">•</span>
+                  <Badge variant={statusColors[appointment.status] as any} className="flex-shrink-0 md:hidden">
+                    {appointment.status}
+                  </Badge>
+                </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1 flex-shrink-0">
