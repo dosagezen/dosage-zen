@@ -571,7 +571,7 @@ export default function Agenda() {
         {/* Filters */}
         <Card>
           <CardContent className="p-4">
-            <div className="space-y-4">
+            <div className="grid grid-cols-4 gap-4 items-end">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -582,37 +582,35 @@ export default function Agenda() {
                 />
               </div>
               
-              <div className="flex gap-2 flex-wrap">
-                <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                  <SelectTrigger className="w-auto">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todas">Todas categorias</SelectItem>
-                    <SelectItem value="consulta">Consultas</SelectItem>
-                    <SelectItem value="exame">Exames</SelectItem>
-                    <SelectItem value="atividade">Atividades</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                  <SelectTrigger className="w-auto">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos status</SelectItem>
-                    <SelectItem value="agendado">Agendado</SelectItem>
-                    <SelectItem value="realizado">Realizado</SelectItem>
-                    <SelectItem value="cancelado">Cancelado</SelectItem>
-                  </SelectContent>
-                </Select>
-                
-                {selectedDate && (
-                  <Button variant="outline" size="sm" onClick={() => setSelectedDate(null)}>
-                    Limpar data
-                  </Button>
-                )}
-              </div>
+              <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas categorias</SelectItem>
+                  <SelectItem value="consulta">Consultas</SelectItem>
+                  <SelectItem value="exame">Exames</SelectItem>
+                  <SelectItem value="atividade">Atividades</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos status</SelectItem>
+                  <SelectItem value="agendado">Agendado</SelectItem>
+                  <SelectItem value="realizado">Realizado</SelectItem>
+                  <SelectItem value="cancelado">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              {selectedDate && (
+                <Button variant="outline" size="sm" onClick={() => setSelectedDate(null)}>
+                  Limpar data
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
