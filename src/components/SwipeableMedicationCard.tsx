@@ -304,12 +304,12 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
         onClick={handleCardClick}
       >
         <CardContent className="p-4 sm:p-6 w-full">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-4 sm:gap-0">
-            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between w-full gap-4 sm:gap-0">
+            <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[#3A5A40]">
                 <Pill className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 w-full">
                 {/* Header com título e badge em duas colunas no desktop */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-2">
                   <h3 className="text-base sm:text-lg font-semibold text-primary">
@@ -366,59 +366,54 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-col sm:flex-col sm:text-right space-y-2 flex-shrink-0 w-full sm:w-auto sm:ml-4">
-              <div className="flex items-center justify-start sm:justify-end gap-2 sm:hidden">
-              </div>
-              
-              {/* Botões para Desktop - ordem: Excluir, Alterar, Concluir */}
-              {!isMobile && !disabled && (
-                <div className="flex gap-2 justify-start sm:justify-end mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onRemove(medicacao.id)
-                    }}
-                    className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                    disabled={isLoading}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Cancelar
-                  </Button>
-                  {onEdit && (
+
+                {/* Botões para Desktop - agora abaixo dos horários */}
+                {!isMobile && !disabled && (
+                  <div className="flex gap-2 justify-start mt-4">
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation()
-                        onEdit(medicacao)
+                        onRemove(medicacao.id)
                       }}
-                      className="h-8 text-xs"
+                      className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
                       disabled={isLoading}
                     >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Alterar
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Cancelar
                     </Button>
-                  )}
-                  <Button 
-                    variant="default" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onComplete(medicacao.id)
-                    }}
-                    className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
-                    disabled={isLoading}
-                  >
-                    <Check className="w-3 h-3 mr-1" />
-                    Concluir
-                  </Button>
-                </div>
-              )}
+                    {onEdit && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onEdit(medicacao)
+                        }}
+                        className="h-8 text-xs"
+                        disabled={isLoading}
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Alterar
+                      </Button>
+                    )}
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onComplete(medicacao.id)
+                      }}
+                      className="h-8 text-xs bg-[#588157] hover:bg-[#3A5A40]"
+                      disabled={isLoading}
+                    >
+                      <Check className="w-3 h-3 mr-1" />
+                      Concluir
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
