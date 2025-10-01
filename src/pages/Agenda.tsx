@@ -570,9 +570,9 @@ export default function Agenda() {
 
         {/* Filters */}
         <Card className="bg-[#dad7cd]">
-          <CardContent className="p-4 mt-1.5 bg-[#dad7cd]">
-            <p className="text-sm text-muted-foreground mb-3">Pesquise seus compromissos</p>
-            <div className="flex flex-wrap items-end gap-4">
+          <CardContent className="p-3 mt-1.5 bg-[#dad7cd]">
+            <p className="text-sm text-muted-foreground mb-2">Pesquise seus compromissos</p>
+            <div className="flex flex-wrap items-end gap-2">
               <div className="relative w-full md:flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
@@ -584,7 +584,7 @@ export default function Agenda() {
               </div>
               
               <Select value={categoryFilter} onValueChange={(value: any) => setCategoryFilter(value)}>
-                <SelectTrigger className="w-full md:w-[160px]">
+                <SelectTrigger className="w-[calc(50%-4px)] md:w-[160px]">
                   <SelectValue placeholder="Todas categorias" />
                 </SelectTrigger>
                 <SelectContent>
@@ -596,7 +596,7 @@ export default function Agenda() {
               </Select>
               
               <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                <SelectTrigger className="w-full md:w-[140px]">
+                <SelectTrigger className="w-[calc(50%-4px)] md:w-[140px]">
                   <SelectValue placeholder="Todos status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -608,7 +608,7 @@ export default function Agenda() {
               </Select>
               
               {selectedDate && (
-                <Button variant="outline" size="sm" onClick={() => setSelectedDate(null)}>
+                <Button variant="outline" size="sm" onClick={() => setSelectedDate(null)} className="w-full md:w-auto">
                   Limpar data
                 </Button>
               )}
