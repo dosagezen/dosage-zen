@@ -43,6 +43,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showEndereco, setShowEndereco] = useState(false);
   const [showPagamento, setShowPagamento] = useState(true);
+  const [expandedPagamento, setExpandedPagamento] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -505,21 +506,34 @@ const Signup = () => {
               {/* Seção: Pagamento (Mock) */}
               {showPagamento && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <h3 className="text-lg font-semibold text-primary">Pagamento</h3>
-                  </div>
-
-                  <div className="bg-muted/30 p-4 rounded-lg border border-muted">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">⚠️</span>
-                      <p className="text-sm text-muted-foreground">
-                        Seus dados não serão armazenados
-                      </p>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedPagamento(!expandedPagamento)}
+                    className="flex items-center justify-between w-full mb-4 hover:opacity-80 transition-opacity"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-5 h-5 text-primary" />
+                      <h3 className="text-lg font-semibold text-primary">Pagamento</h3>
                     </div>
-                  </div>
+                    {expandedPagamento ? (
+                      <ChevronUp className="w-5 h-5 text-primary" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-primary" />
+                    )}
+                  </button>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {expandedPagamento && (
+                    <>
+                      <div className="bg-muted/30 p-4 rounded-lg border border-muted">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">⚠️</span>
+                          <p className="text-sm text-muted-foreground">
+                            Seus dados não serão armazenados
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Número do Cartão */}
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="numeroCartao">Número do Cartão</Label>
@@ -647,9 +661,11 @@ const Signup = () => {
                         )}
                       </div>
                     )}
-                  </div>
+                      </div>
 
-                  {/* Checkbox Salvar Cartão */}
+                      {/* Checkbox Salvar Cartão */}
+                    </>
+                  )}
                 </div>
               )}
 
