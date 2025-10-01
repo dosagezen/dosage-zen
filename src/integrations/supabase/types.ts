@@ -657,6 +657,24 @@ export type Database = {
           user_id: string
         }
       }
+      fn_reports_historical: {
+        Args: { p_context_id: string; p_months?: number; p_tz?: string }
+        Returns: Json
+      }
+      fn_reports_insights: {
+        Args: { p_context_id: string; p_tz?: string }
+        Returns: Json
+      }
+      fn_reports_summary: {
+        Args: {
+          p_category?: string
+          p_context_id: string
+          p_range_end: string
+          p_range_start: string
+          p_tz?: string
+        }
+        Returns: Json
+      }
       fn_restore_card_for_today: {
         Args: { p_day_local: string; p_med_id: string; p_tz: string }
         Returns: number

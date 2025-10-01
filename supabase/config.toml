@@ -20,3 +20,9 @@ verify_jwt = true
 
 [functions.delete-user-account]
 verify_jwt = true
+
+[functions.export-reports-pdf]
+verify_jwt = true
+
+[functions.export-reports-excel]
+verify_jwt = true

@@ -1,68 +1,156 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { BarChart3, Share2, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useReportsData, ReportPeriod, ReportCategory } from "@/hooks/useReportsData";
+import { useReportsInsights } from "@/hooks/useReportsInsights";
+import { useReportsHistorical } from "@/hooks/useReportsHistorical";
+import { useCollaboratorsList } from "@/hooks/useCollaboratorsList";
+import { DateRangePickerDialog } from "@/components/DateRangePickerDialog";
 
-// Mock data
-const statusData = [
-  { name: 'Concluídos', value: 28, percentage: 70, color: 'hsl(var(--success))' },
-  { name: 'Faltando', value: 6, percentage: 15, color: 'hsl(var(--primary))' },
-  { name: 'Atrasados', value: 4, percentage: 10, color: 'hsl(var(--warning))' },
-  { name: 'Excluídos', value: 2, percentage: 5, color: 'hsl(var(--destructive))' }
-];
-
-const categoryData = [
-  { name: 'Medicações', planejados: 20, concluidos: 15, icon: '💊' },
-  { name: 'Consultas', planejados: 5, concluidos: 4, icon: '🩺' },
-  { name: 'Exames', planejados: 7, concluidos: 6, icon: '🔬' },
-  { name: 'Atividades', planejados: 8, concluidos: 3, icon: '🏋️' }
-];
-
-const trendData = [
-  { mes: 'Jul', adesao: 68 },
-  { mes: 'Ago', adesao: 75 },
-  { mes: 'Set', adesao: 78 },
-  { mes: 'Out', adesao: 82 }
-];
-
-const insightsData = {
-  melhorSemana: { periodo: '1ª semana de setembro', adesao: 90 },
-  maisEsquecido: 'Medicações noturnas',
-  diasSeguidos: 3,
-  tendencia: 'melhorando'
+const categoryMapping: Record<string, string> = {
+  'medicacao': 'Medicações',
+  'consulta': 'Consultas',
+  'exame': 'Exames',
+  'atividade': 'Atividades'
 };
 
 export default function Relatorios() {
-  const [periodoSelecionado, setPeriodoSelecionado] = useState('mes');
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('todas');
+  const [periodoSelecionado, setPeriodoSelecionado] = useState<ReportPeriod>('mes');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<ReportCategory>('todas');
   const [usuarioSelecionado, setUsuarioSelecionado] = useState('paciente');
+  const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | undefined>();
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { toast } = useToast();
 
-  const dadosFiltrados = useMemo(() => {
-    // Em uma implementação real, aqui filtraríamos os dados baseado nos filtros
-    return {
-      status: statusData,
-      categorias: categoryData,
-      tendencia: trendData
-    };
-  }, [periodoSelecionado, categoriaSelecionada, usuarioSelecionado]);
+  // Fetch real data
+  const { summary, isLoading: loadingSummary } = useReportsData({
+    period: periodoSelecionado,
+    category: categoriaSelecionada,
+    contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+    customRange
+  });
 
-  const handleExportPDF = () => {
-    toast({
-      title: "Exportação iniciada",
-      description: "Seu relatório em PDF será baixado em instantes.",
-    });
+  const { insights, isLoading: loadingInsights } = useReportsInsights(
+    usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado
+  );
+
+  const { historical, isLoading: loadingHistorical } = useReportsHistorical(
+    usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado
+  );
+
+  const { collaborators } = useCollaboratorsList();
+
+  // Transform data for charts
+  const statusData = [
+    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(var(--success))' },
+    { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(var(--warning))' },
+    { name: 'Faltando', value: summary.totals.faltando, percentage: summary.totals.faltando_pct, color: 'hsl(var(--primary))' },
+    { name: 'Atrasados', value: summary.totals.atrasados, percentage: summary.totals.atrasados_pct, color: 'hsl(var(--destructive))' },
+    { name: 'Excluídos', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(var(--muted))' }
+  ].filter(item => item.value > 0);
+
+  const categoryData = Object.entries(summary.by_category).map(([category, data]) => ({
+    name: categoryMapping[category] || category,
+    planejados: data.planejados,
+    concluidos: data.concluidos
+  }));
+
+  const handlePeriodoChange = (value: string) => {
+    if (value === 'personalizado') {
+      setShowDatePicker(true);
+    } else {
+      setPeriodoSelecionado(value as ReportPeriod);
+      setCustomRange(undefined);
+    }
   };
 
-  const handleExportExcel = () => {
-    toast({
-      title: "Exportação iniciada", 
-      description: "Seu relatório em Excel será baixado em instantes.",
-    });
+  const handleCustomRangeSelect = (range: { start: Date; end: Date }) => {
+    setCustomRange(range);
+    setPeriodoSelecionado('personalizado');
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('export-reports-pdf', {
+        body: {
+          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          period: periodoSelecionado,
+          category: categoriaSelecionada,
+          rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
+          rangeEnd: customRange?.end.toISOString() || new Date().toISOString()
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      // Create downloadable file from HTML
+      const { htmlContent, filename } = response.data;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+
+      toast({
+        title: "PDF exportado com sucesso",
+        description: "Seu relatório foi baixado.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao exportar PDF",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const response = await supabase.functions.invoke('export-reports-excel', {
+        body: {
+          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          period: periodoSelecionado,
+          category: categoriaSelecionada,
+          rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
+          rangeEnd: customRange?.end.toISOString() || new Date().toISOString()
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      // Download CSV
+      const { csvContent, filename } = response.data;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+
+      toast({
+        title: "Excel exportado com sucesso",
+        description: "Seu relatório foi baixado.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao exportar Excel",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleShareWhatsApp = () => {
@@ -84,11 +172,13 @@ export default function Relatorios() {
     return `${entry.value} (${entry.percentage}%)`;
   };
 
-  const TrendIcon = () => {
-    if (insightsData.tendencia === 'melhorando') return <TrendingUp className="w-4 h-4 text-success" />;
-    if (insightsData.tendencia === 'piorando') return <TrendingDown className="w-4 h-4 text-destructive" />;
+  const TrendIcon = ({ trend }: { trend?: 'up' | 'down' | 'neutral' }) => {
+    if (trend === 'up') return <TrendingUp className="w-4 h-4 text-success" />;
+    if (trend === 'down') return <TrendingDown className="w-4 h-4 text-destructive" />;
     return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
+
+  const isLoading = loadingSummary || loadingInsights || loadingHistorical;
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,7 +244,7 @@ export default function Relatorios() {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Período
               </label>
-              <Select value={periodoSelecionado} onValueChange={setPeriodoSelecionado}>
+              <Select value={periodoSelecionado} onValueChange={handlePeriodoChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -162,7 +252,9 @@ export default function Relatorios() {
                   <SelectItem value="hoje">Hoje</SelectItem>
                   <SelectItem value="semana">Semana</SelectItem>
                   <SelectItem value="mes">Mês</SelectItem>
-                  <SelectItem value="personalizado">Personalizado</SelectItem>
+                  <SelectItem value="personalizado">
+                    {customRange ? `${customRange.start.toLocaleDateString()} - ${customRange.end.toLocaleDateString()}` : 'Personalizado'}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -171,7 +263,7 @@ export default function Relatorios() {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Categoria
               </label>
-              <Select value={categoriaSelecionada} onValueChange={setCategoriaSelecionada}>
+              <Select value={categoriaSelecionada} onValueChange={(value) => setCategoriaSelecionada(value as ReportCategory)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -195,7 +287,11 @@ export default function Relatorios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="paciente">Paciente</SelectItem>
-                  <SelectItem value="colaboradores">Colaboradores</SelectItem>
+                  {collaborators.map(collab => (
+                    <SelectItem key={collab.id} value={collab.id}>
+                      {collab.nome} {collab.sobrenome}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -207,39 +303,54 @@ export default function Relatorios() {
       <div className="container mx-auto px-4 py-6">
         {/* Insights Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Melhor semana</div>
-              <div className="text-lg font-semibold text-success">{insightsData.melhorSemana.adesao}%</div>
-              <div className="text-xs text-muted-foreground">{insightsData.melhorSemana.periodo}</div>
-            </CardContent>
-          </Card>
+          {loadingInsights ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <Skeleton className="h-4 w-24 mb-2" />
+                  <Skeleton className="h-6 w-16 mb-1" />
+                  <Skeleton className="h-3 w-32" />
+                </CardContent>
+              </Card>
+            ))
+          ) : insights ? (
+            <>
+              <Card className="bg-gradient-to-br from-success/10 to-success/5 border-success/20">
+                <CardContent className="p-4">
+                  <div className="text-sm text-muted-foreground mb-1">{insights.bestWeek.label}</div>
+                  <div className="text-lg font-semibold text-success">{insights.bestWeek.value}</div>
+                  <div className="text-xs text-muted-foreground">Melhor período</div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Mais esquecido</div>
-              <div className="text-sm font-semibold text-foreground">{insightsData.maisEsquecido}</div>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
+                <CardContent className="p-4">
+                  <div className="text-sm text-muted-foreground mb-1">Mais esquecido</div>
+                  <div className="text-sm font-semibold text-foreground">{insights.mostForgotten.label}</div>
+                  <div className="text-xs text-muted-foreground">{insights.mostForgotten.value}</div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Dias seguidos 100%</div>
-              <div className="text-lg font-semibold text-primary">{insightsData.diasSeguidos}</div>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+                <CardContent className="p-4">
+                  <div className="text-sm text-muted-foreground mb-1">Dias seguidos 100%</div>
+                  <div className="text-lg font-semibold text-primary">{insights.consecutiveDays.value}</div>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
-            <CardContent className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Tendência atual</div>
-              <div className="flex items-center gap-2">
-                <TrendIcon />
-                <span className="text-sm font-semibold text-foreground capitalize">
-                  {insightsData.tendencia}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
+                <CardContent className="p-4">
+                  <div className="text-sm text-muted-foreground mb-1">Tendência atual</div>
+                  <div className="flex items-center gap-2">
+                    <TrendIcon trend={insights.currentTrend.trend} />
+                    <span className="text-sm font-semibold text-foreground">
+                      {insights.currentTrend.value}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          ) : null}
         </div>
 
         {/* Charts Grid */}
@@ -255,27 +366,33 @@ export default function Relatorios() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={dadosFiltrados.status}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={renderCustomizedLabel}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {dadosFiltrados.status.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: any, name: string) => [`${value} (${dadosFiltrados.status.find(d => d.name === name)?.percentage}%)`, name]} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+              {isLoading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <Skeleton className="w-40 h-40 rounded-full" />
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={renderCustomizedLabel}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any, name: string) => [`${value} (${statusData.find(d => d.name === name)?.percentage}%)`, name]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -290,39 +407,45 @@ export default function Relatorios() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={dadosFiltrados.categorias}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
-                    <YAxis stroke="hsl(var(--muted-foreground))" />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px'
-                      }}
-                    />
-                    <Legend />
-                    <Bar 
-                      dataKey="planejados" 
-                      fill="hsl(var(--primary))" 
-                      name="Planejados"
-                      radius={[2, 2, 0, 0]}
-                    />
-                    <Bar 
-                      dataKey="concluidos" 
-                      fill="hsl(var(--success))" 
-                      name="Concluídos"
-                      radius={[2, 2, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {isLoading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                      />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                      />
+                      <Legend />
+                      <Bar 
+                        dataKey="planejados" 
+                        fill="hsl(var(--primary))" 
+                        name="Planejados"
+                        radius={[2, 2, 0, 0]}
+                      />
+                      <Bar 
+                        dataKey="concluidos" 
+                        fill="hsl(var(--success))" 
+                        name="Concluídos"
+                        radius={[2, 2, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -337,38 +460,44 @@ export default function Relatorios() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dadosFiltrados.tendencia}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis 
-                      dataKey="mes" 
-                      stroke="hsl(var(--muted-foreground))"
-                    />
-                    <YAxis 
-                      stroke="hsl(var(--muted-foreground))"
-                      domain={[0, 100]}
-                      tickFormatter={(value) => `${value}%`}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '6px'
-                      }}
-                      formatter={(value: any) => [`${value}%`, 'Adesão']}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="adesao" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6 }}
-                      activeDot={{ r: 8, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              {isLoading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={historical}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="mes" 
+                        stroke="hsl(var(--muted-foreground))"
+                      />
+                      <YAxis 
+                        stroke="hsl(var(--muted-foreground))"
+                        domain={[0, 100]}
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                        formatter={(value: any) => [`${value}%`, 'Adesão']}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="aderencia" 
+                        stroke="hsl(var(--primary))" 
+                        strokeWidth={3}
+                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6 }}
+                        activeDot={{ r: 8, stroke: 'hsl(var(--primary))', strokeWidth: 2 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -385,6 +514,12 @@ export default function Relatorios() {
           </Button>
         </div>
       </div>
+
+      <DateRangePickerDialog
+        open={showDatePicker}
+        onOpenChange={setShowDatePicker}
+        onSelect={handleCustomRangeSelect}
+      />
     </div>
   );
 }
