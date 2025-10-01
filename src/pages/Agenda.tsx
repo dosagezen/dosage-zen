@@ -112,16 +112,26 @@ export default function Agenda() {
 
       const matchesCategory = categoryFilter === 'todas' || apt.tipo === categoryFilter;
       const matchesStatus = statusFilter === 'todos' || apt.status === statusFilter;
-      const matchesDate = !selectedDate || isSameDay(new Date(apt.data_agendamento), selectedDate);
+      
+      // Filtrar pelo mês corrente do calendário
+      const appointmentDate = new Date(apt.data_agendamento);
+      const matchesMonth = isSameMonth(appointmentDate, currentDate);
 
-      return matchesSearch && matchesCategory && matchesStatus && matchesDate;
+      return matchesSearch && matchesCategory && matchesStatus && matchesMonth;
+    });
+
+    // Ordenar por data e horário
+    const sorted = filtered.sort((a, b) => {
+      const dateA = new Date(a.data_agendamento).getTime();
+      const dateB = new Date(b.data_agendamento).getTime();
+      return dateA - dateB;
     });
 
     return {
-      pending: filtered.filter(apt => apt.status === 'agendado'),
-      completed: filtered.filter(apt => apt.status === 'realizado' || apt.status === 'cancelado')
+      pending: sorted.filter(apt => apt.status === 'agendado'),
+      completed: sorted.filter(apt => apt.status === 'realizado' || apt.status === 'cancelado')
     };
-  }, [appointments, searchTerm, categoryFilter, statusFilter, selectedDate]);
+  }, [appointments, searchTerm, categoryFilter, statusFilter, currentDate]);
 
   // Calendar logic - start week on Monday (weekStartsOn: 1)
   const monthStart = startOfMonth(currentDate);
