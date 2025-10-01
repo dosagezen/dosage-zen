@@ -569,7 +569,7 @@ export default function Agenda() {
         </Card>
 
         {/* Filters */}
-        <Card>
+        <Card className="bg-[#dad7cd]">
           <CardContent className="p-4 mt-8 bg-[#dad7cd]">
             <div className="grid grid-cols-4 gap-4 items-end">
               <div className="relative col-span-2">
