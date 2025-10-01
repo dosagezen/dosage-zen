@@ -29,12 +29,16 @@ export default function Conquistas() {
     return (searchParams.get('periodo') as Period) || 'hoje';
   });
 
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    return searchParams.get('categoria') || 'todas';
+  });
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'concluidos' | 'pendentes' | 'atrasados' | 'cancelados'>('concluidos');
 
   const { summary, isLoading, error } = useConquests({
     period: selectedPeriod,
-    category: 'todas'
+    category: selectedCategory as 'todas' | 'medicacao' | 'consulta' | 'exame' | 'atividade'
   });
 
   const handleOpenDialog = (type: 'concluidos' | 'pendentes' | 'atrasados' | 'cancelados') => {
@@ -42,11 +46,24 @@ export default function Conquistas() {
     setDialogOpen(true);
   };
 
-  const updateFilters = (newPeriod: Period) => {
+  const updateFilters = (newPeriod: Period, newCategory?: string) => {
     const params = new URLSearchParams(searchParams);
     params.set('periodo', newPeriod);
+    if (newCategory !== undefined) {
+      params.set('categoria', newCategory);
+    }
     setSearchParams(params);
     setSelectedPeriod(newPeriod);
+    if (newCategory !== undefined) {
+      setSelectedCategory(newCategory);
+    }
+  };
+
+  const updateCategory = (newCategory: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('categoria', newCategory);
+    setSearchParams(params);
+    setSelectedCategory(newCategory);
   };
 
   const renderFilterSection = () => {
@@ -86,7 +103,7 @@ export default function Conquistas() {
         
         {/* Linha inferior: Dropdown "Todas as categorias" */}
         <div className="flex items-start">
-          <Select defaultValue="todas">
+          <Select value={selectedCategory} onValueChange={updateCategory}>
             <SelectTrigger className="w-48 h-9">
               <SelectValue placeholder="Todas as categorias" />
             </SelectTrigger>
