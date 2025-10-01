@@ -334,7 +334,7 @@ const Signup = () => {
                     <Input
                       id="celular"
                       type="tel"
-                      placeholder="Ex.: (81) 98888-8888"
+                      placeholder="Ex.: 85988880000"
                       value={formData.celular}
                       onChange={(e) => {
                         const formatted = formatarTelefone(e.target.value);
