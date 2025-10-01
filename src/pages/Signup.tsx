@@ -43,7 +43,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showEndereco, setShowEndereco] = useState(false);
   const [showPagamento, setShowPagamento] = useState(true);
-  const [expandedPagamento, setExpandedPagamento] = useState(true);
+  const [expandedPagamento, setExpandedPagamento] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
