@@ -82,6 +82,7 @@ export default function Agenda() {
     updateAppointment, 
     deleteAppointment, 
     completeAppointment,
+    restoreAppointment,
     isCreating,
     isUpdating,
     fetchDayCounts 
@@ -316,6 +317,18 @@ export default function Agenda() {
     });
   };
 
+  const handleRestore = async (appointment: Appointment) => {
+    await restoreAppointment(appointment.id);
+    
+    // Emitir evento global para atualizar widget
+    onCompromissoAtualizado({
+      type: 'complete',
+      itemId: appointment.id,
+      itemType: appointment.tipo as 'consulta' | 'exame' | 'atividade',
+      timestamp: Date.now()
+    });
+  };
+
   const renderAppointmentCard = (appointment: Appointment) => {
     const CategoryIcon = categoryIcons[appointment.tipo];
     const time = format(new Date(appointment.data_agendamento), 'HH:mm');
@@ -422,6 +435,24 @@ export default function Agenda() {
                     >
                       <span className="mr-1">✓</span>
                       Concluir
+                    </Button>
+                  </div>
+                )}
+
+                {/* Botão Restaurar para compromissos cancelados ou realizados */}
+                {!isMobile && (appointment.status === 'cancelado' || appointment.status === 'realizado') && (
+                  <div className="flex gap-2 mt-4 pt-3 border-t border-border">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRestore(appointment);
+                      }}
+                      className="h-8 text-xs"
+                    >
+                      <span className="mr-1">↻</span>
+                      Restaurar
                     </Button>
                   </div>
                 )}

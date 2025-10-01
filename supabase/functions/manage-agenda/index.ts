@@ -239,6 +239,27 @@ serve(async (req) => {
         });
       }
 
+      case 'restore': {
+        const { id, context_id } = body;
+
+        const { data: appointment, error } = await supabaseClient
+          .from('appointments')
+          .update({ 
+            status: 'agendado',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
+          .eq('patient_profile_id', context_id || profile.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        return new Response(JSON.stringify({ appointment }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       case 'day_counts': {
         const { month_start, month_end, context_id } = body;
 

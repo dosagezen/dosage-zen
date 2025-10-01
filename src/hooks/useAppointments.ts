@@ -266,6 +266,36 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
     },
   });
 
+  const restoreMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.functions.invoke('manage-agenda', {
+        body: { action: 'restore', id, context_id },
+      });
+
+      if (error) {
+        console.error('Error restoring appointment:', error);
+        throw error;
+      }
+
+      return data.appointment;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Sucesso',
+        description: 'Compromisso restaurado!',
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error restoring appointment:', error);
+      toast({
+        title: 'Erro',
+        description: 'Falha ao restaurar compromisso.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     appointments: query.data || [],
     isLoading: query.isLoading,
@@ -276,10 +306,12 @@ export const useAppointments = (tipo?: 'consulta' | 'exame' | 'atividade', conte
     updateAppointment: updateMutation.mutate,
     deleteAppointment: deleteMutation.mutate,
     completeAppointment: completeMutation.mutate,
+    restoreAppointment: restoreMutation.mutate,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
     isCompleting: completeMutation.isPending,
+    isRestoring: restoreMutation.isPending,
     fetchDayCounts,
   };
 };
