@@ -570,7 +570,7 @@ export default function Agenda() {
 
         {/* Filters */}
         <Card className="bg-[#dad7cd]">
-          <CardContent className="p-4 mt-4 bg-[#dad7cd]">
+          <CardContent className="p-4 mt-1.5 bg-[#dad7cd]">
             <p className="text-sm text-muted-foreground mb-3">Pesquise seus compromissos</p>
             <div className="grid grid-cols-4 gap-4 items-end">
               <div className="relative col-span-2">
