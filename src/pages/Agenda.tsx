@@ -383,6 +383,48 @@ export default function Agenda() {
                     </div>
                   )}
                 </div>
+
+                {/* Botões de ação para Desktop */}
+                {!isMobile && appointment.status === 'agendado' && (
+                  <div className="flex gap-2 mt-4 pt-3 border-t border-border">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancel(appointment);
+                      }}
+                      className="h-8 text-xs hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <span className="mr-1">✗</span>
+                      Cancelar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditAppointment(appointment);
+                      }}
+                      className="h-8 text-xs"
+                    >
+                      <span className="mr-1">✎</span>
+                      Alterar
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleComplete(appointment);
+                      }}
+                      className="h-8 text-xs bg-primary hover:bg-primary/90"
+                    >
+                      <span className="mr-1">✓</span>
+                      Concluir
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
