@@ -61,7 +61,7 @@ export const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           <p className="text-sm text-primary font-medium">
             💰 Perfil Principal
           </p>
-          <p className="text-xs text-muted-foreground mt-1">O perfil "Paciente" é o principal do sistema e requer assinatura paga mensalmente. Você será direcionado para o checkout após criar sua conta. </p>
+          <p className="text-xs text-muted-foreground mt-1">O perfil "Paciente" é o perfil principal do sistema e requer assinatura paga mensalmente. Você será direcionado para o checkout após criar sua conta. </p>
         </div>}
       
       {value && value !== 'paciente' && <div className="bg-muted/50 border border-border rounded-md p-3">
