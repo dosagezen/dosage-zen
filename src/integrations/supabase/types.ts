@@ -180,24 +180,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "collaborations_collaborator_profile_id_fkey"
-            columns: ["collaborator_profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "collaborations_patient_profile_id_fkey"
             columns: ["patient_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "collaborations_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -239,13 +225,6 @@ export type Database = {
             columns: ["patient_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invitations_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -335,13 +314,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "medication_occurrences_completed_by_fkey"
-            columns: ["completed_by"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "medication_occurrences_medication_id_fkey"
             columns: ["medication_id"]
             isOneToOne: false
@@ -353,13 +325,6 @@ export type Database = {
             columns: ["patient_profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "medication_occurrences_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -544,13 +509,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "subscriptions_patient_profile_id_fkey"
-            columns: ["patient_profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -596,57 +554,16 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_roles_context_patient_id_fkey"
-            columns: ["context_patient_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "user_roles_profile_id_fkey"
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_roles_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          codigo: string | null
-          created_at: string | null
-          id: string | null
-          nome: string | null
-          sobrenome: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          codigo?: string | null
-          created_at?: string | null
-          id?: string | null
-          nome?: string | null
-          sobrenome?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          codigo?: string | null
-          created_at?: string | null
-          id?: string | null
-          nome?: string | null
-          sobrenome?: string | null
-        }
-        Relationships: []
-      }
       v_conquests_occurrences: {
         Row: {
           category: string | null
@@ -788,6 +705,15 @@ export type Database = {
       generate_unique_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_collaborator_basic_info: {
+        Args: { p_profile_id: string }
+        Returns: {
+          avatar_url: string
+          id: string
+          nome: string
+          sobrenome: string
+        }[]
       }
       get_user_collaborations: {
         Args: { user_uuid: string }
