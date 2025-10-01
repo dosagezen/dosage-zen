@@ -534,6 +534,7 @@ export default function Agenda() {
                 const isSelected = selectedDate && isSameDay(date, selectedDate);
                 const isDayToday = isToday(date);
                 const isOutsideMonth = !isSameMonth(date, currentDate);
+                const isFirstColumn = index % 7 === 0;
                 const isLastColumn = (index + 1) % 7 === 0;
                 const isLastRow = index >= calendarDays.length - 7;
                 
@@ -551,7 +552,8 @@ export default function Agenda() {
                     aria-label={ariaLabel}
                     className={`
                       relative p-1 md:p-2 text-xs md:text-sm transition-all duration-200 min-h-[50px] md:min-h-[70px] flex flex-col items-start justify-start
-                      border-r border-b border-border/20 focus:outline-none focus:ring-2 focus:ring-primary focus:z-10
+                      border-l border-r border-b border-border/20 focus:outline-none focus:ring-2 focus:ring-primary focus:z-10
+                      ${isFirstColumn ? 'border-l-0' : ''}
                       ${isLastColumn ? 'border-r-0' : ''}
                       ${isLastRow ? 'border-b-0' : ''}
                       ${isSelected ? 'border-2 border-destructive bg-background' : 'hover:bg-accent/50'}
