@@ -448,10 +448,10 @@ export default function Relatorios() {
                 </div>
                 <div>
                   <CardTitle className="text-base font-semibold">
-                    Planejamento vs Execução
+                    Visão Geral de Planejamento
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Comparativo de planejados e realizados
+                    Total planejado, concluído e cancelado
                   </p>
                 </div>
               </div>
