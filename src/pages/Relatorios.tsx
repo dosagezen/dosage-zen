@@ -48,13 +48,13 @@ export default function Relatorios() {
 
   const { collaborators } = useCollaboratorsList();
 
-  // Transform data for charts
+  // Transform data for charts - using exact colors from Conquistas page
   const statusData = [
-    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(142 76% 36%)' },
-    { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(38 92% 50%)' },
-    { name: 'Faltando', value: summary.totals.faltando, percentage: summary.totals.faltando_pct, color: 'hsl(217 91% 60%)' },
-    { name: 'Atrasados', value: summary.totals.atrasados, percentage: summary.totals.atrasados_pct, color: 'hsl(0 84% 60%)' },
-    { name: 'Excluídos', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(240 5% 65%)' }
+    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(134 66% 30%)' },
+    { name: 'Pendentes', value: summary.totals.faltando, percentage: summary.totals.faltando_pct, color: 'hsl(142 76% 50%)' },
+    { name: 'Atrasados', value: summary.totals.atrasados, percentage: summary.totals.atrasados_pct, color: 'hsl(25 95% 53%)' },
+    { name: 'Cancelados', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(350 89% 60%)' },
+    { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(38 92% 50%)' }
   ].filter(item => item.value > 0);
 
   const categoryData = Object.entries(summary.by_category).map(([category, data]) => ({
