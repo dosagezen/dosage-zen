@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -367,12 +367,19 @@ export default function Relatorios() {
           {/* Pie Chart */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
-                  <span className="text-primary-foreground text-xs">📊</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-md flex items-center justify-center">
+                  <PieChartIcon className="w-4 h-4 text-primary-foreground" />
                 </div>
-                Status dos Compromissos
-              </CardTitle>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Status dos Compromissos
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Distribuição por status de conclusão
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -408,12 +415,19 @@ export default function Relatorios() {
           {/* Bar Chart */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
-                  <span className="text-primary-foreground text-xs">📈</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-md flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-primary-foreground" />
                 </div>
-                Planejados vs Concluídos
-              </CardTitle>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Planejados vs Concluídos
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Comparativo por categoria
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -461,12 +475,19 @@ export default function Relatorios() {
           {/* Line Chart */}
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gradient-primary rounded-md flex items-center justify-center">
-                  <span className="text-primary-foreground text-xs">📉</span>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-md flex items-center justify-center">
+                  <Activity className="w-4 h-4 text-primary-foreground" />
                 </div>
-                Evolução da Adesão
-              </CardTitle>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Evolução da Adesão
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Tendência de adesão ao longo do tempo
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
