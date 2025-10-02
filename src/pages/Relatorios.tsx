@@ -123,20 +123,39 @@ export default function Relatorios() {
       // Dynamically import html2pdf.js
       const html2pdf = (await import('html2pdf.js')).default;
       
-      // Create temporary container
+      // Create temporary container and render HTML
       const container = document.createElement('div');
       container.innerHTML = htmlContent;
       container.style.position = 'absolute';
       container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '210mm';
       document.body.appendChild(container);
 
-      // Convert to PDF and download
-      await html2pdf().from(container).set({
-        margin: 10,
+      // Wait a moment for rendering
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Convert to PDF with proper configuration
+      const opt: any = {
+        margin: [10, 10, 10, 10],
         filename: filename.replace('.pdf', '') + '.pdf',
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).save();
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(container).save();
 
       // Cleanup
       document.body.removeChild(container);
@@ -221,20 +240,39 @@ export default function Relatorios() {
       // Dynamically import html2pdf.js
       const html2pdf = (await import('html2pdf.js')).default;
       
-      // Create temporary container
+      // Create temporary container and render HTML
       const container = document.createElement('div');
       container.innerHTML = htmlContent;
       container.style.position = 'absolute';
       container.style.left = '-9999px';
+      container.style.top = '0';
+      container.style.width = '210mm';
       document.body.appendChild(container);
 
-      // Convert to PDF and download
-      await html2pdf().from(container).set({
-        margin: 10,
+      // Wait a moment for rendering
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Convert to PDF with proper configuration
+      const opt: any = {
+        margin: [10, 10, 10, 10],
         filename: filename.replace('.pdf', '') + '.pdf',
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).save();
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(container).save();
 
       // Cleanup
       document.body.removeChild(container);
