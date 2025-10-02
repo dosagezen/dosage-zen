@@ -69,6 +69,15 @@ export default function Relatorios() {
     concluidos: data.concluidos
   }));
 
+  const statusBarData = [
+    { name: 'Planejados', value: summary.totals.planejados, color: 'hsl(217 91% 60%)' },
+    { name: 'Concluídos', value: summary.totals.concluidos, color: 'hsl(134 66% 30%)' },
+    { name: 'Pendentes', value: summary.totals.faltando, color: 'hsl(142 76% 50%)' },
+    { name: 'Atrasados', value: summary.totals.atrasados, color: 'hsl(25 95% 53%)' },
+    { name: 'Retardatários', value: summary.totals.retardatarios, color: 'hsl(38 92% 50%)' },
+    { name: 'Cancelados', value: summary.totals.excluidos, color: 'hsl(350 89% 60%)' }
+  ];
+
   const handlePeriodoChange = (value: string) => {
     if (value === 'personalizado') {
       setShowDatePicker(true);
@@ -481,6 +490,60 @@ export default function Relatorios() {
                       </Pie>
                       <Tooltip formatter={(value: any, name: string) => [`${value} (${planejamentoData.find(d => d.name === name)?.percentage}%)`, name]} />
                     </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Status Horizontal Bar Chart */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-md flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Distribuição de Status
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Visão consolidada de todos os status
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ) : (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={statusBarData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        stroke="hsl(var(--muted-foreground))"
+                        width={100}
+                        fontSize={12}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '6px'
+                        }}
+                      />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                        {statusBarData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
