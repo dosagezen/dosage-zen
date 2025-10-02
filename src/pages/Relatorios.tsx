@@ -50,11 +50,11 @@ export default function Relatorios() {
 
   // Transform data for charts
   const statusData = [
-    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(var(--success))' },
-    { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(var(--warning))' },
-    { name: 'Faltando', value: summary.totals.faltando, percentage: summary.totals.faltando_pct, color: 'hsl(var(--primary))' },
-    { name: 'Atrasados', value: summary.totals.atrasados, percentage: summary.totals.atrasados_pct, color: 'hsl(var(--destructive))' },
-    { name: 'Excluídos', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(var(--muted))' }
+    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(142 76% 36%)' },
+    { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(38 92% 50%)' },
+    { name: 'Faltando', value: summary.totals.faltando, percentage: summary.totals.faltando_pct, color: 'hsl(217 91% 60%)' },
+    { name: 'Atrasados', value: summary.totals.atrasados, percentage: summary.totals.atrasados_pct, color: 'hsl(0 84% 60%)' },
+    { name: 'Excluídos', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(240 5% 65%)' }
   ].filter(item => item.value > 0);
 
   const categoryData = Object.entries(summary.by_category).map(([category, data]) => ({
@@ -211,8 +211,29 @@ export default function Relatorios() {
     }
   };
 
-  const renderCustomizedLabel = (entry: any) => {
-    return `${entry.value} (${entry.percentage}%)`;
+  const renderCustomizedLabel = (props: any) => {
+    const { cx, cy, midAngle, outerRadius, value, percentage, name } = props;
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 30;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="hsl(var(--foreground))"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
+        <tspan x={x} dy="0" fontSize="14" fontWeight="600">
+          {value} ({percentage}%)
+        </tspan>
+        <tspan x={x} dy="16" fontSize="11" fill="hsl(var(--muted-foreground))">
+          {name}
+        </tspan>
+      </text>
+    );
   };
 
   const TrendIcon = ({ trend }: { trend?: 'up' | 'down' | 'neutral' }) => {
@@ -387,7 +408,7 @@ export default function Relatorios() {
                   <Skeleton className="w-40 h-40 rounded-full" />
                 </div>
               ) : (
-                <div className="h-80">
+                <div className="h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -396,7 +417,7 @@ export default function Relatorios() {
                         cy="50%"
                         labelLine={false}
                         label={renderCustomizedLabel}
-                        outerRadius={80}
+                        outerRadius={100}
                         fill="#8884d8"
                         dataKey="value"
                       >
