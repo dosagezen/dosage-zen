@@ -72,7 +72,24 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
             )}
           </div>
 
-          <div className="flex justify-center overflow-x-auto">
+          <div className="flex justify-center overflow-x-auto relative">
+            <style>{`
+              .calendar-months-wrapper > div:nth-child(2)::before {
+                content: '';
+                position: absolute;
+                left: -16px;
+                top: 36px;
+                bottom: 0;
+                width: 4px;
+                background: hsl(var(--border) / 0.4);
+                border-radius: 9999px;
+              }
+              @media (max-width: 640px) {
+                .calendar-months-wrapper > div:nth-child(2)::before {
+                  display: none;
+                }
+              }
+            `}</style>
             <Calendar
               mode="single"
               selected={dateRange.end || dateRange.start}
@@ -80,10 +97,11 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               locale={ptBR}
               disabled={(date) => date > new Date()}
               numberOfMonths={2}
+              weekStartsOn={1}
               className="pointer-events-auto"
               classNames={{
-                months: "flex flex-col sm:flex-row gap-4",
-                month: "space-y-4",
+                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-8 relative",
+                month: "space-y-4 relative",
                 caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-medium",
                 nav: "space-x-1 flex items-center",
@@ -94,11 +112,11 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
                 head_row: "flex",
                 head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
                 row: "flex w-full mt-2",
-                cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 [&:nth-child(6)]:bg-accent/20 [&:nth-child(7)]:bg-accent/20",
+                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground",
                 day_range_end: "day-range-end",
                 day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-                day_today: "bg-accent text-accent-foreground",
+                day_today: "bg-accent text-accent-foreground font-semibold",
                 day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
                 day_disabled: "text-muted-foreground opacity-50",
                 day_hidden: "invisible",
