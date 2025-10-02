@@ -100,7 +100,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               weekStartsOn={1}
               className="pointer-events-auto w-full"
               classNames={{
-                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-[30px] relative w-full justify-between",
+                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-4 relative w-full justify-between",
                 month: "space-y-4 relative",
                 caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-medium",
