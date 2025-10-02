@@ -77,7 +77,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               .calendar-months-wrapper > div:nth-child(2)::before {
                 content: '';
                 position: absolute;
-                left: -8px;
+                left: -18px;
                 top: 36px;
                 bottom: 0;
                 width: 4px;
@@ -100,7 +100,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               weekStartsOn={1}
               className="pointer-events-auto w-full"
               classNames={{
-                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-4 relative w-full justify-center",
+                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-9 relative w-full justify-center",
                 month: "space-y-4 relative",
                 caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-medium",
