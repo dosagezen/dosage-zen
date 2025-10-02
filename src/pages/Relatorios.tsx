@@ -423,18 +423,14 @@ export default function Relatorios() {
               ) : (
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={categoryData} layout="horizontal">
+                    <BarChart data={categoryData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis 
-                        type="number"
+                        dataKey="name" 
                         stroke="hsl(var(--muted-foreground))"
                         fontSize={12}
                       />
-                      <YAxis 
-                        type="category"
-                        dataKey="name"
-                        stroke="hsl(var(--muted-foreground))" 
-                      />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
                       <Tooltip 
                         contentStyle={{
                           backgroundColor: 'hsl(var(--popover))',
@@ -447,13 +443,13 @@ export default function Relatorios() {
                         dataKey="planejados" 
                         fill="hsl(var(--primary))" 
                         name="Planejados"
-                        radius={[0, 2, 2, 0]}
+                        radius={[2, 2, 0, 0]}
                       />
                       <Bar 
                         dataKey="concluidos" 
                         fill="hsl(var(--success))" 
                         name="Concluídos"
-                        radius={[0, 2, 2, 0]}
+                        radius={[2, 2, 0, 0]}
                       />
                     </BarChart>
                   </ResponsiveContainer>
