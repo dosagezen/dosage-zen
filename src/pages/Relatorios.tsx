@@ -396,7 +396,7 @@ export default function Relatorios() {
       <div className="container mx-auto px-4 py-6">
         {/* Contexto do Relatório */}
         <div className="mt-[30px] mb-6">
-          <Card className="bg-white dark:bg-background border-[#ffd966] dark:border-[#665020]">
+          <Card className="bg-white dark:bg-background border-2 border-[#ffb703]">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
                 <BarChart3 className="w-5 h-5 text-[#cc9500] dark:text-[#ffb703] mt-0.5 flex-shrink-0" />
