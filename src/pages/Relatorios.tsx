@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Activity } from "lucide-react";
+import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Activity, Info } from "lucide-react";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,13 +70,16 @@ export default function Relatorios() {
     concluidos: data.concluidos
   }));
 
+  // Hierarchical status data: Retardatários is a subset of Concluídos
+  const concluidosNoPrazo = summary.totals.concluidos - summary.totals.retardatarios;
+  
   const statusBarData = [
-    { name: 'Planejados', value: summary.totals.planejados, color: 'hsl(217 91% 60%)' },
-    { name: 'Concluídos', value: summary.totals.concluidos, color: 'hsl(134 66% 30%)' },
-    { name: 'Pendentes', value: summary.totals.faltando, color: 'hsl(142 76% 50%)' },
-    { name: 'Atrasados', value: summary.totals.atrasados, color: 'hsl(25 95% 53%)' },
-    { name: 'Retardatários', value: summary.totals.retardatarios, color: 'hsl(38 92% 50%)' },
-    { name: 'Cancelados', value: summary.totals.excluidos, color: 'hsl(350 89% 60%)' }
+    { name: 'Planejados', value: summary.totals.planejados, color: 'hsl(217 91% 60%)', isSubcategory: false },
+    { name: 'Concluídos', value: summary.totals.concluidos, color: 'hsl(134 66% 30%)', isSubcategory: false, tooltip: `${summary.totals.concluidos} itens (${concluidosNoPrazo} no prazo + ${summary.totals.retardatarios} retardatários)` },
+    { name: '↳ Retardatários', value: summary.totals.retardatarios, color: 'hsl(38 92% 50%)', isSubcategory: true, tooltip: 'Subconjunto de concluídos com atraso > 30min' },
+    { name: 'Pendentes', value: summary.totals.faltando, color: 'hsl(142 76% 50%)', isSubcategory: false },
+    { name: 'Atrasados', value: summary.totals.atrasados, color: 'hsl(25 95% 53%)', isSubcategory: false },
+    { name: 'Cancelados', value: summary.totals.excluidos, color: 'hsl(350 89% 60%)', isSubcategory: false }
   ];
 
   const handlePeriodoChange = (value: string) => {
@@ -519,33 +523,87 @@ export default function Relatorios() {
                   <Skeleton className="w-full h-full" />
                 </div>
               ) : (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={statusBarData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                      <YAxis 
-                        dataKey="name" 
-                        type="category" 
-                        stroke="hsl(var(--muted-foreground))"
-                        width={100}
-                        fontSize={12}
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--popover))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '6px'
-                        }}
-                      />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                        {statusBarData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={statusBarData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
+                        <YAxis 
+                          dataKey="name" 
+                          type="category" 
+                          stroke="hsl(var(--muted-foreground))"
+                          width={120}
+                          fontSize={12}
+                          tick={(props) => {
+                            const { x, y, payload } = props;
+                            const entry = statusBarData.find(d => d.name === payload.value);
+                            const isIndented = entry?.isSubcategory;
+                            
+                            return (
+                              <g transform={`translate(${x},${y})`}>
+                                <text
+                                  x={0}
+                                  y={0}
+                                  dy={4}
+                                  textAnchor="end"
+                                  fill="hsl(var(--muted-foreground))"
+                                  fontSize={isIndented ? 11 : 12}
+                                  fontStyle={isIndented ? 'italic' : 'normal'}
+                                >
+                                  {payload.value}
+                                </text>
+                              </g>
+                            );
+                          }}
+                        />
+                        <Tooltip 
+                          content={(props) => {
+                            const { active, payload } = props;
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              return (
+                                <div className="bg-popover border border-border rounded-md p-3 shadow-lg">
+                                  <p className="font-semibold text-sm mb-1">{data.name.replace('↳ ', '')}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {data.tooltip || `${data.value} itens`}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                          {statusBarData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={entry.color}
+                              opacity={entry.isSubcategory ? 0.85 : 1}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <TooltipProvider>
+                    <div className="flex items-start gap-2 mt-4 p-3 bg-muted/50 rounded-md">
+                      <UITooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-muted-foreground mt-0.5 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="text-xs">
+                            Retardatários são itens concluídos com mais de 30 minutos de atraso em relação ao horário planejado.
+                          </p>
+                        </TooltipContent>
+                      </UITooltip>
+                      <p className="text-xs text-muted-foreground italic">
+                        <strong>Retardatários</strong> são uma subcategoria de <strong>Concluídos</strong> (itens concluídos com atraso {'>'} 30min)
+                      </p>
+                    </div>
+                  </TooltipProvider>
+                </>
               )}
             </CardContent>
           </Card>
