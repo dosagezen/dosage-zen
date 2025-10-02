@@ -20,12 +20,21 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Check for Authorization header
+    const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
+    if (!authHeader) {
+      console.error('Missing Authorization header');
+      throw new Error('Missing authorization token');
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
@@ -36,9 +45,14 @@ serve(async (req: Request) => {
       error: userError,
     } = await supabaseClient.auth.getUser();
 
+    console.log('User auth check:', { hasUser: !!user, error: userError?.message });
+
     if (userError || !user) {
-      throw new Error('Unauthorized');
+      console.error('Authentication failed:', userError);
+      throw new Error('Unauthorized: ' + (userError?.message || 'No user found'));
     }
+
+    console.log('Authenticated user:', user.id);
 
     const requestData: ExportPDFRequest = await req.json();
     const { contextId, period, category, rangeStart, rangeEnd } = requestData;
