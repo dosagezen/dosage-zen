@@ -77,7 +77,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               .calendar-months-wrapper > div:nth-child(2)::before {
                 content: '';
                 position: absolute;
-                left: -16px;
+                left: -10px;
                 top: 36px;
                 bottom: 0;
                 width: 4px;
