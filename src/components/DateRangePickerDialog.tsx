@@ -45,48 +45,78 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[425px] md:max-w-[750px] lg:max-w-[900px]">
         <DialogHeader>
           <DialogTitle>Selecionar Período Personalizado</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
             {dateRange.start && !dateRange.end && (
               <p>
-                Data inicial: <strong>{format(dateRange.start, "dd/MM/yyyy", { locale: ptBR })}</strong>
+                📅 Data inicial: <strong>{format(dateRange.start, "dd/MM/yyyy", { locale: ptBR })}</strong>
                 <br />
-                Selecione a data final
+                <span className="text-xs">Selecione a data final</span>
               </p>
             )}
             {dateRange.start && dateRange.end && (
               <p>
-                Período: <strong>{format(dateRange.start, "dd/MM/yyyy", { locale: ptBR })}</strong> até{" "}
+                📊 Período selecionado: <strong>{format(dateRange.start, "dd/MM/yyyy", { locale: ptBR })}</strong> até{" "}
                 <strong>{format(dateRange.end, "dd/MM/yyyy", { locale: ptBR })}</strong>
               </p>
             )}
-            {!dateRange.start && <p>Selecione a data inicial</p>}
+            {!dateRange.start && (
+              <p>
+                <span className="text-xs">Clique na data inicial para começar</span>
+              </p>
+            )}
           </div>
 
-          <Calendar
-            mode="single"
-            selected={dateRange.end || dateRange.start}
-            onSelect={handleSelect}
-            locale={ptBR}
-            disabled={(date) => date > new Date()}
-            className="rounded-md border"
-          />
+          <div className="flex justify-center overflow-x-auto">
+            <Calendar
+              mode="single"
+              selected={dateRange.end || dateRange.start}
+              onSelect={handleSelect}
+              locale={ptBR}
+              disabled={(date) => date > new Date()}
+              numberOfMonths={2}
+              className="pointer-events-auto"
+              classNames={{
+                months: "flex flex-col sm:flex-row gap-4",
+                month: "space-y-4",
+                caption: "flex justify-center pt-1 relative items-center",
+                caption_label: "text-sm font-medium",
+                nav: "space-x-1 flex items-center",
+                nav_button: "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+                nav_button_previous: "absolute left-1",
+                nav_button_next: "absolute right-1",
+                table: "w-full border-collapse space-y-1",
+                head_row: "flex",
+                head_cell: "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
+                row: "flex w-full mt-2",
+                cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+                day_range_end: "day-range-end",
+                day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                day_today: "bg-accent text-accent-foreground",
+                day_outside: "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
+                day_disabled: "text-muted-foreground opacity-50",
+                day_hidden: "invisible",
+              }}
+            />
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto">
             Cancelar
           </Button>
           <Button 
             onClick={handleConfirm} 
             disabled={!dateRange.start || !dateRange.end}
+            className="w-full sm:w-auto"
           >
-            Confirmar
+            Confirmar Período
           </Button>
         </DialogFooter>
       </DialogContent>
