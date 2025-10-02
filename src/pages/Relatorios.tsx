@@ -298,8 +298,8 @@ export default function Relatorios() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex-1 min-w-[180px]">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Período
               </label>
@@ -318,7 +318,7 @@ export default function Relatorios() {
               </Select>
             </div>
 
-            <div>
+            <div className="flex-1 min-w-[180px]">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Categoria
               </label>
@@ -336,7 +336,7 @@ export default function Relatorios() {
               </Select>
             </div>
 
-            <div>
+            <div className="flex-1 min-w-[180px]">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Perfil
               </label>
@@ -345,23 +345,18 @@ export default function Relatorios() {
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                &nbsp;
-              </label>
-              <Button
-                variant="outline"
-                className="w-full h-10"
-                onClick={() => {
-                  setPeriodoSelecionado('mes');
-                  setCategoriaSelecionada('todas');
-                  setUsuarioSelecionado('paciente');
-                  setCustomRange(undefined);
-                }}
-              >
-                Limpar Filtros
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setPeriodoSelecionado('mes');
+                setCategoriaSelecionada('todas');
+                setUsuarioSelecionado('paciente');
+                setCustomRange(undefined);
+              }}
+            >
+              Limpar
+            </Button>
           </div>
         </div>
       </div>
