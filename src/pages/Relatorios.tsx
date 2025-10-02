@@ -228,7 +228,7 @@ export default function Relatorios() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-start justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Relatórios</h1>
               <p className="text-muted-foreground">Visualize métricas e análises de sua saúde</p>
