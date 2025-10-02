@@ -261,6 +261,37 @@ export default function Relatorios() {
     return <Minus className="w-4 h-4 text-muted-foreground" />;
   };
 
+  const getPeriodoLabel = () => {
+    if (customRange) {
+      const start = customRange.start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+      const end = customRange.end.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      return `${start} - ${end}`;
+    }
+    
+    const labels: Record<ReportPeriod, string> = {
+      'hoje': 'Hoje',
+      'semana': 'Última Semana',
+      'mes': 'Mês Vigente (Outubro 2025)',
+      'personalizado': 'Período Personalizado'
+    };
+    
+    return labels[periodoSelecionado] || periodoSelecionado;
+  };
+
+  const getCategoriaLabel = () => {
+    if (categoriaSelecionada === 'todas') return 'Todas as Categorias';
+    return categoryMapping[categoriaSelecionada] || categoriaSelecionada;
+  };
+
+  const getPerfilLabel = () => {
+    if (usuarioSelecionado === 'paciente') {
+      return profile?.nome || 'Meu Perfil';
+    }
+    
+    const colaborador = collaborators.find(c => c.id === usuarioSelecionado);
+    return colaborador ? `${colaborador.nome} ${colaborador.sobrenome}` : 'Colaborador';
+  };
+
   const isLoading = loadingSummary || loadingInsights || loadingHistorical;
 
   return (
@@ -363,6 +394,56 @@ export default function Relatorios() {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-6">
+        {/* Contexto do Relatório */}
+        <div className="mt-[30px] mb-6">
+          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/30">
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Contexto do Relatório
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Badge de Período */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Período
+                  </span>
+                  <div className="px-4 py-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                      {getPeriodoLabel()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Badge de Categoria */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Categoria
+                  </span>
+                  <div className="px-4 py-2.5 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                    <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
+                      {getCategoriaLabel()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Badge de Perfil */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Perfil
+                  </span>
+                  <div className="px-4 py-2.5 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                      {getPerfilLabel()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Insights Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {loadingInsights ? (
