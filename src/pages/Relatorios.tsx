@@ -405,7 +405,7 @@ export default function Relatorios() {
                     Contexto do Relatório
                   </h3>
                   <p className="text-sm text-white/90 leading-relaxed">
-                    Exibindo dados de <span className="font-semibold text-white">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-white">{getPeriodoLabel()}</span> para o perfil <span className="font-semibold text-white">{getPerfilLabel()}</span>.
+                    Exibindo dados de <span className="font-semibold text-white">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-white">{getPeriodoLabel()}</span> para o perfil de <span className="font-semibold text-white">{getPerfilLabel()}</span>.
                   </p>
                 </div>
               </div>
