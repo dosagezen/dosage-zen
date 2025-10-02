@@ -57,6 +57,12 @@ export default function Relatorios() {
     { name: 'Retardatários', value: summary.totals.retardatarios, percentage: summary.totals.retardatarios_pct, color: 'hsl(38 92% 50%)' }
   ].filter(item => item.value > 0);
 
+  const planejamentoData = [
+    { name: 'Planejados', value: summary.totals.planejados, percentage: 100, color: 'hsl(217 91% 60%)' },
+    { name: 'Concluídos', value: summary.totals.concluidos, percentage: summary.totals.concluidos_pct, color: 'hsl(134 66% 30%)' },
+    { name: 'Cancelados', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(350 89% 60%)' }
+  ].filter(item => item.value > 0);
+
   const categoryData = Object.entries(summary.by_category).map(([category, data]) => ({
     name: categoryMapping[category] || category,
     planejados: data.planejados,
@@ -385,7 +391,7 @@ export default function Relatorios() {
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie Chart */}
+          {/* Status Distribution Pie Chart */}
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -426,6 +432,54 @@ export default function Relatorios() {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value: any, name: string) => [`${value} (${statusData.find(d => d.name === name)?.percentage}%)`, name]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Planejamento Pie Chart */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-md flex items-center justify-center">
+                  <PieChartIcon className="w-4 h-4 text-primary-foreground" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Planejamento vs Execução
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Comparativo de planejados e realizados
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="h-80 flex items-center justify-center">
+                  <Skeleton className="w-40 h-40 rounded-full" />
+                </div>
+              ) : (
+                <div className="h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={planejamentoData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={renderCustomizedLabel}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {planejamentoData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: any, name: string) => [`${value} (${planejamentoData.find(d => d.name === name)?.percentage}%)`, name]} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
