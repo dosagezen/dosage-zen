@@ -20,28 +20,42 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Check for Authorization header
+    const authHeader = req.headers.get('Authorization');
+    
+    if (!authHeader) {
+      throw new Error('Missing authorization token');
+    }
+
+    // Create service role client for data access
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify user is authenticated
+    // Extract token and verify user
+    const token = authHeader.replace('Bearer ', '');
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
-      throw new Error('Unauthorized');
+      throw new Error('Unauthorized: ' + (userError?.message || 'No user found'));
     }
 
     const requestData: ExportExcelRequest = await req.json();
     const { contextId, period, category, rangeStart, rangeEnd } = requestData;
+
+    // Get user profile for default context if needed
+    const { data: profileData } = await supabaseClient
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    // Use provided contextId or fallback to user's own profile id
+    const effectiveContextId = contextId || profileData?.id;
 
     // Get report data
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -49,7 +63,7 @@ serve(async (req: Request) => {
     const { data: summaryData, error: summaryError } = await supabaseClient.rpc(
       'fn_reports_summary',
       {
-        p_context_id: contextId,
+        p_context_id: effectiveContextId,
         p_range_start: rangeStart,
         p_range_end: rangeEnd,
         p_category: category,
@@ -62,7 +76,7 @@ serve(async (req: Request) => {
     const { data: historicalData, error: historicalError } = await supabaseClient.rpc(
       'fn_reports_historical',
       {
-        p_context_id: contextId,
+        p_context_id: effectiveContextId,
         p_months: 4,
         p_tz: userTimezone,
       }

@@ -103,7 +103,7 @@ export default function Relatorios() {
 
       const response = await supabase.functions.invoke('export-reports-pdf', {
         body: {
-          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          contextId: usuarioSelecionado === 'paciente' ? profile?.id : usuarioSelecionado,
           period: periodoSelecionado,
           category: categoriaSelecionada,
           rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
@@ -142,7 +142,7 @@ export default function Relatorios() {
 
       const response = await supabase.functions.invoke('export-reports-excel', {
         body: {
-          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          contextId: usuarioSelecionado === 'paciente' ? profile?.id : usuarioSelecionado,
           period: periodoSelecionado,
           category: categoriaSelecionada,
           rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
@@ -186,7 +186,7 @@ export default function Relatorios() {
 
       const response = await supabase.functions.invoke('export-reports-pdf', {
         body: {
-          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          contextId: usuarioSelecionado === 'paciente' ? profile?.id : usuarioSelecionado,
           period: periodoSelecionado,
           category: categoriaSelecionada,
           rangeStart: customRange?.start.toISOString() || new Date().toISOString(),

@@ -29,21 +29,18 @@ serve(async (req: Request) => {
       throw new Error('Missing authorization token');
     }
 
+    // Create service role client for data access
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verify user is authenticated
+    // Extract token and verify user
+    const token = authHeader.replace('Bearer ', '');
     const {
       data: { user },
       error: userError,
-    } = await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getUser(token);
 
     console.log('User auth check:', { hasUser: !!user, error: userError?.message });
 
@@ -57,10 +54,10 @@ serve(async (req: Request) => {
     const requestData: ExportPDFRequest = await req.json();
     const { contextId, period, category, rangeStart, rangeEnd } = requestData;
 
-    // Get user profile data
+    // Get user profile data (including id for default context)
     const { data: profileData, error: profileError } = await supabaseClient
       .from('profiles')
-      .select('nome, sobrenome, email, celular')
+      .select('id, nome, sobrenome, email, celular')
       .eq('user_id', user.id)
       .single();
 
@@ -68,13 +65,17 @@ serve(async (req: Request) => {
       console.error('Profile error:', profileError);
     }
 
+    // Use provided contextId or fallback to user's own profile id
+    const effectiveContextId = contextId || profileData?.id;
+    console.log('Using context:', effectiveContextId);
+
     // Get report data
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
     const { data: summaryData, error: summaryError } = await supabaseClient.rpc(
       'fn_reports_summary',
       {
-        p_context_id: contextId || null,
+        p_context_id: effectiveContextId,
         p_range_start: rangeStart,
         p_range_end: rangeEnd,
         p_category: category,
@@ -90,7 +91,7 @@ serve(async (req: Request) => {
     const { data: insightsData, error: insightsError } = await supabaseClient.rpc(
       'fn_reports_insights',
       {
-        p_context_id: contextId || null,
+        p_context_id: effectiveContextId,
         p_tz: userTimezone,
       }
     );
