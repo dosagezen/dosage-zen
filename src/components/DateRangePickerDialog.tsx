@@ -72,7 +72,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
             )}
           </div>
 
-          <div className="flex justify-center overflow-x-auto relative">
+          <div className="flex overflow-x-auto relative w-full">
             <style>{`
               .calendar-months-wrapper > div:nth-child(2)::before {
                 content: '';
@@ -98,9 +98,9 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
               disabled={(date) => date > new Date()}
               numberOfMonths={2}
               weekStartsOn={1}
-              className="pointer-events-auto"
+              className="pointer-events-auto w-full"
               classNames={{
-                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-8 relative",
+                months: "calendar-months-wrapper flex flex-col sm:flex-row gap-4 sm:gap-8 relative w-full justify-between",
                 month: "space-y-4 relative",
                 caption: "flex justify-center pt-1 relative items-center",
                 caption_label: "text-sm font-medium",
