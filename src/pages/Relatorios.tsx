@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { BarChart3, Share2, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +28,7 @@ export default function Relatorios() {
   const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | undefined>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const { toast } = useToast();
+  const { profile } = useAuth();
 
   // Fetch real data
   const { summary, isLoading: loadingSummary } = useReportsData({
@@ -153,19 +155,60 @@ export default function Relatorios() {
     }
   };
 
-  const handleShareWhatsApp = () => {
-    toast({
-      title: "Link copiado",
-      description: "Link do relatório copiado para compartilhar no WhatsApp.",
-    });
-  };
+  const handleShareWhatsApp = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
 
-  const handleShareLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link copiado",
-      description: "Link do relatório copiado para a área de transferência.",
-    });
+      toast({
+        title: "Gerando relatório...",
+        description: "Por favor, aguarde.",
+      });
+
+      const response = await supabase.functions.invoke('export-reports-pdf', {
+        body: {
+          contextId: usuarioSelecionado === 'paciente' ? undefined : usuarioSelecionado,
+          period: periodoSelecionado,
+          category: categoriaSelecionada,
+          rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
+          rangeEnd: customRange?.end.toISOString() || new Date().toISOString()
+        }
+      });
+
+      if (response.error) throw response.error;
+
+      const { htmlContent, filename } = response.data;
+      
+      // Create blob and download
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+
+      // Prepare WhatsApp message
+      const userName = profile?.nome || 'Usuário';
+      const periodText = periodoSelecionado === 'hoje' ? 'Hoje' : 
+                        periodoSelecionado === 'semana' ? 'Semana' :
+                        periodoSelecionado === 'mes' ? 'Mês' : 'Período Personalizado';
+      
+      const message = `🏥 *Relatório DosageZen*\n\nOlá! Compartilho com você meu relatório de saúde.\n\n📊 *Período:* ${periodText}\n📁 *Arquivo:* ${filename}\n\nO arquivo foi baixado e está pronto para ser anexado.\n\n_Gerado por DosageZen_`;
+      
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+
+      toast({
+        title: "PDF baixado",
+        description: "Agora anexe o arquivo no WhatsApp.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao compartilhar",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const renderCustomizedLabel = (entry: any) => {
@@ -202,28 +245,15 @@ export default function Relatorios() {
                 <FileText className="w-4 h-4 mr-2" />
                 PDF
               </Button>
-              <Select onValueChange={(value) => {
-                if (value === 'whatsapp') handleShareWhatsApp();
-                if (value === 'link') handleShareLink();
-              }}>
-                <SelectTrigger className="w-auto">
-                  <Share2 className="w-4 h-4" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="whatsapp">
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4" />
-                      WhatsApp
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="link">
-                    <div className="flex items-center gap-2">
-                      <Share2 className="w-4 h-4" />
-                      Copiar Link
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleShareWhatsApp}
+                className="gap-2"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </Button>
             </div>
           </div>
 
