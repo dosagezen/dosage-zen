@@ -298,21 +298,11 @@ export default function Relatorios() {
 
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Usuário
+                Perfil
               </label>
-              <Select value={usuarioSelecionado} onValueChange={setUsuarioSelecionado}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paciente">Paciente</SelectItem>
-                  {collaborators.map(collab => (
-                    <SelectItem key={collab.id} value={collab.id}>
-                      {collab.nome} {collab.sobrenome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                Paciente
+              </div>
             </div>
           </div>
         </div>
