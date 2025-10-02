@@ -396,10 +396,10 @@ export default function Relatorios() {
       <div className="container mx-auto px-4 py-6">
         {/* Contexto do Relatório */}
         <div className="mt-[30px] mb-6">
-          <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/30">
+          <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800/30">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <BarChart3 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     Contexto do Relatório
