@@ -396,16 +396,16 @@ export default function Relatorios() {
       <div className="container mx-auto px-4 py-6">
         {/* Contexto do Relatório */}
         <div className="mt-[30px] mb-6">
-          <Card className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border-orange-200 dark:border-orange-800/30">
+          <Card className="bg-gradient-to-r from-[#fff9e6] to-[#fff4d4] dark:from-[#3d3520] dark:to-[#2d2818] border-[#ffd966] dark:border-[#665020]">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <BarChart3 className="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                <BarChart3 className="w-5 h-5 text-[#cc9500] dark:text-[#ffb703] mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-lg font-semibold text-[#665020] dark:text-[#ffb703] mb-2">
                     Contexto do Relatório
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Exibindo dados de <span className="font-semibold text-foreground">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-foreground">{getPeriodoLabel()}</span> para o perfil <span className="font-semibold text-foreground">{getPerfilLabel()}</span>.
+                  <p className="text-sm text-[#665020]/80 dark:text-[#ffb703]/80 leading-relaxed">
+                    Exibindo dados de <span className="font-semibold text-[#4d3c18] dark:text-[#ffb703]">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-[#4d3c18] dark:text-[#ffb703]">{getPeriodoLabel()}</span> para o perfil <span className="font-semibold text-[#4d3c18] dark:text-[#ffb703]">{getPerfilLabel()}</span>.
                   </p>
                 </div>
               </div>
