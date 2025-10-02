@@ -45,13 +45,13 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] md:max-w-[750px] lg:max-w-[900px]">
+      <DialogContent className="max-w-[90vw] sm:max-w-[340px] md:max-w-[680px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Selecionar Período Personalizado</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md mx-auto max-w-full sm:max-w-[580px] md:max-w-[640px]">
+          <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
             {dateRange.start && !dateRange.end && (
               <p>
                 📅 Data inicial: <strong>{format(dateRange.start, "dd/MM/yyyy", { locale: ptBR })}</strong>
