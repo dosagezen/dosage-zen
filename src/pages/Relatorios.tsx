@@ -396,16 +396,16 @@ export default function Relatorios() {
       <div className="container mx-auto px-4 py-6">
         {/* Contexto do Relatório */}
         <div className="mt-[30px] mb-6">
-          <Card className="bg-white dark:bg-background border-2 border-[#ffb703]">
+          <Card className="bg-[#ffb703] dark:bg-[#ffb703] border-2 border-[#ffb703]">
             <CardContent className="p-6">
               <div className="flex items-start gap-3">
-                <BarChart3 className="w-5 h-5 text-[#16a34a] dark:text-[#22c55e] mt-0.5 flex-shrink-0" />
+                <BarChart3 className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-[#16a34a] dark:text-[#22c55e] mb-2">
+                  <h3 className="text-lg font-semibold text-white mb-2">
                     Contexto do Relatório
                   </h3>
-                  <p className="text-sm text-[#15803d] dark:text-[#22c55e]/80 leading-relaxed">
-                    Exibindo dados de <span className="font-semibold text-[#16a34a] dark:text-[#22c55e]">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-[#16a34a] dark:text-[#22c55e]">{getPeriodoLabel()}</span> para o perfil <span className="font-semibold text-[#16a34a] dark:text-[#22c55e]">{getPerfilLabel()}</span>.
+                  <p className="text-sm text-white/90 leading-relaxed">
+                    Exibindo dados de <span className="font-semibold text-white">{getCategoriaLabel()}</span> no período de <span className="font-semibold text-white">{getPeriodoLabel()}</span> para o perfil <span className="font-semibold text-white">{getPerfilLabel()}</span>.
                   </p>
                 </div>
               </div>
