@@ -202,15 +202,6 @@ export default function Relatorios() {
                 <FileText className="w-4 h-4 mr-2" />
                 PDF
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportExcel}
-                className="hidden sm:flex"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Excel
-              </Button>
               <Select onValueChange={(value) => {
                 if (value === 'whatsapp') handleShareWhatsApp();
                 if (value === 'link') handleShareLink();
