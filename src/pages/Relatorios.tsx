@@ -401,7 +401,7 @@ export default function Relatorios() {
               <div className="flex items-start gap-3">
                 <BarChart3 className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-lg font-semibold text-white mb-2 underline decoration-1">
                     Contexto do Relatório
                   </h3>
                   <p className="text-sm text-white/90 leading-relaxed">
