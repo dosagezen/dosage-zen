@@ -298,7 +298,7 @@ export default function Relatorios() {
           </div>
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
                 Período
@@ -310,7 +310,7 @@ export default function Relatorios() {
                 <SelectContent>
                   <SelectItem value="hoje">Hoje</SelectItem>
                   <SelectItem value="semana">Semana</SelectItem>
-                  <SelectItem value="mes">Mês</SelectItem>
+                  <SelectItem value="mes">Mês Vigente</SelectItem>
                   <SelectItem value="personalizado">
                     {customRange ? `${customRange.start.toLocaleDateString()} - ${customRange.end.toLocaleDateString()}` : 'Personalizado'}
                   </SelectItem>
@@ -343,6 +343,24 @@ export default function Relatorios() {
               <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                 Paciente
               </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                &nbsp;
+              </label>
+              <Button
+                variant="outline"
+                className="w-full h-10"
+                onClick={() => {
+                  setPeriodoSelecionado('mes');
+                  setCategoriaSelecionada('todas');
+                  setUsuarioSelecionado('paciente');
+                  setCustomRange(undefined);
+                }}
+              >
+                Limpar Filtros
+              </Button>
             </div>
           </div>
         </div>
