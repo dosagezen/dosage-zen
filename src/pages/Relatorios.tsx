@@ -101,6 +101,11 @@ export default function Relatorios() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      toast({
+        title: "Gerando PDF...",
+        description: "Por favor, aguarde.",
+      });
+
       const response = await supabase.functions.invoke('export-reports-pdf', {
         body: {
           contextId: usuarioSelecionado === 'paciente' ? profile?.id : usuarioSelecionado,
@@ -113,20 +118,35 @@ export default function Relatorios() {
 
       if (response.error) throw response.error;
 
-      // Create downloadable file from HTML
       const { htmlContent, filename } = response.data;
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
+      
+      // Dynamically import html2pdf.js
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      // Create temporary container
+      const container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      document.body.appendChild(container);
+
+      // Convert to PDF and download
+      await html2pdf().from(container).set({
+        margin: 10,
+        filename: filename.replace('.pdf', '') + '.pdf',
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+
+      // Cleanup
+      document.body.removeChild(container);
 
       toast({
         title: "PDF exportado com sucesso",
         description: "Seu relatório foi baixado.",
       });
     } catch (error: any) {
+      console.error('PDF export error:', error);
       toast({
         title: "Erro ao exportar PDF",
         description: error.message,
@@ -180,7 +200,7 @@ export default function Relatorios() {
       if (!session) throw new Error('Not authenticated');
 
       toast({
-        title: "Gerando relatório...",
+        title: "Gerando PDF...",
         description: "Por favor, aguarde.",
       });
 
@@ -198,13 +218,26 @@ export default function Relatorios() {
 
       const { htmlContent, filename } = response.data;
       
-      // Create blob and download
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
+      // Dynamically import html2pdf.js
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      // Create temporary container
+      const container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      document.body.appendChild(container);
+
+      // Convert to PDF and download
+      await html2pdf().from(container).set({
+        margin: 10,
+        filename: filename.replace('.pdf', '') + '.pdf',
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      }).save();
+
+      // Cleanup
+      document.body.removeChild(container);
 
       // Prepare WhatsApp message
       const userName = profile?.nome || 'Usuário';
@@ -222,6 +255,7 @@ export default function Relatorios() {
         description: "Agora anexe o arquivo no WhatsApp.",
       });
     } catch (error: any) {
+      console.error('WhatsApp share error:', error);
       toast({
         title: "Erro ao compartilhar",
         description: error.message,
@@ -359,10 +393,10 @@ export default function Relatorios() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
-                  <SelectItem value="medicacoes">Medicações</SelectItem>
-                  <SelectItem value="consultas">Consultas</SelectItem>
-                  <SelectItem value="exames">Exames</SelectItem>
-                  <SelectItem value="atividades">Atividades</SelectItem>
+                  <SelectItem value="medicacao">Medicações</SelectItem>
+                  <SelectItem value="consulta">Consultas</SelectItem>
+                  <SelectItem value="exame">Exames</SelectItem>
+                  <SelectItem value="atividade">Atividades</SelectItem>
                 </SelectContent>
               </Select>
             </div>
