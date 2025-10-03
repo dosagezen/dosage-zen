@@ -101,8 +101,8 @@ export default function Relatorios() {
     setPeriodoSelecionado('personalizado');
   };
 
-  // Helper function to generate PDF from HTML content
-  const generatePDFHelper = async (htmlContent: string, filename: string) => {
+  // Helper function to generate PDF from HTML content and return as Blob
+  const generatePDFHelper = async (htmlContent: string, filename: string): Promise<Blob> => {
     const html2pdf = (await import('html2pdf.js')).default;
     
     const container = document.createElement('div');
@@ -145,8 +145,9 @@ export default function Relatorios() {
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
-      await html2pdf().set(opt).from(container).save();
-      return filename;
+      // Generate and return PDF as Blob
+      const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
+      return pdfBlob;
     } finally {
       // Always cleanup container
       if (container.parentNode) {
@@ -178,11 +179,15 @@ export default function Relatorios() {
       if (response.error) throw response.error;
 
       const { htmlContent, filename } = response.data;
-      await generatePDFHelper(htmlContent, filename);
+      const pdfBlob = await generatePDFHelper(htmlContent, filename);
+      
+      // Create temporary URL and open in new tab
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      window.open(blobUrl, '_blank');
 
       toast({
-        title: "PDF exportado com sucesso",
-        description: "Seu relatório foi baixado.",
+        title: "PDF gerado com sucesso",
+        description: "O PDF foi aberto em uma nova aba.",
       });
     } catch (error: any) {
       console.error('PDF export error:', error);
@@ -256,7 +261,18 @@ export default function Relatorios() {
       if (response.error) throw response.error;
 
       const { htmlContent, filename } = response.data;
-      await generatePDFHelper(htmlContent, filename);
+      const pdfBlob = await generatePDFHelper(htmlContent, filename);
+      
+      // Download the PDF file
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Wait a bit to ensure download started
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Prepare WhatsApp message
       const periodText = periodoSelecionado === 'hoje' ? 'Hoje' : 
@@ -886,9 +902,9 @@ export default function Relatorios() {
             <FileText className="w-4 h-4 mr-2" />
             Exportar PDF
           </Button>
-          <Button onClick={handleExportExcel} variant="outline" className="flex-1">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar Excel
+          <Button onClick={handleShareWhatsApp} variant="outline" className="flex-1">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            WhatsApp
           </Button>
         </div>
       </div>
