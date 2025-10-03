@@ -101,6 +101,60 @@ export default function Relatorios() {
     setPeriodoSelecionado('personalizado');
   };
 
+  // Helper function to generate PDF from HTML content
+  const generatePDFHelper = async (htmlContent: string, filename: string) => {
+    const html2pdf = (await import('html2pdf.js')).default;
+    
+    const container = document.createElement('div');
+    container.innerHTML = htmlContent;
+    
+    // Robust CSS to completely hide the container
+    container.style.cssText = `
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      width: 210mm;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+    `;
+    
+    document.body.appendChild(container);
+
+    try {
+      // Wait for rendering
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const opt: any = {
+        margin: [10, 10, 10, 10],
+        filename: filename.replace('.pdf', '') + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true,
+          letterRendering: true,
+          logging: false
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(container).save();
+      return filename;
+    } finally {
+      // Always cleanup container
+      if (container.parentNode) {
+        document.body.removeChild(container);
+      }
+    }
+  };
+
   const handleExportPDF = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -124,46 +178,7 @@ export default function Relatorios() {
       if (response.error) throw response.error;
 
       const { htmlContent, filename } = response.data;
-      
-      // Dynamically import html2pdf.js
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      // Create temporary container and render HTML
-      const container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '210mm';
-      document.body.appendChild(container);
-
-      // Wait a moment for rendering
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Convert to PDF with proper configuration
-      const opt: any = {
-        margin: [10, 10, 10, 10],
-        filename: filename.replace('.pdf', '') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          letterRendering: true,
-          logging: false
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(container).save();
-
-      // Cleanup
-      document.body.removeChild(container);
+      await generatePDFHelper(htmlContent, filename);
 
       toast({
         title: "PDF exportado com sucesso",
@@ -241,49 +256,9 @@ export default function Relatorios() {
       if (response.error) throw response.error;
 
       const { htmlContent, filename } = response.data;
-      
-      // Dynamically import html2pdf.js
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      // Create temporary container and render HTML
-      const container = document.createElement('div');
-      container.innerHTML = htmlContent;
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = '210mm';
-      document.body.appendChild(container);
-
-      // Wait a moment for rendering
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Convert to PDF with proper configuration
-      const opt: any = {
-        margin: [10, 10, 10, 10],
-        filename: filename.replace('.pdf', '') + '.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          letterRendering: true,
-          logging: false
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      await html2pdf().set(opt).from(container).save();
-
-      // Cleanup
-      document.body.removeChild(container);
+      await generatePDFHelper(htmlContent, filename);
 
       // Prepare WhatsApp message
-      const userName = profile?.nome || 'Usuário';
       const periodText = periodoSelecionado === 'hoje' ? 'Hoje' : 
                         periodoSelecionado === 'semana' ? 'Semana' :
                         periodoSelecionado === 'mes' ? 'Mês' : 'Período Personalizado';
