@@ -77,19 +77,22 @@ export function HistoricalChart() {
         <div className="w-full">
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={historicalData} margin={{ top: 20, right: 8, left: -16, bottom: 20 }}>
+              <LineChart data={historicalData} margin={{ top: 20, right: 8, left: -16, bottom: 30 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis 
                 dataKey="mes" 
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={11}
                 tickFormatter={formatMonthYear}
+                angle={-15}
+                textAnchor="end"
+                height={50}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
                 domain={[0, 100]}
                 tickFormatter={(value) => `${value}%`}
-                fontSize={12}
+                fontSize={11}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line 
@@ -97,7 +100,7 @@ export function HistoricalChart() {
                 dataKey="aderencia" 
                 stroke="hsl(var(--primary))" 
                 strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
+                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
                 activeDot={{ r: 4, stroke: 'hsl(var(--primary))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
               />
             </LineChart>

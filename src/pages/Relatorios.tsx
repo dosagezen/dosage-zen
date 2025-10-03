@@ -562,27 +562,35 @@ export default function Relatorios() {
                   <Skeleton className="w-40 h-40 rounded-full" />
                 </div>
               ) : (
-                <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={statusData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={renderCustomizedLabel}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {statusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value: any, name: string) => [`${value} (${statusData.find(d => d.name === name)?.percentage}%)`, name]} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="h-80 sm:h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {statusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value: any, name: string) => [`${value} (${statusData.find(d => d.name === name)?.percentage}%)`, name]} />
+                        <Legend 
+                          verticalAlign="bottom" 
+                          height={36}
+                          wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                          formatter={(value, entry: any) => `${value} (${entry.payload.percentage}%)`}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
@@ -610,7 +618,7 @@ export default function Relatorios() {
                   <Skeleton className="w-40 h-40 rounded-full" />
                 </div>
               ) : (
-                <div className="h-96">
+                <div className="h-80 sm:h-96">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -618,8 +626,8 @@ export default function Relatorios() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={renderCustomizedLabel}
-                        outerRadius={100}
+                        label={false}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -628,6 +636,12 @@ export default function Relatorios() {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value: any, name: string) => [`${value} (${planejamentoData.find(d => d.name === name)?.percentage}%)`, name]} />
+                      <Legend 
+                        verticalAlign="bottom" 
+                        height={36}
+                        wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                        formatter={(value, entry: any) => `${value} (${entry.payload.percentage}%)`}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -668,12 +682,17 @@ export default function Relatorios() {
                           dataKey="name" 
                           type="category" 
                           stroke="hsl(var(--muted-foreground))"
-                          width={120}
-                          fontSize={12}
+                          width={100}
+                          fontSize={11}
                           tick={(props) => {
                             const { x, y, payload } = props;
                             const entry = statusBarData.find(d => d.name === payload.value);
                             const isIndented = entry?.isSubcategory;
+                            
+                            // Truncate long labels on mobile
+                            const label = payload.value.length > 12 
+                              ? payload.value.substring(0, 10) + '...'
+                              : payload.value;
                             
                             return (
                               <g transform={`translate(${x},${y})`}>
@@ -683,10 +702,10 @@ export default function Relatorios() {
                                   dy={4}
                                   textAnchor="end"
                                   fill="hsl(var(--muted-foreground))"
-                                  fontSize={isIndented ? 11 : 12}
+                                  fontSize={isIndented ? 10 : 11}
                                   fontStyle={isIndented ? 'italic' : 'normal'}
                                 >
-                                  {payload.value}
+                                  {label}
                                 </text>
                               </g>
                             );
@@ -773,17 +792,23 @@ export default function Relatorios() {
                       <XAxis 
                         dataKey="name" 
                         stroke="hsl(var(--muted-foreground))"
-                        fontSize={12}
+                        fontSize={11}
+                        angle={-15}
+                        textAnchor="end"
+                        height={60}
                       />
-                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
                       <Tooltip 
                         contentStyle={{
                           backgroundColor: 'hsl(var(--popover))',
                           border: '1px solid hsl(var(--border))',
-                          borderRadius: '6px'
+                          borderRadius: '6px',
+                          fontSize: '12px'
                         }}
                       />
-                      <Legend />
+                      <Legend 
+                        wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                      />
                       <Bar 
                         dataKey="planejados" 
                         fill="hsl(var(--primary))" 
@@ -833,15 +858,21 @@ export default function Relatorios() {
                       <XAxis 
                         dataKey="mes" 
                         stroke="hsl(var(--muted-foreground))"
+                        fontSize={11}
+                        angle={-15}
+                        textAnchor="end"
+                        height={60}
                       />
                       <YAxis 
                         stroke="hsl(var(--muted-foreground))"
                         domain={[0, 100]}
                         tickFormatter={(value) => `${value}%`}
+                        fontSize={11}
                       />
                       <Tooltip 
                         contentStyle={{
                           backgroundColor: 'hsl(var(--popover))',
+                          fontSize: '12px',
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '6px'
                         }}
