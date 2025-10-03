@@ -64,11 +64,16 @@ export default function Relatorios() {
     { name: 'Cancelados', value: summary.totals.excluidos, percentage: summary.totals.excluidos_pct, color: 'hsl(350 89% 60%)' }
   ].filter(item => item.value > 0);
 
-  const categoryData = Object.entries(summary.by_category).map(([category, data]) => ({
-    name: categoryMapping[category] || category,
-    planejados: data.planejados,
-    concluidos: data.concluidos
-  }));
+  // Define order for categories in chart
+  const categoryOrder = ['medicacao', 'consulta', 'exame', 'atividade'];
+  
+  const categoryData = categoryOrder
+    .filter(category => summary.by_category[category]) // Only include categories with data
+    .map(category => ({
+      name: categoryMapping[category] || category,
+      planejados: summary.by_category[category].planejados,
+      concluidos: summary.by_category[category].concluidos
+    }));
 
   // Hierarchical status data: Retardatários is a subset of Concluídos
   const concluidosNoPrazo = summary.totals.concluidos - summary.totals.retardatarios;
