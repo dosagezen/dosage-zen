@@ -305,25 +305,43 @@ export default function Relatorios() {
   const renderCustomizedLabel = (props: any) => {
     const { cx, cy, midAngle, outerRadius, value, percentage, name } = props;
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius + 30;
+    const radius = outerRadius + 35;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    // Determinar alinhamento do texto baseado na posição
+    const textAnchor = x > cx ? 'start' : 'end';
+    
+    // Cor baseada na percentagem: azul escuro >= 65%, laranja < 65%
+    const percentageColor = percentage >= 65 ? 'hsl(217 91% 40%)' : 'hsl(25 95% 53%)';
 
     return (
-      <text
-        x={x}
-        y={y}
-        fill="hsl(var(--foreground))"
-        textAnchor={x > cx ? 'start' : 'end'}
-        dominantBaseline="central"
-      >
-        <tspan x={x} dy="0" fontSize="14" fontWeight="600">
+      <g>
+        {/* Números absolutos e percentuais na primeira linha */}
+        <text
+          x={x}
+          y={y - 8}
+          fill={percentageColor}
+          textAnchor={textAnchor}
+          dominantBaseline="central"
+          fontSize="13"
+          fontWeight="700"
+        >
           {value} ({percentage}%)
-        </tspan>
-        <tspan x={x} dy="16" fontSize="11" fill="hsl(var(--muted-foreground))">
+        </text>
+        {/* Nome/legenda na segunda linha, alinhada à direita dos números */}
+        <text
+          x={x}
+          y={y + 8}
+          fill="hsl(var(--muted-foreground))"
+          textAnchor={textAnchor}
+          dominantBaseline="central"
+          fontSize="11"
+          fontWeight="500"
+        >
           {name}
-        </tspan>
-      </text>
+        </text>
+      </g>
     );
   };
 
@@ -563,16 +581,16 @@ export default function Relatorios() {
                 </div>
               ) : (
                 <>
-                  <div className="h-80 sm:h-96">
+                  <div className="h-96 sm:h-[420px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
+                      <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
                         <Pie
                           data={statusData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={false}
-                          outerRadius={80}
+                          label={renderCustomizedLabel}
+                          outerRadius={70}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -581,12 +599,6 @@ export default function Relatorios() {
                           ))}
                         </Pie>
                         <Tooltip formatter={(value: any, name: string) => [`${value} (${statusData.find(d => d.name === name)?.percentage}%)`, name]} />
-                        <Legend 
-                          verticalAlign="bottom" 
-                          height={36}
-                          wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
-                          formatter={(value, entry: any) => `${value} (${entry.payload.percentage}%)`}
-                        />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -618,16 +630,16 @@ export default function Relatorios() {
                   <Skeleton className="w-40 h-40 rounded-full" />
                 </div>
               ) : (
-                <div className="h-80 sm:h-96">
+                <div className="h-96 sm:h-[420px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart margin={{ top: 20, right: 80, bottom: 20, left: 80 }}>
                       <Pie
                         data={planejamentoData}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={false}
-                        outerRadius={80}
+                        label={renderCustomizedLabel}
+                        outerRadius={70}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -636,12 +648,6 @@ export default function Relatorios() {
                         ))}
                       </Pie>
                       <Tooltip formatter={(value: any, name: string) => [`${value} (${planejamentoData.find(d => d.name === name)?.percentage}%)`, name]} />
-                      <Legend 
-                        verticalAlign="bottom" 
-                        height={36}
-                        wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
-                        formatter={(value, entry: any) => `${value} (${entry.payload.percentage}%)`}
-                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
