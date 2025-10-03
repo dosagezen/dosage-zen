@@ -404,21 +404,11 @@ export default function Relatorios() {
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 min-w-[180px]">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Período
+                Perfil
               </label>
-              <Select value={periodoSelecionado} onValueChange={handlePeriodoChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hoje">Hoje</SelectItem>
-                  <SelectItem value="semana">Semana</SelectItem>
-                  <SelectItem value="mes">Mês Vigente</SelectItem>
-                  <SelectItem value="personalizado">
-                    {customRange ? `${customRange.start.toLocaleDateString()} - ${customRange.end.toLocaleDateString()}` : 'Personalizado'}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                Paciente
+              </div>
             </div>
 
             <div className="flex-1 min-w-[180px]">
@@ -441,11 +431,21 @@ export default function Relatorios() {
 
             <div className="flex-1 min-w-[180px]">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">
-                Perfil
+                Período
               </label>
-              <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                Paciente
-              </div>
+              <Select value={periodoSelecionado} onValueChange={handlePeriodoChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hoje">Hoje</SelectItem>
+                  <SelectItem value="semana">Semana</SelectItem>
+                  <SelectItem value="mes">Mês Vigente</SelectItem>
+                  <SelectItem value="personalizado">
+                    {customRange ? `${customRange.start.toLocaleDateString()} - ${customRange.end.toLocaleDateString()}` : 'Personalizado'}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <Button
