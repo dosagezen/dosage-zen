@@ -6,8 +6,12 @@ import {
   requestNotificationPermission,
   getNotificationPermission,
   isPushNotificationSupported,
-  getBrowserInfo
+  getBrowserInfo,
+  urlBase64ToUint8Array
 } from '@/lib/notifications/service-worker-utils';
+
+// VAPID Public Key - Generate and configure in Supabase Secrets
+const VAPID_PUBLIC_KEY = 'BPXjIBPYd8N-n_QfxXt0Z8V5wY0ZJWqQVqF3hR_xR8X5wY0ZJWqQVqF3hR_xR8X5wY0ZJWqQVqF3hR_xR8X5wY0';
 
 interface NotificationSubscription {
   endpoint: string;
@@ -99,10 +103,10 @@ export const useNotifications = () => {
         throw new Error('Falha ao registrar Service Worker');
       }
 
-      // Subscribe to push
+      // Subscribe to push with VAPID key
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: null // Will be configured in production
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
 
       setSubscription(sub);

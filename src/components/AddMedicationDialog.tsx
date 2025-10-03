@@ -12,6 +12,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from "@/hooks/use-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
+import { scheduleMedicationReminder, cancelNotifications } from "@/lib/notifications/schedule-helper"
 
 // Utility functions for handling dates without timezone issues
 const parseLocalDate = (dateString: string): Date => {
@@ -61,6 +63,7 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { toast } = useToast()
   const isMobile = useIsMobile()
+  const { currentContext } = useAuth()
   
   const [formData, setFormData] = useState({
     status: true, // true = ativa, false = inativa
@@ -188,6 +191,24 @@ const AddMedicationDialog = ({ children, open, onOpenChange, medication, isEditi
       onUpdate(medicationData)
     } else if (!isEditing && onSave) {
       onSave(medicationData)
+    }
+    
+    // Schedule notification for the medication
+    if (currentContext && formData.horario && formData.dataInicio) {
+      const medicationTime = new Date(formData.dataInicio);
+      const [hours, minutes] = formData.horario.split(':').map(Number);
+      medicationTime.setHours(hours, minutes, 0, 0);
+      
+      scheduleMedicationReminder(
+        currentContext,
+        medication?.id || 'new-medication',
+        formData.nome,
+        medicationTime
+      ).then((success) => {
+        if (success) {
+          console.log('Medication reminder scheduled successfully');
+        }
+      });
     }
     
     // Fechar o dialog após chamar a função

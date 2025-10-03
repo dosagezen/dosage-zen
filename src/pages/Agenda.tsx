@@ -20,6 +20,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCompromissosEvents } from '@/contexts/CompromissosEventContext';
+import { 
+  scheduleAppointmentReminders, 
+  scheduleExamReminders, 
+  scheduleActivityReminder,
+  cancelNotifications 
+} from '@/lib/notifications/schedule-helper';
 
 type AppointmentCategory = 'consulta' | 'exame' | 'atividade';
 type AppointmentStatus = 'agendado' | 'realizado' | 'cancelado';
@@ -276,11 +282,43 @@ export default function Agenda() {
           : formData.data_agendamento
       };
       
+      let savedAppointment;
       if (editingAppointment) {
-        await updateAppointment({ id: editingAppointment.id, ...dataToSave });
+        savedAppointment = await updateAppointment({ id: editingAppointment.id, ...dataToSave });
       } else {
-        await createAppointment(dataToSave);
+        savedAppointment = await createAppointment(dataToSave);
       }
+
+      // Schedule notifications based on appointment type
+      if (currentContext && formData.data_agendamento && savedAppointment) {
+        const appointmentTime = new Date(formData.data_agendamento);
+        const appointmentId = editingAppointment?.id || savedAppointment.id;
+        const appointmentTitle = formData.titulo || categoryLabels[formData.tipo];
+
+        if (formData.tipo === 'consulta') {
+          scheduleAppointmentReminders(
+            currentContext,
+            appointmentId,
+            appointmentTitle,
+            appointmentTime
+          );
+        } else if (formData.tipo === 'exame') {
+          scheduleExamReminders(
+            currentContext,
+            appointmentId,
+            appointmentTitle,
+            appointmentTime
+          );
+        } else if (formData.tipo === 'atividade') {
+          scheduleActivityReminder(
+            currentContext,
+            appointmentId,
+            appointmentTitle,
+            appointmentTime
+          );
+        }
+      }
+      
       setShowAddDialog(false);
       setFormData({
         tipo: 'consulta',
