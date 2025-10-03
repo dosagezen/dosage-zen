@@ -406,10 +406,10 @@ export default function Relatorios() {
                 variant="outline"
                 size="sm"
                 onClick={handleExportPDF}
-                className="hidden sm:flex"
+                className="gap-2"
               >
-                <FileText className="w-4 h-4 mr-2" />
-                PDF
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">PDF</span>
               </Button>
               <Button
                 variant="outline"
