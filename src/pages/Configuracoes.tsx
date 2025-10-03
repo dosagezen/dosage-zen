@@ -7,11 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UserProfileManager } from "@/components/UserProfileManager";
 import MyProfileSection from "@/components/MyProfileSection";
+import { NotificationSettings } from "@/components/NotificationSettings";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Configuracoes = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, profile } = useAuth()
   const [activeSection, setActiveSection] = useState("meu-perfil")
 
   // Sincronizar com URL params
@@ -58,6 +61,16 @@ const Configuracoes = () => {
         return <MyProfileSection />;
       case "colaboradores":
         return <UserProfileManager />;
+      case "notificacoes":
+        return user && profile ? (
+          <NotificationSettings userId={user.id} profileId={profile.id} />
+        ) : (
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-muted-foreground">Carregando...</p>
+            </CardContent>
+          </Card>
+        );
       default:
         return (
           <Card>

@@ -13,6 +13,9 @@ import { useCompromissosDodia } from "@/hooks/useCompromissosDodia";
 import { useConquests } from "@/hooks/useConquests";
 import { useAuth } from "@/contexts/AuthContext";
 import { formatTime24h } from "@/lib/utils";
+import { NotificationStatusWidget } from "@/components/NotificationStatusWidget";
+import { NotificationPermissionDialog } from "@/components/NotificationPermissionDialog";
+import { useNotificationPermissionDialog } from "@/hooks/useNotificationPermissionDialog";
 
 // Função utilitária para saudação baseada no horário
 const getGreetingByTime = (timezone?: string): string => {
@@ -41,6 +44,9 @@ const Dashboard = () => {
     profile,
     currentContext
   } = useAuth();
+  
+  // Notification permission dialog
+  const notificationDialog = useNotificationPermissionDialog();
 
   // Hooks para dados reais
   const {
@@ -478,6 +484,15 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      {/* Notification Status Widget */}
+      {user && profile && (
+        <NotificationStatusWidget
+          profileId={profile.id}
+          userId={user.id}
+          onOpenSettings={() => navigate('/configuracoes?section=notificacoes')}
+        />
+      )}
+
       {/* Ações Rápidas */}
       <Card className="shadow-card">
         <CardHeader>
@@ -511,6 +526,16 @@ const Dashboard = () => {
 
       {/* Modal de Compromissos do Dia */}
       <CompromissosModal isOpen={isDayModalOpen} onClose={() => setIsDayModalOpen(false)} />
+      
+      {/* Notification Permission Dialog */}
+      {notificationDialog.showDialog && notificationDialog.userId && notificationDialog.profileId && (
+        <NotificationPermissionDialog
+          open={notificationDialog.showDialog}
+          onOpenChange={notificationDialog.handleClose}
+          userId={notificationDialog.userId}
+          profileId={notificationDialog.profileId}
+        />
+      )}
     </div>;
 };
 export default Dashboard;

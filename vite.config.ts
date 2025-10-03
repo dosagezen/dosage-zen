@@ -19,4 +19,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Don't process service worker as a module
+  publicDir: 'public',
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      }
+    }
+  }
 }));

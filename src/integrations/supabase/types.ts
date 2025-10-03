@@ -419,6 +419,105 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          atividade_advance_hours: number | null
+          atividade_enabled: boolean | null
+          consulta_advance_hours: number | null
+          consulta_enabled: boolean | null
+          created_at: string
+          enabled: boolean | null
+          exame_advance_hours: number | null
+          exame_enabled: boolean | null
+          id: string
+          medicacao_advance_minutes: number | null
+          medicacao_enabled: boolean | null
+          profile_id: string
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          atividade_advance_hours?: number | null
+          atividade_enabled?: boolean | null
+          consulta_advance_hours?: number | null
+          consulta_enabled?: boolean | null
+          created_at?: string
+          enabled?: boolean | null
+          exame_advance_hours?: number | null
+          exame_enabled?: boolean | null
+          id?: string
+          medicacao_advance_minutes?: number | null
+          medicacao_enabled?: boolean | null
+          profile_id: string
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          atividade_advance_hours?: number | null
+          atividade_enabled?: boolean | null
+          consulta_advance_hours?: number | null
+          consulta_enabled?: boolean | null
+          created_at?: string
+          enabled?: boolean | null
+          exame_advance_hours?: number | null
+          exame_enabled?: boolean | null
+          id?: string
+          medicacao_advance_minutes?: number | null
+          medicacao_enabled?: boolean | null
+          profile_id?: string
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_schedule: {
+        Row: {
+          body: string
+          created_at: string
+          data: Json | null
+          entity_id: string
+          id: string
+          is_cancelled: boolean | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          profile_id: string
+          scheduled_for: string
+          sent_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          data?: Json | null
+          entity_id: string
+          id?: string
+          is_cancelled?: boolean | null
+          notification_type: Database["public"]["Enums"]["notification_type"]
+          profile_id: string
+          scheduled_for: string
+          sent_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          data?: Json | null
+          entity_id?: string
+          id?: string
+          is_cancelled?: boolean | null
+          notification_type?: Database["public"]["Enums"]["notification_type"]
+          profile_id?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -459,6 +558,42 @@ export type Database = {
           is_gestor?: boolean | null
           nome?: string
           sobrenome?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          is_active: boolean | null
+          p256dh: string
+          profile_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          is_active?: boolean | null
+          p256dh: string
+          profile_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          is_active?: boolean | null
+          p256dh?: string
+          profile_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -772,6 +907,7 @@ export type Database = {
       app_role: "paciente" | "acompanhante" | "cuidador" | "admin" | "gestor"
       invitation_status: "pendente" | "aceito" | "recusado"
       medication_occurrence_status: "pendente" | "concluido" | "excluido"
+      notification_type: "medicacao" | "consulta" | "exame" | "atividade"
       subscription_status: "ativo" | "inativo" | "cancelado"
     }
     CompositeTypes: {
@@ -903,6 +1039,7 @@ export const Constants = {
       app_role: ["paciente", "acompanhante", "cuidador", "admin", "gestor"],
       invitation_status: ["pendente", "aceito", "recusado"],
       medication_occurrence_status: ["pendente", "concluido", "excluido"],
+      notification_type: ["medicacao", "consulta", "exame", "atividade"],
       subscription_status: ["ativo", "inativo", "cancelado"],
     },
   },
