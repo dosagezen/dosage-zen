@@ -130,125 +130,135 @@ serve(async (req: Request) => {
       'atividade': 'Atividades'
     };
 
-    // Generate elegant HTML-based PDF content
+    // Generate mobile-first responsive HTML report
     const htmlContent = `
       <!DOCTYPE html>
-      <html>
+      <html lang="pt-BR">
         <head>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
           <title>Relatório de Saúde - DosageZen</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             
             body { 
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
               color: #2c3e50;
-              line-height: 1.6;
+              line-height: 1.5;
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              padding: 40px 20px;
+              padding: 20px 12px;
             }
             
             .container {
+              width: 100%;
               max-width: 900px;
               margin: 0 auto;
               background: white;
-              border-radius: 16px;
-              box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+              border-radius: 8px;
+              box-shadow: 0 10px 40px rgba(0,0,0,0.2);
               overflow: hidden;
             }
             
             .header {
               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
               color: white;
-              padding: 40px;
+              padding: 30px 20px;
               text-align: center;
             }
             
             .logo {
-              font-size: 32px;
+              font-size: 24px;
               font-weight: bold;
-              margin-bottom: 10px;
+              margin-bottom: 8px;
               letter-spacing: 1px;
             }
             
             .header h1 {
-              font-size: 28px;
+              font-size: 20px;
               font-weight: 600;
-              margin: 20px 0 10px;
+              margin: 16px 0 6px;
+              line-height: 1.3;
             }
             
             .header .subtitle {
-              font-size: 16px;
-              opacity: 0.9;
+              font-size: 14px;
+              opacity: 0.95;
               font-weight: 300;
+              line-height: 1.4;
             }
             
             .patient-info {
               background: #f8f9fa;
-              padding: 30px 40px;
+              padding: 24px 20px;
               border-bottom: 1px solid #e9ecef;
             }
             
             .patient-info h2 {
               color: #667eea;
-              font-size: 18px;
-              margin-bottom: 15px;
+              font-size: 16px;
+              margin-bottom: 12px;
               font-weight: 600;
             }
             
             .info-grid {
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 15px;
+              grid-template-columns: 1fr;
+              gap: 12px;
             }
             
             .info-item {
               display: flex;
-              align-items: center;
-              gap: 10px;
+              flex-direction: column;
+              gap: 4px;
             }
             
             .info-label {
               font-weight: 600;
               color: #6c757d;
-              font-size: 14px;
+              font-size: 13px;
             }
             
             .info-value {
               color: #2c3e50;
               font-size: 14px;
+              word-break: break-word;
+              overflow-wrap: break-word;
             }
             
             .content {
-              padding: 40px;
+              padding: 24px 20px;
             }
             
             .section {
-              margin-bottom: 40px;
+              margin-bottom: 30px;
             }
             
             .section-title {
               color: #667eea;
-              font-size: 20px;
+              font-size: 18px;
               font-weight: 600;
-              margin-bottom: 20px;
-              padding-bottom: 10px;
-              border-bottom: 2px solid #e9ecef;
+              margin-bottom: 16px;
+              padding-bottom: 8px;
+              border-bottom: 3px solid #667eea;
             }
             
             .metrics-grid {
               display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 20px;
-              margin-bottom: 30px;
+              grid-template-columns: 1fr;
+              gap: 15px;
+              margin-bottom: 24px;
             }
             
             .metric-card {
               background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-              padding: 20px;
+              padding: 16px;
               border-radius: 12px;
               text-align: center;
               border-left: 4px solid #667eea;
+              min-height: 120px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
             }
             
             .metric-card.success { border-left-color: #10b981; }
@@ -256,10 +266,10 @@ serve(async (req: Request) => {
             .metric-card.danger { border-left-color: #ef4444; }
             
             .metric-value {
-              font-size: 32px;
+              font-size: 28px;
               font-weight: bold;
               color: #2c3e50;
-              margin-bottom: 5px;
+              margin-bottom: 4px;
             }
             
             .metric-label {
@@ -267,38 +277,39 @@ serve(async (req: Request) => {
               color: #6c757d;
               text-transform: uppercase;
               letter-spacing: 0.5px;
+              margin-bottom: 8px;
             }
             
             .metric-percentage {
-              font-size: 14px;
+              font-size: 13px;
               color: #667eea;
               font-weight: 600;
-              margin-top: 5px;
+              margin-top: 4px;
             }
             
             .insights-grid {
               display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 20px;
+              grid-template-columns: 1fr;
+              gap: 15px;
             }
             
             .insight-card {
               background: #f8f9fa;
-              padding: 20px;
+              padding: 16px;
               border-radius: 12px;
               border-left: 4px solid #667eea;
             }
             
             .insight-title {
-              font-size: 14px;
+              font-size: 13px;
               color: #6c757d;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              margin-bottom: 10px;
+              margin-bottom: 8px;
             }
             
             .insight-value {
-              font-size: 20px;
+              font-size: 18px;
               font-weight: 600;
               color: #2c3e50;
             }
@@ -306,17 +317,26 @@ serve(async (req: Request) => {
             .insight-detail {
               font-size: 13px;
               color: #6c757d;
-              margin-top: 5px;
+              margin-top: 4px;
+            }
+            
+            .table-wrapper {
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
+              margin: 0 -20px 20px;
+              padding: 0 20px;
             }
             
             table {
               width: 100%;
+              min-width: 600px;
               border-collapse: collapse;
-              margin-top: 20px;
+              margin-top: 16px;
               background: white;
               border-radius: 8px;
               overflow: hidden;
               box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              font-size: 13px;
             }
             
             thead {
@@ -325,18 +345,19 @@ serve(async (req: Request) => {
             }
             
             th {
-              padding: 15px;
+              padding: 12px 10px;
               text-align: left;
               font-weight: 600;
-              font-size: 14px;
+              font-size: 11px;
               text-transform: uppercase;
               letter-spacing: 0.5px;
+              white-space: nowrap;
             }
             
             td {
-              padding: 15px;
+              padding: 12px 10px;
               border-bottom: 1px solid #e9ecef;
-              font-size: 14px;
+              white-space: nowrap;
             }
             
             tbody tr:hover {
@@ -349,31 +370,32 @@ serve(async (req: Request) => {
             
             .progress-bar {
               width: 100%;
-              height: 8px;
+              min-width: 100px;
+              height: 6px;
               background: #e9ecef;
-              border-radius: 4px;
+              border-radius: 10px;
               overflow: hidden;
-              margin-top: 8px;
+              margin-top: 4px;
             }
             
             .progress-fill {
               height: 100%;
               background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-              border-radius: 4px;
+              border-radius: 10px;
               transition: width 0.3s ease;
             }
             
             .footer {
               background: #f8f9fa;
-              padding: 30px 40px;
+              padding: 24px 20px;
               text-align: center;
-              border-top: 1px solid #e9ecef;
+              border-top: 2px solid #e9ecef;
             }
             
             .footer-text {
               color: #6c757d;
               font-size: 13px;
-              margin-bottom: 5px;
+              margin-bottom: 4px;
             }
             
             .footer-brand {
@@ -381,10 +403,218 @@ serve(async (req: Request) => {
               font-weight: 600;
               font-size: 14px;
             }
+
+            /* Tablet (480px+) */
+            @media (min-width: 480px) {
+              body {
+                padding: 30px 16px;
+              }
+
+              .container {
+                border-radius: 12px;
+              }
+
+              .header {
+                padding: 35px 24px;
+              }
+
+              .logo {
+                font-size: 28px;
+              }
+
+              .header h1 {
+                font-size: 24px;
+              }
+
+              .header .subtitle {
+                font-size: 15px;
+              }
+
+              .content {
+                padding: 30px 24px;
+              }
+
+              .section-title {
+                font-size: 20px;
+              }
+
+              .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+              }
+
+              .metric-value {
+                font-size: 30px;
+              }
+
+              .insight-value {
+                font-size: 19px;
+              }
+            }
+
+            /* Tablet landscape / Small desktop (640px+) */
+            @media (min-width: 640px) {
+              .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+              }
+
+              .info-item {
+                flex-direction: row;
+                align-items: center;
+                gap: 10px;
+              }
+
+              .insights-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+              }
+
+              .table-wrapper {
+                margin: 0;
+                padding: 0;
+              }
+            }
+
+            /* Desktop (768px+) */
+            @media (min-width: 768px) {
+              body {
+                padding: 40px 20px;
+                line-height: 1.6;
+              }
+
+              .container {
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+              }
+
+              .header {
+                padding: 40px;
+              }
+
+              .logo {
+                font-size: 32px;
+                margin-bottom: 10px;
+              }
+
+              .header h1 {
+                font-size: 28px;
+                margin: 20px 0 10px;
+              }
+
+              .header .subtitle {
+                font-size: 16px;
+              }
+
+              .patient-info {
+                padding: 30px 40px;
+              }
+
+              .patient-info h2 {
+                font-size: 18px;
+                margin-bottom: 15px;
+              }
+
+              .info-label {
+                font-size: 14px;
+              }
+
+              .info-value {
+                font-size: 14px;
+              }
+
+              .content {
+                padding: 40px;
+              }
+
+              .section {
+                margin-bottom: 40px;
+              }
+
+              .section-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+              }
+
+              .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                margin-bottom: 30px;
+              }
+
+              .metric-card {
+                padding: 20px;
+              }
+
+              .metric-label {
+                font-size: 13px;
+                margin-bottom: 10px;
+              }
+
+              .metric-value {
+                font-size: 32px;
+                margin-bottom: 5px;
+              }
+
+              .metric-percentage {
+                font-size: 14px;
+                margin-top: 5px;
+              }
+
+              .insight-card {
+                padding: 20px;
+              }
+
+              .insight-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+              }
+
+              .insight-value {
+                font-size: 20px;
+              }
+
+              .insight-detail {
+                font-size: 13px;
+                margin-top: 5px;
+              }
+
+              table {
+                font-size: 14px;
+              }
+
+              th {
+                padding: 15px;
+                font-size: 12px;
+              }
+
+              td {
+                padding: 15px;
+              }
+
+              .progress-bar {
+                height: 8px;
+                margin-top: 8px;
+              }
+
+              .footer {
+                padding: 30px 40px;
+              }
+
+              .footer-text {
+                font-size: 13px;
+                margin-bottom: 5px;
+              }
+
+              .footer-brand {
+                font-size: 14px;
+              }
+            }
             
             @media print {
               body { background: white; padding: 0; }
-              .container { box-shadow: none; }
+              .container { box-shadow: none; border-radius: 0; }
             }
           </style>
         </head>
@@ -491,18 +721,19 @@ serve(async (req: Request) => {
               ${summaryData?.by_category && Object.keys(summaryData.by_category).length > 0 ? `
               <div class="section">
                 <h2 class="section-title">📋 Detalhamento por Categoria</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Categoria</th>
-                      <th>Planejados</th>
-                      <th>Concluídos</th>
-                      <th>Retardatários</th>
-                      <th>Atrasados</th>
-                      <th>Pendentes</th>
-                      <th>Adesão</th>
-                    </tr>
-                  </thead>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Categoria</th>
+                        <th>Planejados</th>
+                        <th>Concluídos</th>
+                        <th>Retardatários</th>
+                        <th>Atrasados</th>
+                        <th>Pendentes</th>
+                        <th>Adesão</th>
+                      </tr>
+                    </thead>
                   <tbody>
                     ${Object.entries(summaryData.by_category).map(([cat, data]: [string, any]) => {
                       const adherence = data.planejados > 0 ? Math.round((data.concluidos / data.planejados) * 100) : 0;
@@ -523,7 +754,8 @@ serve(async (req: Request) => {
                       </tr>
                     `}).join('')}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
               ` : ''}
             </div>

@@ -39,10 +39,10 @@ const PublicReportView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Carregando relatório...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-base text-muted-foreground px-4">Carregando relatório...</p>
         </div>
       </div>
     );
@@ -50,13 +50,13 @@ const PublicReportView = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="text-center space-y-4 max-w-md">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="text-center space-y-4 max-w-sm mx-auto">
           <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
             <span className="text-3xl">⚠️</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Relatório não encontrado</h1>
-          <p className="text-muted-foreground">{error}</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground px-2">Relatório não encontrado</h1>
+          <p className="text-sm sm:text-base text-muted-foreground px-2">{error}</p>
         </div>
       </div>
     );
