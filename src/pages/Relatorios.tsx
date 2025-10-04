@@ -157,14 +157,14 @@ export default function Relatorios() {
   };
 
   const handleExportPDF = async () => {
+    const toastId = toast({
+      title: "Gerando PDF...",
+      description: "Por favor, aguarde.",
+    });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
-
-      toast({
-        title: "Gerando PDF...",
-        description: "Por favor, aguarde.",
-      });
 
       const response = await supabase.functions.invoke('export-reports-pdf', {
         body: {
@@ -181,134 +181,75 @@ export default function Relatorios() {
       const { htmlContent, filename } = response.data;
       const pdfBlob = await generatePDFHelper(htmlContent, filename);
       
-      // Convert PDF blob to base64 for embedding
-      const reader = new FileReader();
-      reader.readAsDataURL(pdfBlob);
+      // Platform detection
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        
-        // Create HTML page with embedded PDF and download button
-        const htmlPage = `
-          <!DOCTYPE html>
-          <html lang="pt-BR">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${filename}</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-                background: #f5f5f5;
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-              }
-              .header {
-                background: white;
-                padding: 12px 16px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 12px;
-              }
-              .title {
-                font-size: 16px;
-                font-weight: 600;
-                color: #333;
-                flex: 1;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-              }
-              .download-btn {
-                background: #10b981;
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                border-radius: 6px;
-                font-weight: 500;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 14px;
-                transition: background 0.2s;
-                white-space: nowrap;
-              }
-              .download-btn:hover {
-                background: #059669;
-              }
-              .download-btn:active {
-                transform: scale(0.98);
-              }
-              .pdf-container {
-                flex: 1;
-                background: #525252;
-                overflow: hidden;
-                position: relative;
-              }
-              iframe, embed {
-                width: 100%;
-                height: 100%;
-                border: none;
-              }
-              @media (max-width: 640px) {
-                .header { padding: 10px 12px; }
-                .title { font-size: 14px; }
-                .download-btn { 
-                  padding: 8px 16px;
-                  font-size: 13px;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <div class="title">📄 ${filename.replace('.pdf', '')}</div>
-              <button class="download-btn" onclick="downloadPDF()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Baixar
-              </button>
-            </div>
-            <div class="pdf-container">
-              <embed src="${base64data}" type="application/pdf" />
-            </div>
-            <script>
-              function downloadPDF() {
-                const link = document.createElement('a');
-                link.href = '${base64data}';
-                link.download = '${filename}';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }
-            </script>
-          </body>
-          </html>
-        `;
-        
-        // Create blob from HTML and open in new tab
-        const htmlBlob = new Blob([htmlPage], { type: 'text/html' });
-        const htmlUrl = URL.createObjectURL(htmlBlob);
-        window.open(htmlUrl, '_blank');
+      // Debug info
+      console.log('PDF Generation Debug:', {
+        platform: isIOS ? 'iOS' : isMobile ? 'Mobile' : 'Desktop',
+        blobSize: pdfBlob.size,
+        blobType: pdfBlob.type,
+        userAgent: navigator.userAgent
+      });
+
+      // Helper function to download PDF
+      const downloadPDF = (blob: Blob, fileName: string) => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(link.href), 100);
       };
 
-      toast({
-        title: "PDF gerado com sucesso",
-        description: "O PDF foi aberto em uma nova aba.",
-      });
+      // iOS/Mobile: Direct download (only reliable method)
+      if (isIOS || isMobile) {
+        downloadPDF(pdfBlob, filename);
+        toast({
+          title: "PDF baixado!",
+          description: "Abra o arquivo na pasta Downloads.",
+        });
+        return;
+      }
+
+      // Desktop: Try to open in new tab with fallback
+      try {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const newWindow = window.open(blobUrl, '_blank');
+        
+        // Pop-up blocked or failed to open
+        if (!newWindow) {
+          downloadPDF(pdfBlob, filename);
+          toast({
+            title: "Pop-up bloqueado",
+            description: "PDF baixado automaticamente.",
+          });
+        } else {
+          toast({
+            title: "PDF aberto em nova aba",
+            description: "Você pode baixá-lo usando o navegador.",
+          });
+          
+          // Clean up blob URL after window loads
+          newWindow.onload = () => {
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+          };
+        }
+      } catch (error) {
+        console.error('Failed to open PDF in new tab:', error);
+        downloadPDF(pdfBlob, filename);
+        toast({
+          title: "PDF baixado",
+          description: "Não foi possível visualizar inline.",
+        });
+      }
     } catch (error: any) {
       console.error('PDF export error:', error);
       toast({
         title: "Erro ao exportar PDF",
-        description: error.message,
+        description: error.message || "Tente novamente.",
         variant: "destructive"
       });
     }
