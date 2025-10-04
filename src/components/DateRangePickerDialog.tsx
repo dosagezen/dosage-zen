@@ -66,8 +66,8 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[340px] md:max-w-[680px] max-h-[90vh] overflow-y-auto p-3 sm:p-6">
-        <DialogHeader className="sticky top-0 z-20 bg-background border-b pb-3 -mt-3 -mx-3 sm:-mt-6 sm:-mx-6 px-3 sm:px-6 pt-3 sm:pt-6">
+      <DialogContent className="w-full max-w-full sm:max-w-[340px] md:max-w-[680px] h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-hidden p-0 rounded-none sm:rounded-lg">
+        <DialogHeader className="sticky top-0 z-20 bg-background border-b px-4 py-3 sm:px-6 sm:py-4">
           <DialogTitle className="text-base sm:text-lg">Selecionar Período</DialogTitle>
           <div className="mt-3 text-sm">
             {dateRange.start && !dateRange.end && (
@@ -90,12 +90,11 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
           </div>
         </DialogHeader>
         
-        <div className="space-y-4 mt-4">
-
-          <div className="flex flex-col sm:flex-row gap-6 w-full">
+        <div className="overflow-y-auto px-4 py-3 space-y-3 flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 w-full">
             {/* Calendário de Início */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-3">
+            <div className="flex-1 -mx-1 sm:mx-0">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Mês Inicial</h3>
                 <div className="flex gap-1">
                   <Button
@@ -126,23 +125,23 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
                 month={startMonth}
                 onMonthChange={setStartMonth}
                 weekStartsOn={1}
-                className="pointer-events-auto w-full border rounded-md p-2 sm:p-3"
+                className="pointer-events-auto w-full sm:border rounded-md p-1 sm:p-2"
                 classNames={{
                   months: "w-full",
-                  month: "space-y-4 w-full",
+                  month: "w-full space-y-2",
                   caption: "flex justify-center pt-1 relative items-center",
                   caption_label: "text-sm font-medium",
                   nav: "hidden",
-                  table: "w-full border-collapse space-y-1",
-                  head_row: "flex",
-                  head_cell: "text-muted-foreground rounded-md w-8 sm:w-9 font-normal text-[0.7rem] sm:text-[0.8rem]",
-                  row: "flex w-full mt-2",
-                  cell: "h-8 w-8 sm:h-9 sm:w-9 text-center text-xs sm:text-sm p-0 relative",
-                  day: "h-8 w-8 sm:h-9 sm:w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md",
+                  table: "w-full border-collapse",
+                  head_row: "flex w-full justify-between",
+                  head_cell: "flex-1 text-center text-muted-foreground font-normal text-[0.65rem] sm:text-[0.75rem]",
+                  row: "flex w-full justify-between mt-1",
+                  cell: "flex-1 aspect-square text-center text-xs sm:text-sm p-0 relative",
+                  day: "w-full h-full flex items-center justify-center font-normal rounded-md hover:bg-accent hover:text-accent-foreground",
                   day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                   day_today: "bg-accent text-accent-foreground font-semibold",
-                  day_outside: "text-muted-foreground opacity-50",
-                  day_disabled: "text-muted-foreground opacity-50",
+                  day_outside: "text-muted-foreground/40",
+                  day_disabled: "text-muted-foreground/30",
                   day_hidden: "invisible",
                 }}
               />
@@ -152,8 +151,8 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
             <div className="hidden sm:block w-px bg-border" />
 
             {/* Calendário de Fim */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-3">
+            <div className="flex-1 -mx-1 sm:mx-0">
+              <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Mês Final</h3>
                 <div className="flex gap-1">
                   <Button
@@ -184,23 +183,23 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
                 month={endMonth}
                 onMonthChange={setEndMonth}
                 weekStartsOn={1}
-                className="pointer-events-auto w-full border rounded-md p-2 sm:p-3"
+                className="pointer-events-auto w-full sm:border rounded-md p-1 sm:p-2"
                 classNames={{
                   months: "w-full",
-                  month: "space-y-4 w-full",
+                  month: "w-full space-y-2",
                   caption: "flex justify-center pt-1 relative items-center",
                   caption_label: "text-sm font-medium",
                   nav: "hidden",
-                  table: "w-full border-collapse space-y-1",
-                  head_row: "flex",
-                  head_cell: "text-muted-foreground rounded-md w-8 sm:w-9 font-normal text-[0.7rem] sm:text-[0.8rem]",
-                  row: "flex w-full mt-2",
-                  cell: "h-8 w-8 sm:h-9 sm:w-9 text-center text-xs sm:text-sm p-0 relative",
-                  day: "h-8 w-8 sm:h-9 sm:w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground rounded-md",
+                  table: "w-full border-collapse",
+                  head_row: "flex w-full justify-between",
+                  head_cell: "flex-1 text-center text-muted-foreground font-normal text-[0.65rem] sm:text-[0.75rem]",
+                  row: "flex w-full justify-between mt-1",
+                  cell: "flex-1 aspect-square text-center text-xs sm:text-sm p-0 relative",
+                  day: "w-full h-full flex items-center justify-center font-normal rounded-md hover:bg-accent hover:text-accent-foreground",
                   day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                   day_today: "bg-accent text-accent-foreground font-semibold",
-                  day_outside: "text-muted-foreground opacity-50",
-                  day_disabled: "text-muted-foreground opacity-50",
+                  day_outside: "text-muted-foreground/40",
+                  day_disabled: "text-muted-foreground/30",
                   day_hidden: "invisible",
                 }}
               />
@@ -208,7 +207,7 @@ export const DateRangePickerDialog = ({ open, onOpenChange, onSelect }: DateRang
           </div>
         </div>
 
-        <DialogFooter className="sticky bottom-0 z-20 bg-background border-t pt-4 -mb-3 -mx-3 sm:-mb-6 sm:-mx-6 px-3 sm:px-6 pb-3 sm:pb-6 shadow-lg flex-col-reverse sm:flex-row gap-2">
+        <DialogFooter className="sticky bottom-0 z-20 bg-background border-t px-4 py-3 sm:px-6 sm:py-4 shadow-lg flex-col-reverse sm:flex-row gap-2">
           <Button 
             variant="outline" 
             onClick={handleCancel} 
