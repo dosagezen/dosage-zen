@@ -111,11 +111,20 @@ serve(async (req: Request) => {
       console.error('Insights error:', insightsError);
     }
 
-    // Format period text
+    // Format period text for header subtitle
     const periodText = period === 'hoje' ? 'Hoje' :
                       period === 'semana' ? 'Esta Semana' :
                       period === 'mes' ? 'Este Mês' :
                       `${new Date(rangeStart).toLocaleDateString('pt-BR')} - ${new Date(rangeEnd).toLocaleDateString('pt-BR')}`;
+    
+    // Format report date text based on selected period
+    const reportDateText = period === 'hoje' 
+      ? `Hoje, ${new Date(rangeStart).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`
+      : period === 'semana'
+      ? `Semana de ${new Date(rangeStart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} a ${new Date(rangeEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+      : period === 'mes'
+      ? `Mês de ${new Date(rangeStart).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
+      : `${new Date(rangeStart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} até ${new Date(rangeEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
 
     const categoryText = category === 'todas' ? 'Todas as Categorias' :
                         category === 'medicacao' ? 'Medicações' :
@@ -624,7 +633,8 @@ serve(async (req: Request) => {
             <div class="header">
               <div class="logo">🏥 DosageZen</div>
               <h1>Relatório de Saúde e Adesão</h1>
-              <p class="subtitle">${categoryText} • ${periodText}</p>
+              <p class="subtitle">${categoryText}</p>
+              <p class="subtitle">${periodText}</p>
             </div>
             
             <!-- Patient Info -->
@@ -645,7 +655,7 @@ serve(async (req: Request) => {
                 </div>
                 <div class="info-item">
                   <span class="info-label">Data do Relatório:</span>
-                  <span class="info-value">${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                  <span class="info-value">${reportDateText}</span>
                 </div>
               </div>
             </div>
@@ -734,25 +744,28 @@ serve(async (req: Request) => {
                         <th>Adesão</th>
                       </tr>
                     </thead>
-                  <tbody>
-                    ${Object.entries(summaryData.by_category).map(([cat, data]: [string, any]) => {
-                      const adherence = data.planejados > 0 ? Math.round((data.concluidos / data.planejados) * 100) : 0;
-                      return `
-                      <tr>
-                        <td><strong>${categoryMapping[cat] || cat}</strong></td>
-                        <td>${data.planejados || 0}</td>
-                        <td>${data.concluidos || 0}</td>
-                        <td>${data.retardatarios || 0}</td>
-                        <td>${data.atrasados || 0}</td>
-                        <td>${data.faltando || 0}</td>
-                        <td>
-                          ${adherence}%
-                          <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${adherence}%"></div>
-                          </div>
-                        </td>
-                      </tr>
-                    `}).join('')}
+                   <tbody>
+                    ${['medicacao', 'consulta', 'exame', 'atividade']
+                      .filter(cat => summaryData.by_category[cat])
+                      .map(cat => {
+                        const data = summaryData.by_category[cat];
+                        const adherence = data.planejados > 0 ? Math.round((data.concluidos / data.planejados) * 100) : 0;
+                        return `
+                        <tr>
+                          <td><strong>${categoryMapping[cat] || cat}</strong></td>
+                          <td>${data.planejados || 0}</td>
+                          <td>${data.concluidos || 0}</td>
+                          <td>${data.retardatarios || 0}</td>
+                          <td>${data.atrasados || 0}</td>
+                          <td>${data.faltando || 0}</td>
+                          <td>
+                            ${adherence}%
+                            <div class="progress-bar">
+                              <div class="progress-fill" style="width: ${adherence}%"></div>
+                            </div>
+                          </td>
+                        </tr>
+                      `}).join('')}
                   </tbody>
                   </table>
                 </div>
@@ -762,12 +775,14 @@ serve(async (req: Request) => {
             
             <!-- Footer -->
             <div class="footer">
-              <p class="footer-text">Relatório gerado automaticamente em ${new Date().toLocaleString('pt-BR', { 
+              <p class="footer-text">Relatório referente ao período: ${periodText}</p>
+              <p class="footer-text">Gerado em ${new Date().toLocaleString('pt-BR', { 
                 day: '2-digit', 
                 month: 'long', 
                 year: 'numeric',
                 hour: '2-digit',
-                minute: '2-digit'
+                minute: '2-digit',
+                timeZone: userTimezone
               })}</p>
               <p class="footer-brand">DosageZen - Gerenciamento Inteligente de Saúde</p>
             </div>
