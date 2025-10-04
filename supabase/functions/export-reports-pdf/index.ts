@@ -72,13 +72,24 @@ serve(async (req: Request) => {
     // Get report data
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     
+    // Ensure category has a fallback value
+    const categoryParam = category || 'todas';
+    
+    console.log('Calling fn_reports_summary with params:', {
+      p_context_id: effectiveContextId,
+      p_range_start: rangeStart,
+      p_range_end: rangeEnd,
+      p_category: categoryParam,
+      p_tz: userTimezone
+    });
+
     const { data: summaryData, error: summaryError } = await supabaseClient.rpc(
       'fn_reports_summary',
       {
         p_context_id: effectiveContextId,
         p_range_start: rangeStart,
         p_range_end: rangeEnd,
-        p_category: category,
+        p_category: categoryParam,
         p_tz: userTimezone,
       }
     );

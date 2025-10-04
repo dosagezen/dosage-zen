@@ -134,6 +134,32 @@ export default function Relatorios() {
     try {
       const contextId = usuarioSelecionado === 'paciente' ? profile.id : usuarioSelecionado;
       
+      // Calculate date range based on period
+      const now = new Date();
+      let rangeStart: Date;
+      let rangeEnd: Date = now;
+
+      if (periodoSelecionado === 'personalizado' && customRange?.start && customRange?.end) {
+        rangeStart = customRange.start;
+        rangeEnd = customRange.end;
+      } else if (periodoSelecionado === 'hoje') {
+        rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      } else if (periodoSelecionado === 'semana') {
+        rangeStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      } else if (periodoSelecionado === 'mes') {
+        rangeStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      } else {
+        rangeStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      console.log('Gerando relatório público com parâmetros:', {
+        contextId,
+        period: periodoSelecionado,
+        category: categoriaSelecionada,
+        rangeStart: rangeStart.toISOString(),
+        rangeEnd: rangeEnd.toISOString(),
+      });
+      
       const { data: functionData, error: functionError } = await supabase.functions.invoke(
         'export-reports-pdf',
         {
@@ -141,8 +167,8 @@ export default function Relatorios() {
             contextId,
             period: periodoSelecionado,
             category: categoriaSelecionada,
-            rangeStart: customRange?.start?.toISOString(),
-            rangeEnd: customRange?.end?.toISOString(),
+            rangeStart: rangeStart.toISOString(),
+            rangeEnd: rangeEnd.toISOString(),
           },
         }
       );
