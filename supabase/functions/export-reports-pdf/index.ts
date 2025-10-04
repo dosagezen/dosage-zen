@@ -560,6 +560,14 @@ serve(async (req: Request) => {
                 padding-bottom: 10px;
               }
 
+              .section-description {
+                color: #6c757d;
+                font-size: 14px;
+                line-height: 1.6;
+                margin: -10px 0 20px 0;
+                font-weight: 400;
+              }
+
               .metrics-grid {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 20px;
@@ -583,6 +591,11 @@ serve(async (req: Request) => {
               .metric-percentage {
                 font-size: 14px;
                 margin-top: 5px;
+              }
+
+              .section-description {
+                font-size: 15px;
+                margin: -5px 0 25px 0;
               }
 
               .insight-card {
@@ -679,6 +692,7 @@ serve(async (req: Request) => {
               <!-- Summary Section -->
               <div class="section">
                 <h2 class="section-title">📊 Resumo Geral</h2>
+                <p class="section-description">Visão consolidada de todos os compromissos de saúde no período selecionado, mostrando a quantidade total de atividades planejadas e como foram realizadas: concluídas no prazo, atrasadas, pendentes ou excluídas.</p>
                 <div class="metrics-grid">
                   <div class="metric-card">
                     <div class="metric-value">${summaryData?.totals?.planejados || 0}</div>
@@ -716,6 +730,7 @@ serve(async (req: Request) => {
               ${insightsData ? `
               <div class="section">
                 <h2 class="section-title">💡 Insights e Análises</h2>
+                <p class="section-description">Análise inteligente do seu comportamento de adesão ao tratamento, destacando seus melhores momentos, pontos de atenção e tendências de evolução ao longo do tempo.</p>
                 <div class="insights-grid">
                   <div class="insight-card">
                     <div class="insight-title">🏆 Melhor Período</div>
@@ -745,6 +760,7 @@ serve(async (req: Request) => {
               ${summaryData?.by_category && Object.keys(summaryData.by_category).length > 0 ? `
               <div class="section">
                 <h2 class="section-title">📋 Detalhamento por Categoria</h2>
+                <p class="section-description">Visualização detalhada da adesão separada por tipo de compromisso (medicações, consultas, exames e atividades), permitindo identificar qual área necessita mais atenção.</p>
                 <div class="table-wrapper">
                   <table>
                     <thead>
