@@ -459,6 +459,11 @@ serve(async (req: Request) => {
               .insight-value {
                 font-size: 19px;
               }
+
+              /* Mobile: quebrar linha do período no footer */
+              .footer .footer-text:first-child {
+                word-break: break-word;
+              }
             }
 
             /* Tablet landscape / Small desktop (640px+) */
@@ -776,14 +781,25 @@ serve(async (req: Request) => {
             <!-- Footer -->
             <div class="footer">
               <p class="footer-text">Relatório referente ao período: ${periodText}</p>
-              <p class="footer-text">Gerado em ${new Date().toLocaleString('pt-BR', { 
-                day: '2-digit', 
-                month: 'long', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: userTimezone
-              })}</p>
+              <p class="footer-text">Gerado em ${(() => {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('pt-BR', { 
+                  day: '2-digit', 
+                  month: 'long', 
+                  year: 'numeric',
+                  timeZone: userTimezone
+                });
+                const hours = now.toLocaleString('pt-BR', { 
+                  hour: '2-digit', 
+                  hour12: false,
+                  timeZone: userTimezone
+                });
+                const minutes = now.toLocaleString('pt-BR', { 
+                  minute: '2-digit',
+                  timeZone: userTimezone
+                });
+                return `${dateStr} às ${hours}h${minutes}`;
+              })()}</p>
               <p class="footer-brand">DosageZen - Gerenciamento Inteligente de Saúde</p>
             </div>
           </div>
