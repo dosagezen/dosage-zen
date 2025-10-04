@@ -20,6 +20,7 @@ import { useReportsInsights } from "@/hooks/useReportsInsights";
 import { useReportsHistorical } from "@/hooks/useReportsHistorical";
 import { useCollaboratorsList } from "@/hooks/useCollaboratorsList";
 import { DateRangePickerDialog } from "@/components/DateRangePickerDialog";
+import { format } from "date-fns";
 
 const categoryMapping: Record<string, string> = {
   'medicacao': 'Medicações',
@@ -690,14 +691,25 @@ export default function Relatorios() {
               </label>
               <Select value={periodoSelecionado} onValueChange={handlePeriodoChange}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {periodoSelecionado === 'personalizado' && customRange 
+                      ? `📅 ${format(customRange.start, 'dd/MM/yy')} - ${format(customRange.end, 'dd/MM/yy')}`
+                      : periodoSelecionado === 'hoje' 
+                        ? 'Hoje'
+                        : periodoSelecionado === 'semana'
+                          ? 'Semana'
+                          : 'Mês Vigente'
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="hoje">Hoje</SelectItem>
                   <SelectItem value="semana">Semana</SelectItem>
                   <SelectItem value="mes">Mês Vigente</SelectItem>
                   <SelectItem value="personalizado">
-                    {customRange ? `${customRange.start.toLocaleDateString()} - ${customRange.end.toLocaleDateString()}` : 'Personalizado'}
+                    {customRange 
+                      ? `📅 ${format(customRange.start, 'dd/MM/yy')} - ${format(customRange.end, 'dd/MM/yy')}` 
+                      : '📅 Personalizado...'}
                   </SelectItem>
                 </SelectContent>
               </Select>
