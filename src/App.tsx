@@ -21,6 +21,7 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
+import PublicReportView from "./pages/PublicReportView";
 import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
 import { ThemeProvider } from "next-themes";
 
@@ -108,6 +109,7 @@ const App = () => (
             <Route path="/admin/signup" element={<AdminSignup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/view/relatorio/:id" element={<PublicReportView />} />
             <Route path="/app/*" element={<AppLayout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Activity, Info } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { BarChart3, Download, FileText, MessageCircle, TrendingUp, TrendingDown, Minus, PieChart as PieChartIcon, Activity, Info, Share2, Copy } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +34,8 @@ export default function Relatorios() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState('paciente');
   const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | undefined>();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [currentShareUrl, setCurrentShareUrl] = useState<string>("");
+  const [generatingShare, setGeneratingShare] = useState(false);
   const { toast } = useToast();
   const { profile } = useAuth();
 
@@ -100,6 +108,95 @@ export default function Relatorios() {
     setCustomRange(range);
     setPeriodoSelecionado('personalizado');
   };
+
+  // Generate deterministic share ID from params
+  const computeShareId = useCallback(async (params: {
+    contextId: string;
+    period: string;
+    category: string;
+    rangeStart?: string;
+    rangeEnd?: string;
+  }): Promise<string> => {
+    const jsonStr = JSON.stringify(params);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(jsonStr);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex.substring(0, 16);
+  }, []);
+
+  // Generate and upload public snapshot
+  const generatePublicSnapshot = useCallback(async () => {
+    if (!profile?.id) return;
+    
+    setGeneratingShare(true);
+    try {
+      const contextId = usuarioSelecionado === 'paciente' ? profile.id : usuarioSelecionado;
+      
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'export-reports-pdf',
+        {
+          body: {
+            contextId,
+            period: periodoSelecionado,
+            category: categoriaSelecionada,
+            rangeStart: customRange?.start?.toISOString(),
+            rangeEnd: customRange?.end?.toISOString(),
+          },
+        }
+      );
+
+      if (functionError) throw functionError;
+
+      const htmlContent = functionData.htmlContent;
+      
+      // Compute deterministic ID
+      const shareId = await computeShareId({
+        contextId,
+        period: periodoSelecionado,
+        category: categoriaSelecionada,
+        rangeStart: customRange?.start?.toISOString(),
+        rangeEnd: customRange?.end?.toISOString(),
+      });
+
+      // Upload to public bucket
+      const { error: uploadError } = await supabase.storage
+        .from('public-reports')
+        .upload(`${shareId}.html`, new Blob([htmlContent], { type: 'text/html' }), {
+          upsert: true,
+          contentType: 'text/html',
+        });
+
+      if (uploadError) throw uploadError;
+
+      const publicUrl = `${window.location.origin}/view/relatorio/${shareId}`;
+      setCurrentShareUrl(publicUrl);
+      
+      return publicUrl;
+    } catch (error) {
+      console.error('Error generating public snapshot:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao gerar link",
+        description: "Não foi possível criar o link de compartilhamento.",
+      });
+      return null;
+    } finally {
+      setGeneratingShare(false);
+    }
+  }, [profile, usuarioSelecionado, periodoSelecionado, categoriaSelecionada, customRange, computeShareId, toast]);
+
+  // Auto-update share URL when filters change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (profile?.id) {
+        generatePublicSnapshot();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [profile, usuarioSelecionado, periodoSelecionado, categoriaSelecionada, customRange, generatePublicSnapshot]);
 
   // Helper function to generate PDF from HTML content and return as Blob
   const generatePDFHelper = async (htmlContent: string, filename: string): Promise<Blob> => {
@@ -350,64 +447,54 @@ export default function Relatorios() {
     }
   };
 
-  const handleShareWhatsApp = async () => {
+  // Copy share link to clipboard
+  const handleCopyLink = async () => {
+    if (!currentShareUrl) {
+      toast({
+        variant: "destructive",
+        title: "Link indisponível",
+        description: "Aguarde a geração do link de compartilhamento.",
+      });
+      return;
+    }
+
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
+      await navigator.clipboard.writeText(currentShareUrl);
       toast({
-        title: "Gerando PDF...",
-        description: "Por favor, aguarde.",
+        title: "Link copiado!",
+        description: "O link do relatório foi copiado para a área de transferência.",
       });
-
-      const response = await supabase.functions.invoke('export-reports-pdf', {
-        body: {
-          contextId: usuarioSelecionado === 'paciente' ? profile?.id : usuarioSelecionado,
-          period: periodoSelecionado,
-          category: categoriaSelecionada,
-          rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
-          rangeEnd: customRange?.end.toISOString() || new Date().toISOString()
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      const { htmlContent, filename } = response.data;
-      const pdfBlob = await generatePDFHelper(htmlContent, filename);
-      
-      // Download the PDF file
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(pdfBlob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Wait a bit to ensure download started
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Prepare WhatsApp message
-      const periodText = periodoSelecionado === 'hoje' ? 'Hoje' : 
-                        periodoSelecionado === 'semana' ? 'Semana' :
-                        periodoSelecionado === 'mes' ? 'Mês' : 'Período Personalizado';
-      
-      const message = `🏥 *Relatório DosageZen*\n\nOlá! Compartilho com você meu relatório de saúde.\n\n📊 *Período:* ${periodText}\n📁 *Arquivo:* ${filename}\n\nO arquivo foi baixado e está pronto para ser anexado.\n\n_Gerado por DosageZen_`;
-      
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-
+    } catch (error) {
+      console.error('Error copying link:', error);
       toast({
-        title: "PDF baixado",
-        description: "Agora anexe o arquivo no WhatsApp.",
-      });
-    } catch (error: any) {
-      console.error('WhatsApp share error:', error);
-      toast({
-        title: "Erro ao compartilhar",
-        description: error.message,
-        variant: "destructive"
+        variant: "destructive",
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o link.",
       });
     }
+  };
+
+  // Handle WhatsApp share
+  const handleShareWhatsApp = async () => {
+    if (!currentShareUrl) {
+      toast({
+        variant: "destructive",
+        title: "Link indisponível",
+        description: "Aguarde a geração do link de compartilhamento.",
+      });
+      return;
+    }
+
+    const message = `📊 *Relatório DosageZen*\n\nConfira meu relatório de saúde: ${getPeriodoLabel()}\n\n${currentShareUrl}\n\n_Gerado pelo app DosageZen_`;
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+    
+    toast({
+      title: "Compartilhar no WhatsApp",
+      description: "Link do relatório preparado para compartilhamento.",
+    });
   };
 
   const renderCustomizedLabel = (props: any) => {
@@ -514,15 +601,31 @@ export default function Relatorios() {
                 <FileText className="w-4 h-4" />
                 <span className="hidden sm:inline">PDF</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShareWhatsApp}
-                className="gap-2"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={generatingShare}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span className="hidden sm:inline">
+                      {generatingShare ? "Gerando..." : "Compartilhar"}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleShareWhatsApp}>
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCopyLink}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar link
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
