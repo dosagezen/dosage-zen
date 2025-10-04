@@ -170,6 +170,7 @@ export default function Relatorios() {
             category: categoriaSelecionada,
             rangeStart: rangeStart.toISOString(),
             rangeEnd: rangeEnd.toISOString(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         }
       );
@@ -296,7 +297,8 @@ export default function Relatorios() {
           period: periodoSelecionado,
           category: categoriaSelecionada,
           rangeStart: customRange?.start.toISOString() || new Date().toISOString(),
-          rangeEnd: customRange?.end.toISOString() || new Date().toISOString()
+          rangeEnd: customRange?.end.toISOString() || new Date().toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }
       });
 

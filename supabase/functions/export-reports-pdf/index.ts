@@ -12,6 +12,7 @@ interface ExportPDFRequest {
   category: string;
   rangeStart: string;
   rangeEnd: string;
+  timezone?: string;
 }
 
 serve(async (req: Request) => {
@@ -70,7 +71,9 @@ serve(async (req: Request) => {
     console.log('Using context:', effectiveContextId);
 
     // Get report data
-    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // Use timezone do usuário enviado do frontend
+    const userTimezone = timezone || 'America/Sao_Paulo';
+    console.log('Using user timezone:', userTimezone);
     
     // Ensure category has a fallback value
     const categoryParam = category || 'todas';
@@ -461,8 +464,14 @@ serve(async (req: Request) => {
               }
 
               /* Mobile: quebrar linha do período no footer */
-              .footer .footer-text:first-child {
-                word-break: break-word;
+              .footer-period {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+              }
+              
+              .footer-period-label {
+                font-weight: 500;
               }
             }
 
@@ -780,25 +789,23 @@ serve(async (req: Request) => {
             
             <!-- Footer -->
             <div class="footer">
-              <p class="footer-text">Relatório referente ao período: ${periodText}</p>
+              <div class="footer-period footer-text">
+                <span class="footer-period-label">Relatório referente ao período:</span>
+                <span>${periodText}</span>
+              </div>
               <p class="footer-text">Gerado em ${(() => {
                 const now = new Date();
-                const dateStr = now.toLocaleDateString('pt-BR', { 
+                const fullDateTime = now.toLocaleString('pt-BR', { 
                   day: '2-digit', 
                   month: 'long', 
                   year: 'numeric',
-                  timeZone: userTimezone
-                });
-                const hours = now.toLocaleString('pt-BR', { 
-                  hour: '2-digit', 
+                  hour: '2-digit',
+                  minute: '2-digit',
                   hour12: false,
                   timeZone: userTimezone
                 });
-                const minutes = now.toLocaleString('pt-BR', { 
-                  minute: '2-digit',
-                  timeZone: userTimezone
-                });
-                return `${dateStr} às ${hours}h${minutes}`;
+                // Substituir "às 13:44" por "às 13h44"
+                return fullDateTime.replace(/(\d{2}):(\d{2})/, '$1h$2');
               })()}</p>
               <p class="footer-brand">DosageZen - Gerenciamento Inteligente de Saúde</p>
             </div>
