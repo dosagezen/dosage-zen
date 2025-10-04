@@ -53,7 +53,7 @@ serve(async (req: Request) => {
     console.log('Authenticated user:', user.id);
 
     const requestData: ExportPDFRequest = await req.json();
-    const { contextId, period, category, rangeStart, rangeEnd } = requestData;
+    const { contextId, period, category, rangeStart, rangeEnd, timezone } = requestData;
 
     // Get user profile data (including id for default context)
     const { data: profileData, error: profileError } = await supabaseClient
