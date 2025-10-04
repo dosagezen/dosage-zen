@@ -185,32 +185,76 @@ export default function Relatorios() {
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      // Debug info
       console.log('PDF Generation Debug:', {
         platform: isIOS ? 'iOS' : isMobile ? 'Mobile' : 'Desktop',
         blobSize: pdfBlob.size,
         blobType: pdfBlob.type,
-        userAgent: navigator.userAgent
+        hasShareAPI: 'share' in navigator,
+        canShare: navigator.canShare ? navigator.canShare({ files: [new File([pdfBlob], filename, { type: 'application/pdf' })] }) : false
       });
 
-      // Helper function to download PDF
-      const downloadPDF = (blob: Blob, fileName: string) => {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(link.href), 100);
-      };
-
-      // iOS/Mobile: Direct download (only reliable method)
+      // iOS/Mobile: Use Share API or fallback
       if (isIOS || isMobile) {
-        downloadPDF(pdfBlob, filename);
-        toast({
-          title: "PDF baixado!",
-          description: "Abra o arquivo na pasta Downloads.",
-        });
+        try {
+          // Try Share API first (iOS 12.2+ and modern browsers)
+          if (navigator.share) {
+            const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+            
+            // Check if can share files
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Relatório DosageZen',
+                text: `Relatório de ${getPeriodoLabel()}`
+              });
+              
+              toast({
+                title: "PDF compartilhado!",
+                description: "Arquivo salvo ou compartilhado com sucesso.",
+              });
+              return;
+            }
+          }
+          
+          // Fallback: Data URI (works on older iOS/Android)
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result as string;
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast({
+              title: "PDF baixado!",
+              description: "Verifique sua pasta Downloads.",
+            });
+          };
+          reader.readAsDataURL(pdfBlob);
+          
+        } catch (error) {
+          console.error('iOS/Mobile share failed:', error);
+          
+          // Last resort: Manual download button
+          const blobUrl = URL.createObjectURL(pdfBlob);
+          toast({
+            title: "Toque para baixar",
+            description: "Toque no botão abaixo para salvar o PDF",
+            action: (
+              <Button 
+                size="sm"
+                onClick={() => {
+                  window.location.href = blobUrl;
+                }}
+              >
+                📥 Baixar PDF
+              </Button>
+            ),
+            duration: Infinity
+          });
+        }
         return;
       }
 
@@ -219,9 +263,15 @@ export default function Relatorios() {
         const blobUrl = URL.createObjectURL(pdfBlob);
         const newWindow = window.open(blobUrl, '_blank');
         
-        // Pop-up blocked or failed to open
         if (!newWindow) {
-          downloadPDF(pdfBlob, filename);
+          // Pop-up blocked
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
           toast({
             title: "Pop-up bloqueado",
             description: "PDF baixado automaticamente.",
@@ -232,17 +282,23 @@ export default function Relatorios() {
             description: "Você pode baixá-lo usando o navegador.",
           });
           
-          // Clean up blob URL after window loads
           newWindow.onload = () => {
             setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
           };
         }
       } catch (error) {
-        console.error('Failed to open PDF in new tab:', error);
-        downloadPDF(pdfBlob, filename);
+        console.error('Failed to open PDF:', error);
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
         toast({
           title: "PDF baixado",
-          description: "Não foi possível visualizar inline.",
+          description: "Arquivo salvo com sucesso.",
         });
       }
     } catch (error: any) {
