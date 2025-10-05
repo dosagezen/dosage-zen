@@ -217,28 +217,25 @@ export default function Relatorios() {
       const publicUrl = `${window.location.origin}/view/relatorio/${shareId}`;
       setCurrentShareUrl(publicUrl);
       
-      // Dismiss loading toast
-      loadingToast.dismiss();
-      
       toast({
         title: "✅ Link gerado!",
         description: "O link de compartilhamento está pronto.",
+        duration: 3500,
       });
       
       return publicUrl;
     } catch (error) {
       console.error('Error generating public snapshot:', error);
       
-      // Dismiss loading toast
-      loadingToast.dismiss();
-      
       toast({
         variant: "destructive",
         title: "Erro ao gerar link",
         description: error instanceof Error ? error.message : "Não foi possível criar o link de compartilhamento.",
+        duration: 6000,
       });
       return null;
     } finally {
+      loadingToast.dismiss();
       setGeneratingShare(false);
     }
   }, [profile, usuarioSelecionado, periodoSelecionado, categoriaSelecionada, customRange, computeShareId, toast]);
