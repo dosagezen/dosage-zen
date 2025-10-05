@@ -132,6 +132,12 @@ export default function Relatorios() {
     if (!profile?.id) return;
     
     setGeneratingShare(true);
+    const loadingToast = toast({
+      title: "Gerando link...",
+      description: "Por favor, aguarde.",
+      duration: Infinity,
+    });
+    
     try {
       const contextId = usuarioSelecionado === 'paciente' ? profile.id : usuarioSelecionado;
       
@@ -211,13 +217,25 @@ export default function Relatorios() {
       const publicUrl = `${window.location.origin}/view/relatorio/${shareId}`;
       setCurrentShareUrl(publicUrl);
       
+      // Dismiss loading toast
+      loadingToast.dismiss();
+      
+      toast({
+        title: "✅ Link gerado!",
+        description: "O link de compartilhamento está pronto.",
+      });
+      
       return publicUrl;
     } catch (error) {
       console.error('Error generating public snapshot:', error);
+      
+      // Dismiss loading toast
+      loadingToast.dismiss();
+      
       toast({
         variant: "destructive",
         title: "Erro ao gerar link",
-        description: "Não foi possível criar o link de compartilhamento.",
+        description: error instanceof Error ? error.message : "Não foi possível criar o link de compartilhamento.",
       });
       return null;
     } finally {
