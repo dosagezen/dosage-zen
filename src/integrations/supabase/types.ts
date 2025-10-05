@@ -833,22 +833,14 @@ export type Database = {
         }
       }
       fn_upsert_medication_occurrences: {
-        Args:
-          | {
-              p_data_fim: string
-              p_data_inicio: string
-              p_horarios: string[]
-              p_medication_id: string
-              p_patient_profile_id: string
-            }
-          | {
-              p_data_fim: string
-              p_data_inicio: string
-              p_horarios: string[]
-              p_medication_id: string
-              p_patient_profile_id: string
-              p_tz: string
-            }
+        Args: {
+          p_data_fim: string
+          p_data_inicio: string
+          p_horarios: string[]
+          p_medication_id: string
+          p_patient_profile_id: string
+          p_tz: string
+        }
         Returns: undefined
       }
       generate_invite_token: {

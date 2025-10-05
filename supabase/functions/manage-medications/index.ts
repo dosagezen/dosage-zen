@@ -78,6 +78,37 @@ serve(async (req) => {
       return times.sort();
     };
 
+    // Helper function to retry RPC calls with exponential backoff
+    const retryRpcCall = async (
+      supabaseClient: any,
+      functionName: string,
+      params: any,
+      maxRetries = 3
+    ): Promise<{ data: any; error: any }> => {
+      let lastError;
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const { data, error } = await supabaseClient.rpc(functionName, params);
+        
+        if (!error) {
+          return { data, error: null };
+        }
+        
+        // Se for erro de unique constraint, espera e tenta novamente
+        if (error.code === '23505') { // unique_violation
+          console.log(`Retry attempt ${attempt}/${maxRetries} due to unique constraint conflict for ${functionName}`);
+          await new Promise(resolve => setTimeout(resolve, 100 * attempt)); // exponential backoff
+          lastError = error;
+          continue;
+        }
+        
+        // Outros erros: retorna imediatamente
+        return { data: null, error };
+      }
+      
+      return { data: null, error: lastError };
+    };
+
     const body = await req.json();
     const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes, occurrence_id, status } = body;
 
@@ -656,7 +687,8 @@ serve(async (req) => {
         const tzCreate = (body?.timezone && typeof body.timezone === 'string' && body.timezone.length > 0) ? body.timezone : 'America/Sao_Paulo';
         if (horariosArray.length > 0) {
           console.log(`Generating occurrences for medication ${medication.id} with horarios:`, horariosArray);
-          const { error: occurrenceError } = await supabaseClient.rpc(
+          const { error: occurrenceError } = await retryRpcCall(
+            supabaseClient,
             'fn_upsert_medication_occurrences',
             {
               p_medication_id: medication.id,
@@ -817,7 +849,8 @@ serve(async (req) => {
         if (updatedHorarios && Array.isArray(updatedHorarios) && updatedHorarios.length > 0) {
           const horariosArray = updatedHorarios.map((h: any) => typeof h === 'string' ? h : h.hora);
           console.log(`Regenerating occurrences for medication ${id} with horarios:`, horariosArray);
-          const { error: occurrenceError } = await supabaseClient.rpc(
+          const { error: occurrenceError } = await retryRpcCall(
+            supabaseClient,
             'fn_upsert_medication_occurrences',
             {
               p_medication_id: id,
