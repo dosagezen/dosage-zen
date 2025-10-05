@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter, RotateCcw, Clock, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { Users, UserPlus, Mail, Shield, Eye, Edit, Trash2, Search, Filter, RotateCcw, Clock, CheckCircle, XCircle, RefreshCw, UserX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { InviteAdminDialog } from "@/components/admin/InviteAdminDialog";
 import { EditAdminDialog } from "@/components/admin/EditAdminDialog";
 import { RemoveAdminDialog } from "@/components/admin/RemoveAdminDialog";
+import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +34,7 @@ export function Usuarios() {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [isDeleteUserDialogOpen, setIsDeleteUserDialogOpen] = useState(false);
   const [resendingInvites, setResendingInvites] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -252,6 +254,15 @@ export function Usuarios() {
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Atualizar
+          </Button>
+          <Button 
+            variant="destructive"
+            size="sm"
+            onClick={() => setIsDeleteUserDialogOpen(true)}
+            className="flex-1 sm:flex-none"
+          >
+            <UserX className="w-4 h-4 mr-2" />
+            Remover Usuário
           </Button>
           <Button 
             onClick={() => setIsInviteDialogOpen(true)}
@@ -518,6 +529,12 @@ export function Usuarios() {
           adminName={deletingUser.nome}
         />
       )}
+
+      <DeleteUserDialog
+        open={isDeleteUserDialogOpen}
+        onOpenChange={setIsDeleteUserDialogOpen}
+        onSuccess={loadAdminUsers}
+      />
     </div>
   );
 }
