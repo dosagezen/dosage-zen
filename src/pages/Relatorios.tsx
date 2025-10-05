@@ -177,7 +177,7 @@ export default function Relatorios() {
 
       if (functionError) throw functionError;
 
-      const htmlContent = functionData.htmlContent;
+      const { htmlContent, jsonData } = functionData;
       
       // Compute deterministic ID
       const shareId = await computeShareId({
@@ -188,15 +188,25 @@ export default function Relatorios() {
         rangeEnd: customRange?.end?.toISOString(),
       });
 
-      // Upload to public bucket
-      const { error: uploadError } = await supabase.storage
+      // Upload HTML to public bucket
+      const { error: uploadHtmlError } = await supabase.storage
         .from('public-reports')
         .upload(`${shareId}.html`, new Blob([htmlContent], { type: 'text/html' }), {
           upsert: true,
           contentType: 'text/html',
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadHtmlError) throw uploadHtmlError;
+
+      // Upload JSON to public bucket
+      const { error: uploadJsonError } = await supabase.storage
+        .from('public-reports')
+        .upload(`${shareId}.json`, new Blob([JSON.stringify(jsonData)], { type: 'application/json' }), {
+          upsert: true,
+          contentType: 'application/json',
+        });
+
+      if (uploadJsonError) throw uploadJsonError;
 
       const publicUrl = `${window.location.origin}/view/relatorio/${shareId}`;
       setCurrentShareUrl(publicUrl);
