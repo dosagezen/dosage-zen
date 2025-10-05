@@ -109,37 +109,6 @@ serve(async (req) => {
       return { data: null, error: lastError };
     };
 
-    // Helper function para retry com exponential backoff
-    async function retryRpcCall(
-      supabaseClient: any, 
-      functionName: string, 
-      params: any, 
-      maxRetries = 3
-    ) {
-      let lastError;
-      
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        const { data, error } = await supabaseClient.rpc(functionName, params);
-        
-        if (!error) {
-          return { data, error: null };
-        }
-        
-        // Se for erro de unique constraint, espera e tenta novamente
-        if (error.code === '23505') { // unique_violation
-          console.log(`Retry attempt ${attempt}/${maxRetries} due to unique constraint conflict`);
-          await new Promise(resolve => setTimeout(resolve, 100 * attempt)); // exponential backoff
-          lastError = error;
-          continue;
-        }
-        
-        // Outros erros: retorna imediatamente
-        return { data: null, error };
-      }
-      
-      return { data: null, error: lastError };
-    }
-
     const body = await req.json();
     const { action, id, nome, dosagem, forma, frequencia, horarios, estoque, data_inicio, data_fim, ativo, observacoes, occurrence_id, status } = body;
 
