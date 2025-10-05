@@ -114,11 +114,41 @@ serve(async (req: Request) => {
       console.error('Insights error:', insightsError);
     }
 
+    // Fetch historical data
+    const { data: historicalData, error: historicalError } = await supabaseClient.rpc(
+      'fn_reports_historical',
+      {
+        p_context_id: effectiveContextId,
+        p_months: 4,
+        p_tz: userTimezone,
+      }
+    );
+
+    if (historicalError) {
+      console.error('Historical error:', historicalError);
+    }
+
+    // Helper functions for formatting
+    const formatDate = (start: string, end: string, period: string): string => {
+      if (period === 'hoje') return 'Hoje';
+      if (period === 'semana') return 'Esta Semana';
+      if (period === 'mes') return 'Este Mês';
+      return `${new Date(start).toLocaleDateString('pt-BR')} - ${new Date(end).toLocaleDateString('pt-BR')}`;
+    };
+
+    const formatCategory = (cat: string): string => {
+      const map: Record<string, string> = {
+        'todas': 'Todas as Categorias',
+        'medicacao': 'Medicações',
+        'consulta': 'Consultas',
+        'exame': 'Exames',
+        'atividade': 'Atividades'
+      };
+      return map[cat] || cat;
+    };
+
     // Format period text for header subtitle
-    const periodText = period === 'hoje' ? 'Hoje' :
-                      period === 'semana' ? 'Esta Semana' :
-                      period === 'mes' ? 'Este Mês' :
-                      `${new Date(rangeStart).toLocaleDateString('pt-BR')} - ${new Date(rangeEnd).toLocaleDateString('pt-BR')}`;
+    const periodText = formatDate(rangeStart, rangeEnd, period);
     
     // Format report date text based on selected period
     const reportDateText = period === 'hoje' 
@@ -129,17 +159,51 @@ serve(async (req: Request) => {
       ? `Mês de ${new Date(rangeStart).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`
       : `${new Date(rangeStart).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })} até ${new Date(rangeEnd).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
 
-    const categoryText = category === 'todas' ? 'Todas as Categorias' :
-                        category === 'medicacao' ? 'Medicações' :
-                        category === 'consulta' ? 'Consultas' :
-                        category === 'exame' ? 'Exames' :
-                        category === 'atividade' ? 'Atividades' : category;
+    const categoryText = formatCategory(categoryParam);
 
     const categoryMapping: Record<string, string> = {
       'medicacao': 'Medicações',
       'consulta': 'Consultas',
       'exame': 'Exames',
       'atividade': 'Atividades'
+    };
+
+    // Build structured JSON data for public view
+    const jsonData = {
+      reportId: effectiveContextId + '_' + Date.now(),
+      generatedAt: new Date().toISOString(),
+      metadata: {
+        period,
+        category: categoryParam,
+        rangeStart,
+        rangeEnd,
+        periodText,
+        categoryText,
+      },
+      profile: profileData,
+      summary: summaryData,
+      insights: insightsData || {
+        best_week: { start_date: null, adherence_pct: 0 },
+        most_forgotten: { item: 'N/A', missed_pct: 0 },
+        consecutive_days: 0,
+        trend: { direction: 'estável', value: 0 }
+      },
+      historical: Array.isArray(historicalData) ? historicalData.map((item: any) => ({
+        mes: item.month?.substring(5, 7) === '01' ? 'jan' :
+             item.month?.substring(5, 7) === '02' ? 'fev' :
+             item.month?.substring(5, 7) === '03' ? 'mar' :
+             item.month?.substring(5, 7) === '04' ? 'abr' :
+             item.month?.substring(5, 7) === '05' ? 'mai' :
+             item.month?.substring(5, 7) === '06' ? 'jun' :
+             item.month?.substring(5, 7) === '07' ? 'jul' :
+             item.month?.substring(5, 7) === '08' ? 'ago' :
+             item.month?.substring(5, 7) === '09' ? 'set' :
+             item.month?.substring(5, 7) === '10' ? 'out' :
+             item.month?.substring(5, 7) === '11' ? 'nov' : 'dez',
+        aderencia: item.adherence_pct || 0,
+        concluidos: item.completed || 0,
+        total: item.total || 0
+      })) : [],
     };
 
     // Generate mobile-first responsive HTML report
@@ -830,11 +894,12 @@ serve(async (req: Request) => {
       </html>
     `;
 
-    // Return HTML content (frontend can use print or a library to convert to PDF)
+    // Return both HTML and JSON data
     return new Response(
       JSON.stringify({ 
         success: true, 
         htmlContent,
+        jsonData,
         filename: `relatorio-${period}-${Date.now()}.pdf`
       }),
       {
