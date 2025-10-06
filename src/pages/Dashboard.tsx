@@ -460,10 +460,10 @@ const Dashboard = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-primary truncate">{apt.titulo}</p>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {apt.medico_profissional ? `${apt.medico_profissional} • ` : ''}
-                          {dataFormatada}
-                        </p>
+                        {apt.medico_profissional && (
+                          <p className="text-sm text-muted-foreground truncate">{apt.medico_profissional}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground truncate">{dataFormatada}</p>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
