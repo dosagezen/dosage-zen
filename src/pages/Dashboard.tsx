@@ -463,16 +463,19 @@ const Dashboard = () => {
                         {apt.medico_profissional && (
                           <p className="text-sm text-muted-foreground truncate">{apt.medico_profissional}</p>
                         )}
-                        <p className="text-xs text-muted-foreground truncate">{dataFormatada}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground truncate">{dataFormatada}</p>
+                          <span className="text-muted-foreground/30">•</span>
+                          <Badge className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}>
+                            {getCompromissoStatus(apt.data_agendamento).label}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-sm font-semibold text-primary whitespace-nowrap">
                         {horaFormatada}
                       </p>
-                      <Badge className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}>
-                        {getCompromissoStatus(apt.data_agendamento).label}
-                      </Badge>
                     </div>
                   </div>;
           }) : <div className="text-center py-8 text-muted-foreground">
