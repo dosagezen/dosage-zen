@@ -453,29 +453,27 @@ const Dashboard = () => {
               iconBg,
               iconText
             } = getIconAndStyle(apt.tipo);
-            return <div key={index} className={`flex items-center justify-between p-3 rounded-lg hover-scale transition-all duration-200 ${bgClass} hover:opacity-80`}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center shrink-0`}>
-                        <Icon className={`w-5 h-5 ${iconText}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-primary truncate">{apt.titulo}</p>
-                        {apt.medico_profissional && (
-                          <p className="text-sm text-muted-foreground truncate">{apt.medico_profissional}</p>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs text-muted-foreground truncate">{dataFormatada}</p>
-                          <span className="text-muted-foreground/30">•</span>
-                          <Badge className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}>
-                            {getCompromissoStatus(apt.data_agendamento).label}
-                          </Badge>
-                        </div>
-                      </div>
+            return <div key={index} className={`flex items-center gap-3 p-3 rounded-lg hover-scale transition-all duration-200 ${bgClass} hover:opacity-80`}>
+                    <div className={`w-10 h-10 ${iconBg} rounded-full flex items-center justify-center shrink-0`}>
+                      <Icon className={`w-5 h-5 ${iconText}`} />
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-semibold text-primary whitespace-nowrap">
-                        {horaFormatada}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="grid grid-cols-[1fr,auto] gap-4 items-center mb-1">
+                        <p className="font-medium text-primary truncate">{apt.titulo}</p>
+                        <p className="text-sm font-semibold text-primary whitespace-nowrap text-left">
+                          {horaFormatada}
+                        </p>
+                      </div>
+                      {apt.medico_profissional && (
+                        <p className="text-sm text-muted-foreground truncate">{apt.medico_profissional}</p>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground truncate">{dataFormatada}</p>
+                        <span className="text-muted-foreground/30">•</span>
+                        <Badge className={`text-[10px] px-1.5 py-0.5 h-4 whitespace-nowrap ${getCompromissoStatus(apt.data_agendamento).className}`}>
+                          {getCompromissoStatus(apt.data_agendamento).label}
+                        </Badge>
+                      </div>
                     </div>
                   </div>;
           }) : <div className="text-center py-8 text-muted-foreground">
