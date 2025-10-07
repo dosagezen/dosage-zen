@@ -144,12 +144,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
+        // PROTEÇÃO: NÃO buscar perfil se estiver na rota de reset-password
+        const isResetPasswordRoute = window.location.pathname === '/reset-password';
+        
         // Use setTimeout to defer async operations and prevent deadlock
-        if (session?.user) {
+        if (session?.user && !isResetPasswordRoute) {
           setTimeout(() => {
             console.log('AuthContext: Fetching profile for user', session.user.id);
             fetchProfile(session.user.id);
           }, 0);
+        } else if (isResetPasswordRoute) {
+          console.log('AuthContext: Skipping profile fetch - on reset-password route');
+          setLoading(false);
         } else {
           console.log('AuthContext: No user, clearing profile data');
           setProfile(null);

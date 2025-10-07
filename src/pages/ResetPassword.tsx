@@ -26,7 +26,11 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoverySession = async () => {
       try {
-        // Get current session
+        // PRIMEIRO: Forçar logout para limpar qualquer sessão existente
+        console.log('ResetPassword: Forçando logout antes de validar recovery');
+        await supabase.auth.signOut();
+        
+        // DEPOIS: Get current session (que será a sessão de recovery do link)
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -59,7 +63,8 @@ const ResetPassword = () => {
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
         
-        if (type !== 'recovery' && !accessToken) {
+        // AMBOS devem existir para ser válido (type === 'recovery' E accessToken presente)
+        if (type !== 'recovery' || !accessToken) {
           toast({
             title: "Link inválido",
             description: "Este não é um link válido de recuperação de senha.",
