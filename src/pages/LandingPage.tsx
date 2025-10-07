@@ -12,13 +12,7 @@ const LandingPage = () => {
   const { user, loading } = useAuth();
   const [openFaq, setOpenFaq] = useState<string | null>(null);
 
-  // Handle Supabase recovery links immediately
-  useEffect(() => {
-    if (window.location.hash.includes('type=recovery')) {
-      navigate('/reset-password' + window.location.hash, { replace: true });
-    }
-  }, [navigate]);
-
+  // Redirect authenticated users to the app (recovery is handled by App.tsx)
   useEffect(() => {
     if (!loading && user) {
       navigate('/app');

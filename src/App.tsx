@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ import Index from "./pages/Index";
 import PublicReportView from "./pages/PublicReportView";
 import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
 import { ThemeProvider } from "next-themes";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -94,6 +95,23 @@ const AppLayout = () => {
   );
 };
 
+const RecoveryInterceptor = ({ children }: { children: React.ReactNode }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Intercept password recovery links immediately
+    if (window.location.hash.includes('type=recovery')) {
+      // Only redirect if not already on reset-password page
+      if (location.pathname !== '/reset-password') {
+        navigate('/reset-password' + window.location.hash, { replace: true });
+      }
+    }
+  }, [navigate, location.pathname]);
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -101,18 +119,20 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/dashboard" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/admin/signup" element={<AdminSignup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/view/relatorio/:id" element={<PublicReportView />} />
-            <Route path="/app/*" element={<AppLayout />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <RecoveryInterceptor>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/dashboard" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/admin/signup" element={<AdminSignup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/view/relatorio/:id" element={<PublicReportView />} />
+              <Route path="/app/*" element={<AppLayout />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </RecoveryInterceptor>
         </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
