@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,44 +19,67 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [validSession, setValidSession] = useState<boolean | null>(null);
+  const resolvedRef = useRef(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
-
   useEffect(() => {
-    const checkRecoverySession = async () => {
-      try {
-        // Validate recovery parameters from URL hash
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const type = hashParams.get('type');
+    console.info('ResetPassword: initializing recovery session validation');
 
-        if (type !== 'recovery' || !accessToken) {
-          toast({
-            title: "Link inválido",
-            description: "Este não é um link válido de recuperação de senha.",
-            variant: "destructive"
-          });
-          setValidSession(false);
-          setTimeout(() => navigate("/forgot-password"), 3000);
-          return;
-        }
+    let timeoutId: number | undefined;
 
-        // Consider valid; Supabase will have consumed the hash and set session
+    const markResolved = () => {
+      if (!resolvedRef.current) {
+        resolvedRef.current = true;
         setValidSession(true);
-      } catch (error) {
-        console.error('Erro inesperado ao verificar sessão:', error);
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro. Por favor, tente novamente.",
-          variant: "destructive"
-        });
-        setValidSession(false);
-        setTimeout(() => navigate("/forgot-password"), 3000);
       }
     };
 
-    checkRecoverySession();
+    const setInvalid = (reason: string) => {
+      console.warn('ResetPassword: invalid recovery session:', reason);
+      resolvedRef.current = true;
+      setValidSession(false);
+      toast({
+        title: "Link inválido ou expirado",
+        description: "Solicite um novo e-mail de recuperação.",
+        variant: "destructive"
+      });
+      setTimeout(() => navigate("/forgot-password"), 2500);
+    };
+
+    // 1) Listen to auth events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.info('ResetPassword: onAuthStateChange', { event, hasUser: !!session?.user });
+      if (event === 'PASSWORD_RECOVERY' || !!session?.user) {
+        markResolved();
+        if (timeoutId) window.clearTimeout(timeoutId);
+      }
+    });
+
+    // 2) Immediate session check
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        console.info('ResetPassword: getSession', { hasUser: !!session?.user });
+        if (session?.user) {
+          markResolved();
+          if (timeoutId) window.clearTimeout(timeoutId);
+        }
+      })
+      .catch((err) => {
+        console.error('ResetPassword: getSession error', err);
+      });
+
+    // 3) Fallback timeout
+    timeoutId = window.setTimeout(() => {
+      if (!resolvedRef.current) {
+        setInvalid('timeout waiting for session');
+      }
+    }, 6000);
+
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
   }, [navigate, toast]);
 
   const validateForm = () => {
