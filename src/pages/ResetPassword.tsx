@@ -26,44 +26,11 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoverySession = async () => {
       try {
-        // PRIMEIRO: Forçar logout para limpar qualquer sessão existente
-        console.log('ResetPassword: Forçando logout antes de validar recovery');
-        await supabase.auth.signOut();
-        
-        // DEPOIS: Get current session (que será a sessão de recovery do link)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Erro ao verificar sessão:', sessionError);
-          toast({
-            title: "Erro de autenticação",
-            description: "Não foi possível verificar sua sessão. Tente novamente.",
-            variant: "destructive"
-          });
-          setValidSession(false);
-          setTimeout(() => navigate("/forgot-password"), 3000);
-          return;
-        }
-
-        // Check if there's a valid recovery session
-        if (!session) {
-          toast({
-            title: "Link inválido ou expirado",
-            description: "Por favor, solicite um novo link de recuperação.",
-            variant: "destructive"
-          });
-          setValidSession(false);
-          setTimeout(() => navigate("/forgot-password"), 3000);
-          return;
-        }
-
-        // Additional check: verify if this is actually a recovery session
-        // by checking the URL hash parameters
+        // Validate recovery parameters from URL hash
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const type = hashParams.get('type');
-        
-        // AMBOS devem existir para ser válido (type === 'recovery' E accessToken presente)
+
         if (type !== 'recovery' || !accessToken) {
           toast({
             title: "Link inválido",
@@ -75,6 +42,7 @@ const ResetPassword = () => {
           return;
         }
 
+        // Consider valid; Supabase will have consumed the hash and set session
         setValidSession(true);
       } catch (error) {
         console.error('Erro inesperado ao verificar sessão:', error);

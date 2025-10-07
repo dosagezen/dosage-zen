@@ -22,9 +22,16 @@ const Login = () => {
   const { toast } = useToast();
   const { signIn, user, loading } = useAuth();
 
-  // Redirect if already authenticated
+  // If arriving with a recovery hash, go straight to reset password
   useEffect(() => {
-    if (!loading && user) {
+    if (window.location.hash.includes('type=recovery')) {
+      navigate('/reset-password' + window.location.hash, { replace: true });
+    }
+  }, [navigate]);
+
+  // Redirect if already authenticated (but not during recovery)
+  useEffect(() => {
+    if (!loading && user && !window.location.hash.includes('type=recovery')) {
       navigate('/app/');
     }
   }, [user, loading, navigate]);

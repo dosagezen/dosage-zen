@@ -144,8 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // PROTEÇÃO: NÃO buscar perfil se estiver na rota de reset-password
         const isResetPasswordRoute = window.location.pathname === '/reset-password';
+        const isRecoveryHash = window.location.hash.includes('type=recovery');
+
+        // If Supabase signals a recovery or we detect recovery hash, force redirect to reset-password
+        if (event === 'PASSWORD_RECOVERY' || (isRecoveryHash && !isResetPasswordRoute)) {
+          console.log('AuthContext: Detected recovery flow, redirecting to /reset-password');
+          window.location.replace('/reset-password' + window.location.hash);
+          setLoading(false);
+          return;
+        }
         
         // Use setTimeout to defer async operations and prevent deadlock
         if (session?.user && !isResetPasswordRoute) {
@@ -173,6 +181,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setSession(session);
       setUser(session?.user ?? null);
+
+      // If we land with a recovery hash and have a session, force redirect to reset-password
+      const isRecoveryHash = window.location.hash.includes('type=recovery');
+      if (session?.user && isRecoveryHash && window.location.pathname !== '/reset-password') {
+        console.log('AuthContext: Initial session with recovery hash detected, redirecting');
+        window.location.replace('/reset-password' + window.location.hash);
+        return;
+      }
       
       if (session?.user) {
         console.log('AuthContext: Found existing session, will rely on onAuthStateChange to fetch profile');
