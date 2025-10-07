@@ -48,12 +48,27 @@ const ForgotPassword = () => {
       });
 
       if (error) {
-        console.error('Erro ao enviar email de recuperação:', error);
+        // Tratamento específico de erros
+        let errorMessage = error.message;
+        
+        if (error.message.includes('rate limit')) {
+          errorMessage = "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+        } else if (error.message.includes('not found')) {
+          // Por segurança, não revelar se o email existe ou não
+          errorMessage = "Se este e-mail estiver cadastrado, você receberá um link de recuperação.";
+        }
+        
         toast({
-          title: "Erro ao enviar e-mail",
-          description: error.message,
-          variant: "destructive"
+          title: "Atenção",
+          description: errorMessage,
+          variant: error.message.includes('not found') ? "default" : "destructive"
         });
+        
+        // Se não for erro crítico, mostrar tela de sucesso de qualquer forma
+        // para não revelar se o email existe
+        if (error.message.includes('not found')) {
+          setCurrentStep("sucesso");
+        }
         return;
       }
       
@@ -64,10 +79,9 @@ const ForgotPassword = () => {
       
       setCurrentStep("sucesso");
     } catch (error) {
-      console.error('Erro inesperado:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao enviar e-mail. Tente novamente.",
+        title: "Erro inesperado",
+        description: "Não foi possível enviar o e-mail. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -135,10 +149,13 @@ const ForgotPassword = () => {
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-success">E-mail enviado!</h3>
             <p className="text-sm text-muted-foreground">
-              Verifique sua caixa de entrada e clique no link para redefinir sua senha.
+              Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.
             </p>
             <p className="text-xs text-muted-foreground">
-              Não esqueça de verificar a pasta de spam.
+              Não esqueça de verificar a pasta de spam. O link expira em 1 hora.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 font-medium">
+              Após clicar no link do e-mail, você será redirecionado para criar uma nova senha.
             </p>
           </div>
 

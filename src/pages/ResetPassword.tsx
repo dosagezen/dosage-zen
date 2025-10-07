@@ -24,24 +24,66 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Verificar se há uma sessão válida de recuperação
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+    const checkRecoverySession = async () => {
+      try {
+        // Get current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Erro ao verificar sessão:', sessionError);
+          toast({
+            title: "Erro de autenticação",
+            description: "Não foi possível verificar sua sessão. Tente novamente.",
+            variant: "destructive"
+          });
+          setValidSession(false);
+          setTimeout(() => navigate("/forgot-password"), 3000);
+          return;
+        }
+
+        // Check if there's a valid recovery session
+        if (!session) {
+          toast({
+            title: "Link inválido ou expirado",
+            description: "Por favor, solicite um novo link de recuperação.",
+            variant: "destructive"
+          });
+          setValidSession(false);
+          setTimeout(() => navigate("/forgot-password"), 3000);
+          return;
+        }
+
+        // Additional check: verify if this is actually a recovery session
+        // by checking the URL hash parameters
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const type = hashParams.get('type');
+        
+        if (type !== 'recovery' && !accessToken) {
+          toast({
+            title: "Link inválido",
+            description: "Este não é um link válido de recuperação de senha.",
+            variant: "destructive"
+          });
+          setValidSession(false);
+          setTimeout(() => navigate("/forgot-password"), 3000);
+          return;
+        }
+
+        setValidSession(true);
+      } catch (error) {
+        console.error('Erro inesperado ao verificar sessão:', error);
         toast({
-          title: "Link inválido ou expirado",
-          description: "Por favor, solicite um novo link de recuperação.",
+          title: "Erro",
+          description: "Ocorreu um erro. Por favor, tente novamente.",
           variant: "destructive"
         });
         setValidSession(false);
         setTimeout(() => navigate("/forgot-password"), 3000);
-      } else {
-        setValidSession(true);
       }
     };
 
-    checkSession();
+    checkRecoverySession();
   }, [navigate, toast]);
 
   const validateForm = () => {
@@ -76,29 +118,40 @@ const ResetPassword = () => {
       });
 
       if (error) {
-        console.error('Erro ao atualizar senha:', error);
+        // Tratamento específico de erros comuns
+        let errorMessage = error.message;
+        
+        if (error.message.includes('token')) {
+          errorMessage = "Sessão expirada. Solicite um novo link de recuperação.";
+          setTimeout(() => navigate("/forgot-password"), 2000);
+        } else if (error.message.includes('password')) {
+          errorMessage = "A senha não atende aos requisitos de segurança.";
+        }
+        
         toast({
           title: "Erro ao alterar senha",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive"
         });
         return;
       }
 
+      // Fazer logout após alteração de senha por segurança
+      await supabase.auth.signOut();
+
       toast({
-        title: "Senha alterada!",
-        description: "Sua senha foi atualizada com sucesso.",
+        title: "Senha alterada com sucesso!",
+        description: "Faça login com sua nova senha.",
       });
       
       setSuccess(true);
       
-      // Redirecionar para login após 2 segundos
-      setTimeout(() => navigate("/login"), 2000);
+      // Redirecionar para login após 3 segundos
+      setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
-      console.error('Erro inesperado:', error);
       toast({
-        title: "Erro",
-        description: "Erro ao alterar senha. Tente novamente.",
+        title: "Erro inesperado",
+        description: "Não foi possível alterar a senha. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -160,9 +213,12 @@ const ResetPassword = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-success">Senha alterada!</h3>
+                  <h3 className="text-lg font-semibold text-success">Senha alterada com sucesso!</h3>
                   <p className="text-sm text-muted-foreground">
-                    Sua senha foi atualizada com sucesso. Redirecionando para o login...
+                    Sua senha foi redefinida. Redirecionando para o login...
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Use sua nova senha para fazer login.
                   </p>
                 </div>
               </div>

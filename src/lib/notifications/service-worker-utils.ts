@@ -2,7 +2,7 @@
  * Service Worker Registration and Management Utilities
  */
 
-export const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
+export const urlBase64ToUint8Array = (base64String: string): Uint8Array<ArrayBuffer> => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding)
     .replace(/-/g, '+')
@@ -14,7 +14,7 @@ export const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
-  return outputArray;
+  return outputArray as Uint8Array<ArrayBuffer>;
 };
 
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
