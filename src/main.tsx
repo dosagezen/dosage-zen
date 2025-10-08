@@ -7,7 +7,7 @@ import { registerServiceWorker } from './lib/notifications/service-worker-utils'
 
 // Redirect from Lovable domain to custom domain in production
 if (import.meta.env.MODE === 'production' && location.hostname.endsWith('lovable.app')) {
-  location.replace(`https://go.dosagezen.com${location.pathname}${location.search}${location.hash}`);
+  location.replace(`https://dosagezen.com${location.pathname}${location.search}${location.hash}`);
 }
 
 // Register service worker for push notifications
