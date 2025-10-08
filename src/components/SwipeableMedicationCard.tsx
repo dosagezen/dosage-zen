@@ -357,13 +357,24 @@ const SwipeableMedicationCard: React.FC<SwipeableMedicationCardProps> = ({
                         ))}
                     </div>
                   ) : (
-                    // Horário único - mostrar como antes
-                    <div className="flex items-center gap-1 text-primary">
-                      <Clock className="w-4 h-4" />
-                      <span className="font-medium text-sm sm:text-base">
-                        {medicacao.proximaDose === "Todos concluídos hoje" ? "Finalizada" : formatTime24h(medicacao.proximaDose)}
-                      </span>
-                    </div>
+                    // Horário único - mesmo estilo dos múltiplos
+                    medicacao.horarios.filter(h => h.hora !== '-').map((horario, index) => (
+                      <div key={`${horario.hora}-${index}`} className="flex items-center gap-1 text-xs bg-muted/50 px-2 py-1 rounded-lg">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <span className={`font-medium ${
+                          horario.status === 'concluido' ? 'line-through text-muted-foreground' : 
+                          horario.status === 'excluido' ? 'line-through text-destructive' : 'text-primary'
+                        }`}>
+                          {formatTime24h(horario.hora)}
+                        </span>
+                        {horario.status === 'concluido' && (
+                          <Check className="w-3 h-3 text-green-600" />
+                        )}
+                        {horario.status === 'excluido' && (
+                          <span className="text-destructive text-xs">✗</span>
+                        )}
+                      </div>
+                    ))
                   )}
                 </div>
 
