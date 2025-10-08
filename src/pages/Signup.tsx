@@ -113,7 +113,7 @@ const Signup = () => {
     } else if (formData.senha.length < 8) {
       newErrors.senha = "Mínimo 8 caracteres";
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.senha)) {
-      newErrors.senha = "Deve conter maiúscula, minúscula e número";
+      newErrors.senha = "Sua senha deve conter: mínimo de 8 caracteres; letras maiúsculas e minúsculas; números.";
     }
 
     // Confirmar senha
