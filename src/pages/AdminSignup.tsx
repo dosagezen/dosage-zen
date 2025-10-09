@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { useTermsOfUse } from "@/hooks/useTermsOfUse";
 
 interface InvitationData {
   email: string;
@@ -31,6 +33,8 @@ export default function AdminSignup() {
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
 
+  const { data: activeTerms } = useTermsOfUse();
+  const { mutate: logAcceptance } = useTermsAcceptance();
   const token = searchParams.get('token');
 
   // Password validation
@@ -139,6 +143,23 @@ export default function AdminSignup() {
           description: data.error
         });
         return;
+      }
+
+      // Registrar aceite dos termos após signup bem sucedido
+      if (activeTerms?.id) {
+        try {
+          // Buscar o usuário recém-criado
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.id) {
+            logAcceptance({ 
+              termsId: activeTerms.id, 
+              userId: user.id 
+            });
+          }
+        } catch (termsError) {
+          console.error('Erro ao registrar aceite dos termos:', termsError);
+          // Não bloqueia o fluxo se o log falhar
+        }
       }
 
       toast({
@@ -344,12 +365,12 @@ export default function AdminSignup() {
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
                   Aceito os{" "}
-                  <Link to="/terms" className="text-primary hover:underline">
-                    termos de uso
+                  <Link to="/legal/termos-de-uso" target="_blank" className="text-primary hover:underline">
+                    Termos de Uso
                   </Link>{" "}
                   e{" "}
-                  <Link to="/privacy" className="text-primary hover:underline">
-                    política de privacidade
+                  <Link to="/legal/politica-privacidade" target="_blank" className="text-primary hover:underline">
+                    Política de Privacidade
                   </Link>
                 </Label>
               </div>

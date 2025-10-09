@@ -10,6 +10,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileSelector } from "@/components/ProfileSelector";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
+import { useTermsOfUse } from "@/hooks/useTermsOfUse";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -51,6 +54,8 @@ const Signup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { signUp } = useAuth();
+  const { data: activeTerms } = useTermsOfUse();
+  const { mutate: logAcceptance } = useTermsAcceptance();
 
   const formatarTelefone = (value: string) => {
     const numero = value.replace(/\D/g, '');
@@ -176,6 +181,23 @@ const Signup = () => {
           variant: "destructive"
         });
         return;
+      }
+
+      // Registrar aceite dos termos após signup bem sucedido
+      if (activeTerms?.id) {
+        try {
+          // Buscar o usuário recém-criado
+          const { data: { user: newUser } } = await supabase.auth.getUser();
+          if (newUser?.id) {
+            logAcceptance({ 
+              termsId: activeTerms.id, 
+              userId: newUser.id 
+            });
+          }
+        } catch (termsError) {
+          console.error('Erro ao registrar aceite dos termos:', termsError);
+          // Não bloqueia o fluxo se o log falhar
+        }
       }
 
       toast({
@@ -701,16 +723,16 @@ const Signup = () => {
                   >
                     Eu concordo com os{" "}
                     <a
-                      href="/termos-de-servico"
+                      href="/legal/termos-de-uso"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:text-primary-hover underline"
                     >
-                      Termos de Serviço
+                      Termos de Uso
                     </a>
                     {" "}e a{" "}
                     <a
-                      href="/politica-de-privacidade"
+                      href="/legal/politica-privacidade"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-primary hover:text-primary-hover underline"

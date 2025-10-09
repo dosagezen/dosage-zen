@@ -646,6 +646,109 @@ export type Database = {
           },
         ]
       }
+      terms_acceptance_logs: {
+        Row: {
+          acceptance_ip: unknown | null
+          acceptance_method: string
+          accepted_at: string | null
+          id: number
+          terms_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acceptance_ip?: unknown | null
+          acceptance_method?: string
+          accepted_at?: string | null
+          id?: number
+          terms_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acceptance_ip?: unknown | null
+          acceptance_method?: string
+          accepted_at?: string | null
+          id?: number
+          terms_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_acceptance_logs_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "terms_of_use"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terms_of_use: {
+        Row: {
+          content_md: string
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          id: string
+          is_active: boolean
+          version: string
+        }
+        Insert: {
+          content_md: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date: string
+          id?: string
+          is_active?: boolean
+          version: string
+        }
+        Update: {
+          content_md?: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          is_active?: boolean
+          version?: string
+        }
+        Relationships: []
+      }
+      terms_view_logs: {
+        Row: {
+          id: number
+          terms_id: string
+          user_agent: string | null
+          viewed_at: string | null
+          viewer_ip: unknown | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          id?: number
+          terms_id: string
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: unknown | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          id?: number
+          terms_id?: string
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: unknown | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terms_view_logs_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "terms_of_use"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           context_patient_id: string | null
@@ -813,6 +916,33 @@ export type Database = {
       fn_restore_card_for_today: {
         Args: { p_day_local: string; p_med_id: string; p_tz: string }
         Returns: number
+      }
+      fn_terms_get_active: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      fn_terms_list_versions: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      fn_terms_log_accept: {
+        Args: {
+          p_acceptance_ip?: unknown
+          p_acceptance_method?: string
+          p_terms_id: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      fn_terms_log_view: {
+        Args: {
+          p_terms_id: string
+          p_user_agent?: string
+          p_viewer_ip?: unknown
+          p_viewer_user_id?: string
+        }
+        Returns: undefined
       }
       fn_undo_last_occurrence: {
         Args: { p_occ_id: string }

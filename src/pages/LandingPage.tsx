@@ -437,10 +437,10 @@ const LandingPage = () => {
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <div className="space-y-2 text-sm">
-                <a href="#" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
+                <a href="/legal/politica-privacidade" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
                   Política de Privacidade
                 </a>
-                <a href="#" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
+                <a href="/legal/termos-de-uso" className="block hover:underline opacity-75 hover:opacity-100 transition-opacity">
                   Termos de Uso
                 </a>
                 
