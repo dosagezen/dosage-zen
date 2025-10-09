@@ -24,6 +24,8 @@ import Index from "./pages/Index";
 import PublicReportView from "./pages/PublicReportView";
 import TermosDeUso from "./pages/TermosDeUso";
 import TermosHistorico from "./pages/TermosHistorico";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
+import PoliticaPrivacidadeHistorico from "./pages/PoliticaPrivacidadeHistorico";
 import MedicacaoErrorBoundary from "./components/MedicacaoErrorBoundary";
 import { ThemeProvider } from "next-themes";
 import { useEffect } from "react";
@@ -131,8 +133,10 @@ const App = () => (
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/view/relatorio/:id" element={<PublicReportView />} />
-              <Route path="/legal/termos-de-uso" element={<TermosDeUso />} />
-              <Route path="/legal/termos-de-uso/historico" element={<TermosHistorico />} />
+            <Route path="/legal/termos-de-uso" element={<TermosDeUso />} />
+            <Route path="/legal/termos-de-uso/historico" element={<TermosHistorico />} />
+            <Route path="/legal/politica-privacidade" element={<PoliticaPrivacidade />} />
+            <Route path="/legal/politica-privacidade/historico" element={<PoliticaPrivacidadeHistorico />} />
               <Route path="/app/*" element={<AppLayout />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -50,6 +50,7 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -162,6 +163,24 @@ const Signup = () => {
     
     if (!validateForm()) return;
 
+    if (!acceptTerms) {
+      toast({
+        title: "Atenção",
+        description: "Você precisa aceitar os Termos de Uso para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!acceptPrivacy) {
+      toast({
+        title: "Atenção",
+        description: "Você precisa aceitar a Política de Privacidade para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -183,19 +202,30 @@ const Signup = () => {
         return;
       }
 
-      // Registrar aceite dos termos após signup bem sucedido
-      if (activeTerms?.id) {
+      // Registrar aceite dos termos e privacidade após signup bem sucedido
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser?.id) {
         try {
-          // Buscar o usuário recém-criado
-          const { data: { user: newUser } } = await supabase.auth.getUser();
-          if (newUser?.id) {
+          // Log aceite dos termos
+          if (activeTerms?.id) {
             logAcceptance({ 
               termsId: activeTerms.id, 
               userId: newUser.id 
             });
           }
-        } catch (termsError) {
-          console.error('Erro ao registrar aceite dos termos:', termsError);
+
+          // Log aceite da política de privacidade
+          const { data: privacyData } = await supabase.rpc('fn_privacy_get_active');
+          if (privacyData && typeof privacyData === 'object' && 'id' in privacyData) {
+            await supabase.rpc('fn_privacy_log_accept', {
+              p_policy_id: (privacyData as { id: string }).id,
+              p_user_id: newUser.id,
+              p_user_agent: navigator.userAgent,
+              p_acceptance_method: 'checkbox'
+            });
+          }
+        } catch (logError) {
+          console.error('Erro ao registrar aceites:', logError);
           // Não bloqueia o fluxo se o log falhar
         }
       }
@@ -749,7 +779,7 @@ const Signup = () => {
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary-hover"
-                  disabled={isLoading || !acceptTerms}
+                  disabled={isLoading || !acceptTerms || !acceptPrivacy}
                   size="lg"
                 >
                   {isLoading ? (

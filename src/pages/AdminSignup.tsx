@@ -30,6 +30,7 @@ export default function AdminSignup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
 
@@ -145,19 +146,30 @@ export default function AdminSignup() {
         return;
       }
 
-      // Registrar aceite dos termos após signup bem sucedido
-      if (activeTerms?.id) {
+      // Registrar aceite dos termos e privacidade após signup bem sucedido
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
         try {
-          // Buscar o usuário recém-criado
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user?.id) {
+          // Log aceite dos termos
+          if (activeTerms?.id) {
             logAcceptance({ 
               termsId: activeTerms.id, 
               userId: user.id 
             });
           }
-        } catch (termsError) {
-          console.error('Erro ao registrar aceite dos termos:', termsError);
+
+          // Log aceite da política de privacidade
+          const { data: privacyData } = await supabase.rpc('fn_privacy_get_active');
+          if (privacyData && typeof privacyData === 'object' && 'id' in privacyData) {
+            await supabase.rpc('fn_privacy_log_accept', {
+              p_policy_id: (privacyData as { id: string }).id,
+              p_user_id: user.id,
+              p_user_agent: navigator.userAgent,
+              p_acceptance_method: 'checkbox'
+            });
+          }
+        } catch (logError) {
+          console.error('Erro ao registrar aceites:', logError);
           // Não bloqueia o fluxo se o log falhar
         }
       }

@@ -518,6 +518,109 @@ export type Database = {
         }
         Relationships: []
       }
+      privacy_policies: {
+        Row: {
+          content_md: string
+          created_at: string | null
+          created_by: string | null
+          effective_date: string
+          id: string
+          is_active: boolean
+          version: string
+        }
+        Insert: {
+          content_md: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date: string
+          id?: string
+          is_active?: boolean
+          version: string
+        }
+        Update: {
+          content_md?: string
+          created_at?: string | null
+          created_by?: string | null
+          effective_date?: string
+          id?: string
+          is_active?: boolean
+          version?: string
+        }
+        Relationships: []
+      }
+      privacy_policy_acceptance_logs: {
+        Row: {
+          acceptance_ip: unknown | null
+          acceptance_method: string
+          accepted_at: string | null
+          id: number
+          policy_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          acceptance_ip?: unknown | null
+          acceptance_method?: string
+          accepted_at?: string | null
+          id?: number
+          policy_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          acceptance_ip?: unknown | null
+          acceptance_method?: string
+          accepted_at?: string | null
+          id?: number
+          policy_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_policy_acceptance_logs_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "privacy_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      privacy_policy_view_logs: {
+        Row: {
+          id: number
+          policy_id: string
+          user_agent: string | null
+          viewed_at: string | null
+          viewer_ip: unknown | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          id?: number
+          policy_id: string
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: unknown | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          id?: number
+          policy_id?: string
+          user_agent?: string | null
+          viewed_at?: string | null
+          viewer_ip?: unknown | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_policy_view_logs_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "privacy_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -869,6 +972,33 @@ export type Database = {
       fn_next_occurrence: {
         Args: { p_medication_id: string }
         Returns: string
+      }
+      fn_privacy_get_active: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      fn_privacy_list_versions: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      fn_privacy_log_accept: {
+        Args: {
+          p_acceptance_ip?: unknown
+          p_acceptance_method?: string
+          p_policy_id: string
+          p_user_agent?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      fn_privacy_log_view: {
+        Args: {
+          p_policy_id: string
+          p_user_agent?: string
+          p_viewer_ip?: unknown
+          p_viewer_user_id?: string
+        }
+        Returns: undefined
       }
       fn_profile_update: {
         Args: {
