@@ -20,7 +20,9 @@ if ('serviceWorker' in navigator) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <CompromissosEventProvider>
-    <App />
-  </CompromissosEventProvider>
+  <React.StrictMode>
+    <CompromissosEventProvider>
+      <App />
+    </CompromissosEventProvider>
+  </React.StrictMode>
 );
