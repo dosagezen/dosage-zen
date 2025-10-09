@@ -50,7 +50,6 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -166,16 +165,7 @@ const Signup = () => {
     if (!acceptTerms) {
       toast({
         title: "Atenção",
-        description: "Você precisa aceitar os Termos de Uso para continuar.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!acceptPrivacy) {
-      toast({
-        title: "Atenção",
-        description: "Você precisa aceitar a Política de Privacidade para continuar.",
+        description: "Você precisa aceitar os Termos de Uso e a Política de Privacidade para continuar.",
         variant: "destructive",
       });
       return;
@@ -779,7 +769,7 @@ const Signup = () => {
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary-hover"
-                  disabled={isLoading || !acceptTerms || !acceptPrivacy}
+                  disabled={isLoading || !acceptTerms}
                   size="lg"
                 >
                   {isLoading ? (
