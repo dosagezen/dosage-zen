@@ -52,7 +52,6 @@ const Configuracoes = () => {
     { id: "colaboradores", label: "Colaboradores", icon: Users },
     { id: "assinatura", label: "Assinatura", icon: CreditCard },
     { id: "notificacoes", label: "Notificações", icon: Bell },
-    { id: "seguranca", label: "Segurança", icon: Shield },
     { id: "privacidade", label: "Privacidade", icon: Key },
   ];
 
