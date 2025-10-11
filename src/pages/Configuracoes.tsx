@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { UserProfileManager } from "@/components/UserProfileManager";
 import MyProfileSection from "@/components/MyProfileSection";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import PrivacySettings from "@/components/PrivacySettings";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Configuracoes = () => {
@@ -71,6 +72,8 @@ const Configuracoes = () => {
             </CardContent>
           </Card>
         );
+      case "privacidade":
+        return <PrivacySettings />;
       default:
         return (
           <Card>
