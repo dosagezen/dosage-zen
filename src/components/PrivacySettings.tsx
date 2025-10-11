@@ -1,19 +1,16 @@
-import { useNavigate } from "react-router-dom";
-import { FileText, Shield } from "lucide-react";
+import { FileText, Shield, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PrivacySettings = () => {
-  const navigate = useNavigate();
-
   const handleNavigateToTerms = () => {
-    navigate("/legal/termos-de-uso");
+    window.open("/legal/termos-de-uso", "_blank");
   };
 
   const handleNavigateToPrivacy = () => {
-    navigate("/legal/politica-privacidade");
+    window.open("/legal/politica-privacidade", "_blank");
   };
 
   return (
@@ -70,6 +67,7 @@ const PrivacySettings = () => {
               >
                 <FileText className="w-4 h-4 mr-2" />
                 Ver Termos de Uso
+                <ExternalLink className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -98,6 +96,7 @@ const PrivacySettings = () => {
               >
                 <Shield className="w-4 h-4 mr-2" />
                 Ver Política de Privacidade
+                <ExternalLink className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
