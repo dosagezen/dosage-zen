@@ -6,11 +6,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PrivacySettings = () => {
   const handleNavigateToTerms = () => {
-    window.open("/legal/termos-de-uso", "_blank");
+    window.open("https://www.dosagezen.com/legal/termos-de-uso", "_blank");
   };
 
   const handleNavigateToPrivacy = () => {
-    window.open("/legal/politica-privacidade", "_blank");
+    window.open("https://www.dosagezen.com/legal/politica-privacidade", "_blank");
   };
 
   return (
